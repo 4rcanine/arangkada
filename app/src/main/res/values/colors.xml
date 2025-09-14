@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Primary Colors -->
-    <color name="primary_color">#FF6B35</color> <!-- Orange - representing energy and movement -->
-    <color name="primary_dark">#E55A2B</color>
-    <color name="primary_light">#FF8A5B</color>
+    <!-- Primary Colors - Updated Palette -->
+    <color name="primary_color">#42989e</color> <!-- Teal - for backgrounds and main elements -->
+    <color name="primary_dark">#357a7f</color>
+    <color name="primary_light">#5ba8ae</color>
 
-    <!-- Secondary Colors -->
-    <color name="secondary_color">#2E8B57</color> <!-- Sea Green - representing reliability -->
-    <color name="secondary_dark">#1F5F3F</color>
-    <color name="secondary_light">#4CAF50</color>
+    <!-- Secondary Colors - Updated Palette -->
+    <color name="secondary_color">#9e6e42</color> <!-- Brown - for buttons -->
+    <color name="secondary_dark">#7f5535</color>
+    <color name="secondary_light">#b8855f</color>
 
     <!-- Accent Colors -->
     <color name="accent_color">#FFD700</color> <!-- Gold - for highlights -->
@@ -41,6 +41,4 @@
     <!-- Transportation Theme Colors -->
     <color name="van_color">#34495E</color> <!-- Dark blue-gray for van representation -->
     <color name="road_color">#95A5A6</color> <!-- Gray for road elements -->
-    <color name="teal_700">#018786</color> <!-- Default Material teal -->
-
 </resources>

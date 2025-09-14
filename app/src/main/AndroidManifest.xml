@@ -36,6 +36,11 @@
             android:name=".activities.AuthActivity"
             android:exported="false"
             android:theme="@style/Theme.Arangkada" />
+        <!-- Booking Activity -->
+        <activity
+            android:name=".activities.BookingActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Arangkada" />
 
     </application>
 
