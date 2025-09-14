@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "593625234127",
+    "project_id": "arangkada-3c6c2",
+    "storage_bucket": "arangkada-3c6c2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:593625234127:android:7138057143af9e701095ba",
+        "android_client_info": {
+          "package_name": "com.example.arangkada"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQEZpiTtOOKeNWobCP9lWF4dE_-vdasoM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
