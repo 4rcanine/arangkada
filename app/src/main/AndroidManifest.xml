@@ -12,7 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Arangkada"
         tools:targetApi="31">
-
+        <activity
+            android:name=".activities.MyTripsActivity"
+            android:exported="false" />
         <!-- Info Activity - Launch Screen -->
         <activity
             android:name=".activities.InfoActivity"
@@ -20,34 +22,27 @@
             android:theme="@style/Theme.Arangkada.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-
-        <!-- Main Activity - Keep for future use -->
+        </activity> <!-- Main Activity - Keep for future use -->
         <activity
             android:name=".MainActivity"
             android:exported="false"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Arangkada" />
-
-        <!-- Future activities (add these when you create them) -->
+            android:theme="@style/Theme.Arangkada" /> <!-- Future activities (add these when you create them) -->
         <activity
             android:name=".activities.AuthActivity"
             android:exported="false"
-            android:theme="@style/Theme.Arangkada" />
-        <!-- Booking Activity -->
+            android:theme="@style/Theme.Arangkada" /> <!-- Booking Activity -->
         <activity
             android:name=".activities.BookingActivity"
             android:exported="false"
-            android:theme="@style/Theme.Arangkada" />
-
-        <!-- Ticket Confirmation Activity -->
+            android:theme="@style/Theme.Arangkada" /> <!-- Ticket Confirmation Activity -->
         <activity
             android:name=".activities.TicketConfirmationActivity"
             android:exported="false"
             android:theme="@style/Theme.Arangkada" />
-
     </application>
 
 </manifest>

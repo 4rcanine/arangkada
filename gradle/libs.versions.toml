@@ -10,7 +10,10 @@ activityCompose = "1.8.2"       # Changed from 1.10.1 (was requiring compileSdk 
 composeBom = "2023.10.01"       # Changed from 2024.04.01 (better compatibility)
 appcompat = "1.6.1"
 firebaseAuth = "24.0.1"
-firebaseFirestore = "26.0.0"             # Changed from 1.7.1 (better compatibility)
+firebaseFirestore = "26.0.0"
+material = "1.10.0"
+activity = "1.8.0"
+constraintlayout = "2.1.4"             # Changed from 1.7.1 (better compatibility)
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -30,6 +33,9 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

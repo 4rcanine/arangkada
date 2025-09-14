@@ -130,9 +130,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openMyTrips() {
-        Toast.makeText(this, "My trips: 3 upcoming, 12 completed", Toast.LENGTH_SHORT).show();
-        // TODO: Navigate to TripsActivity
+        // Open MyTripsActivity
+        Intent intent = new Intent(MainActivity.this, com.example.arangkada.activities.MyTripsActivity.class);
+        startActivity(intent);
     }
+
+
 
     private void openNotifications() {
         Toast.makeText(this, "2 new notifications", Toast.LENGTH_SHORT).show();
