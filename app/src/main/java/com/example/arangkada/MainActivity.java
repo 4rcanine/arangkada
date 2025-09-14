@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void openMyTrips() {
         // Open MyTripsActivity
-        Intent intent = new Intent(MainActivity.this, com.example.arangkada.activities.MyTripsActivity.class);
+        Intent intent = new Intent(MainActivity.this, com.example.arangkada.activities.CancellationActivity.class);
         startActivity(intent);
     }
 

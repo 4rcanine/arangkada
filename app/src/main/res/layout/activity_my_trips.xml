@@ -4,18 +4,45 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#E1EFE4"
+    android:background="@color/light_gray_background"
     android:padding="16dp">
 
     <!-- Back Button -->
-    <Button
-        android:id="@+id/btnBack"
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+    android:layout_marginBottom="16dp">
+
+    <TextView
+        android:id="@+id/myTripsText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Back"
-        android:backgroundTint="#018786"
-        android:textColor="@android:color/white"
-        android:layout_marginBottom="12dp" />
+        android:text="My trips"
+        android:textColor="@color/gray_text"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?android:attr/selectableItemBackground"
+        android:padding="8dp"
+        android:layout_marginEnd="20dp"/> <!-- spacing between the two -->
+
+    <TextView
+        android:id="@+id/historyText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="History"
+        android:textColor="@color/red_accent"
+        android:textSize="16sp"
+        android:padding="8dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?android:attr/selectableItemBackground"/>
+</LinearLayout>
 
     <!-- Scrollable Trips Section -->
     <ScrollView

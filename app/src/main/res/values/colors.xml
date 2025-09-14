@@ -41,4 +41,31 @@
     <!-- Transportation Theme Colors -->
     <color name="van_color">#34495E</color> <!-- Dark blue-gray for van representation -->
     <color name="road_color">#95A5A6</color> <!-- Gray for road elements -->
+    <color name="teal_primary">#4A90A4</color>
+    <color name="teal_dark">#357A8A</color>
+    <color name="light_green">#7CB342</color>
+
+    <!-- Accent Colors -->
+    <color name="red_accent">#E57373</color>
+    <color name="red_button">#EF5350</color>
+
+    <!-- Background Colors -->
+    <color name="light_gray_background">#F5F5F5</color>
+    <color name="white_background">#FFFFFF</color>
+
+    <!-- Text Colors -->
+    <color name="dark_text">#212121</color>
+    <color name="gray_text">#757575</color>
+    <color name="light_gray_text">#BDBDBD</color>
+
+    <!-- Circle Background Colors -->
+    <color name="gray_circle">#E0E0E0</color>
+
+    <!-- Default Android Colors (if not already defined) -->
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+
 </resources>

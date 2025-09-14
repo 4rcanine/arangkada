@@ -291,14 +291,14 @@ public class AuthActivity extends AppCompatActivity {
     }
 
 //    //PARA AUTO LOGIN
-//    @Override
-//    protected void onStart() {
-//        super.onStart();
-//        FirebaseUser currentUser = mAuth.getCurrentUser();
-//        if (currentUser != null) {
-//            navigateToMainActivity();
-//        }
-//    }
+    @Override
+    protected void onStart() {
+        super.onStart();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            navigateToMainActivity();
+        }
+    }
 
 }
 

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.arangkada"
     xmlns:tools="http://schemas.android.com/tools">
 
     <application
@@ -13,9 +14,11 @@
         android:theme="@style/Theme.Arangkada"
         tools:targetApi="31">
         <activity
-            android:name=".activities.MyTripsActivity"
+            android:name=".activities.CancellationActivity"
             android:exported="false" />
-        <!-- Info Activity - Launch Screen -->
+        <activity
+            android:name=".activities.MyTripsActivity"
+            android:exported="false" /> <!-- Info Activity - Launch Screen -->
         <activity
             android:name=".activities.InfoActivity"
             android:exported="true"
