@@ -14,6 +14,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.arangkada.MainActivity;
 import com.example.arangkada.R;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import java.util.HashMap;
+import java.util.Map;
+
+
+
 public class AuthActivity extends AppCompatActivity {
 
     // Views
@@ -35,6 +43,10 @@ public class AuthActivity extends AppCompatActivity {
     private EditText signupPasswordEditText;
     private EditText signupConfirmPasswordEditText;
     private Button signupButton;
+    private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
+
+
 
     // State
     private boolean isLoginMode = true;
@@ -47,6 +59,10 @@ public class AuthActivity extends AppCompatActivity {
         initializeViews();
         setupClickListeners();
         showLoginMode();
+        mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
+
+
     }
 
     private void initializeViews() {
@@ -148,27 +164,30 @@ public class AuthActivity extends AppCompatActivity {
         String email = loginEmailEditText.getText().toString().trim();
         String password = loginPasswordEditText.getText().toString().trim();
 
-        // Basic validation
         if (email.isEmpty()) {
             loginEmailEditText.setError("Email is required");
             loginEmailEditText.requestFocus();
             return;
         }
-
         if (password.isEmpty()) {
             loginPasswordEditText.setError("Password is required");
             loginPasswordEditText.requestFocus();
             return;
         }
 
-        // Dummy login logic - Replace with actual authentication
-        if (isValidDummyCredentials(email, password)) {
-            Toast.makeText(this, "Login successful! Welcome back.", Toast.LENGTH_SHORT).show();
-            navigateToMainActivity();
-        } else {
-            Toast.makeText(this, "Invalid credentials. Try: user@test.com / password123", Toast.LENGTH_LONG).show();
-        }
+        // Firebase login
+        mAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        Toast.makeText(AuthActivity.this, "Login successful! Welcome " + user.getEmail(), Toast.LENGTH_SHORT).show();
+                        navigateToMainActivity();
+                    } else {
+                        Toast.makeText(AuthActivity.this, "Login failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
     }
+
 
     private void performSignup() {
         String fullName = signupFullNameEditText.getText().toString().trim();
@@ -177,58 +196,74 @@ public class AuthActivity extends AppCompatActivity {
         String password = signupPasswordEditText.getText().toString().trim();
         String confirmPassword = signupConfirmPasswordEditText.getText().toString().trim();
 
-        // Basic validation
         if (fullName.isEmpty()) {
             signupFullNameEditText.setError("Full name is required");
             signupFullNameEditText.requestFocus();
             return;
         }
-
         if (email.isEmpty()) {
             signupEmailEditText.setError("Email is required");
             signupEmailEditText.requestFocus();
             return;
         }
-
         if (!isValidEmail(email)) {
             signupEmailEditText.setError("Please enter a valid email");
             signupEmailEditText.requestFocus();
             return;
         }
-
         if (phone.isEmpty()) {
             signupPhoneEditText.setError("Phone number is required");
             signupPhoneEditText.requestFocus();
             return;
         }
-
         if (password.isEmpty()) {
             signupPasswordEditText.setError("Password is required");
             signupPasswordEditText.requestFocus();
             return;
         }
-
         if (password.length() < 6) {
             signupPasswordEditText.setError("Password must be at least 6 characters");
             signupPasswordEditText.requestFocus();
             return;
         }
-
         if (!password.equals(confirmPassword)) {
             signupConfirmPasswordEditText.setError("Passwords do not match");
             signupConfirmPasswordEditText.requestFocus();
             return;
         }
 
-        // Dummy signup logic - Replace with actual registration
-        Toast.makeText(this, "Account created successfully! Welcome " + fullName + "!", Toast.LENGTH_SHORT).show();
-        navigateToMainActivity();
+        // Firebase signup
+        mAuth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        FirebaseUser user = mAuth.getCurrentUser();
+
+                        // Prepare user data
+                        Map<String, Object> userData = new HashMap<>();
+                        userData.put("name", fullName);
+                        userData.put("email", email);
+                        userData.put("number", phone);
+                        userData.put("password", password); // ⚠️ Not recommended in real apps
+
+                        // Save to Firestore (document named with email)
+                        db.collection("accounts")
+                                .document(email)
+                                .set(userData)
+                                .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(AuthActivity.this, "Account created! Welcome " + fullName, Toast.LENGTH_SHORT).show();
+                                    navigateToMainActivity();
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(AuthActivity.this, "Failed to save user data: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                });
+
+                    } else {
+                        Toast.makeText(AuthActivity.this, "Signup failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 
-    private boolean isValidDummyCredentials(String email, String password) {
-        // Dummy validation - accept any email with password "password123"
-        return password.equals("password123") && email.contains("@");
-    }
+
 
     private boolean isValidEmail(String email) {
         return email.contains("@") && email.contains(".");
@@ -254,4 +289,17 @@ public class AuthActivity extends AppCompatActivity {
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         finish();
     }
+
+//    //PARA AUTO LOGIN
+//    @Override
+//    protected void onStart() {
+//        super.onStart();
+//        FirebaseUser currentUser = mAuth.getCurrentUser();
+//        if (currentUser != null) {
+//            navigateToMainActivity();
+//        }
+//    }
+
 }
+
+
