@@ -116,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupUserInfo() {
         // In a real app, you'd get this from SharedPreferences or user session
-        userNameTextView.setText("Juan Dela Cruz");
+        userNameTextView.setText("Matthew Dela Cruz");
 
         // Show notification badge (dummy data)
         notificationBadge.setVisibility(View.VISIBLE);

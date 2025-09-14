@@ -7,6 +7,9 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -14,7 +17,6 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
-import com.example.arangkada.MainActivity;
 import com.example.arangkada.R;
 
 import java.text.SimpleDateFormat;
@@ -31,6 +33,15 @@ public class BookingActivity extends AppCompatActivity {
     private CardView timePickerCard;
     private Button confirmBookingButton;
     private Button cancelButton;
+
+    // Updated passenger inputs
+    private EditText regularCountEditText;
+    private EditText studentCountEditText;
+    private EditText seniorCountEditText;
+
+    // Updated payment method
+    private RadioGroup paymentMethodGroup;
+    private RadioButton rbCash, rbGCash;
 
     private Calendar selectedCalendar;
     private String fromLocation;
@@ -59,6 +70,16 @@ public class BookingActivity extends AppCompatActivity {
         timePickerCard = findViewById(R.id.card_time_picker);
         confirmBookingButton = findViewById(R.id.btn_confirm_booking);
         cancelButton = findViewById(R.id.btn_cancel);
+
+        // Passenger input fields
+        regularCountEditText = findViewById(R.id.et_regular_count);
+        studentCountEditText = findViewById(R.id.et_student_count);
+        seniorCountEditText = findViewById(R.id.et_senior_count);
+
+        // Payment method radio buttons
+        paymentMethodGroup = findViewById(R.id.rg_payment_method);
+        rbCash = findViewById(R.id.rb_cash);
+        rbGCash = findViewById(R.id.rb_gcash);
     }
 
     private void setupDateTimeFormatters() {
@@ -72,7 +93,6 @@ public class BookingActivity extends AppCompatActivity {
         fromLocation = intent.getStringExtra("from_location");
         toLocation = intent.getStringExtra("to_location");
 
-        // Set default values if null
         if (fromLocation == null) fromLocation = "Cervantes";
         if (toLocation == null) toLocation = "Baguio";
 
@@ -81,37 +101,13 @@ public class BookingActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
-        datePickerCard.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showDatePicker();
-            }
-        });
-
-        timePickerCard.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showTimePicker();
-            }
-        });
-
-        confirmBookingButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                confirmBooking();
-            }
-        });
-
-        cancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                cancelBooking();
-            }
-        });
+        datePickerCard.setOnClickListener(v -> showDatePicker());
+        timePickerCard.setOnClickListener(v -> showTimePicker());
+        confirmBookingButton.setOnClickListener(v -> confirmBooking());
+        cancelButton.setOnClickListener(v -> cancelBooking());
     }
 
     private void setDefaultDateTime() {
-        // Set default to current date and time
         updateDateTimeDisplay();
     }
 
@@ -122,22 +118,16 @@ public class BookingActivity extends AppCompatActivity {
 
         DatePickerDialog datePickerDialog = new DatePickerDialog(
                 this,
-                new DatePickerDialog.OnDateSetListener() {
-                    @Override
-                    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                        selectedCalendar.set(Calendar.YEAR, year);
-                        selectedCalendar.set(Calendar.MONTH, month);
-                        selectedCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-                        updateDateTimeDisplay();
-                    }
+                (view, year1, month1, dayOfMonth) -> {
+                    selectedCalendar.set(Calendar.YEAR, year1);
+                    selectedCalendar.set(Calendar.MONTH, month1);
+                    selectedCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                    updateDateTimeDisplay();
                 },
                 year, month, day
         );
 
-        // Set minimum date to today
         datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis() - 1000);
-
-        // Set maximum date to 30 days from now
         Calendar maxDate = Calendar.getInstance();
         maxDate.add(Calendar.DAY_OF_MONTH, 30);
         datePickerDialog.getDatePicker().setMaxDate(maxDate.getTimeInMillis());
@@ -151,13 +141,10 @@ public class BookingActivity extends AppCompatActivity {
 
         TimePickerDialog timePickerDialog = new TimePickerDialog(
                 this,
-                new TimePickerDialog.OnTimeSetListener() {
-                    @Override
-                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                        selectedCalendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                        selectedCalendar.set(Calendar.MINUTE, minute);
-                        updateDateTimeDisplay();
-                    }
+                (view, hourOfDay, minute1) -> {
+                    selectedCalendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                    selectedCalendar.set(Calendar.MINUTE, minute1);
+                    updateDateTimeDisplay();
                 },
                 hour, minute, false
         );
@@ -171,22 +158,34 @@ public class BookingActivity extends AppCompatActivity {
     }
 
     private void confirmBooking() {
-        String bookingDetails = String.format(
-                "Booking Confirmed!\n\nRoute: %s → %s\nDate: %s\nTime: %s\n\nBooking ID: AR%d\nFare: ₱45.00",
-                fromLocation,
-                toLocation,
-                dateFormat.format(selectedCalendar.getTime()),
-                timeFormat.format(selectedCalendar.getTime()),
-                System.currentTimeMillis() % 10000
-        );
+        String regularCount = regularCountEditText.getText().toString();
+        String studentCount = studentCountEditText.getText().toString();
+        String seniorCount = seniorCountEditText.getText().toString();
 
-        Toast.makeText(this, bookingDetails, Toast.LENGTH_LONG).show();
+        if (regularCount.isEmpty()) regularCount = "0";
+        if (studentCount.isEmpty()) studentCount = "0";
+        if (seniorCount.isEmpty()) seniorCount = "0";
 
-        // Navigate back to dashboard
-        Intent intent = new Intent(BookingActivity.this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        String paymentMethod = rbCash.isChecked() ? "Cash" : "GCash";
+
+        String passengers = "Regular: " + regularCount +
+                "\nStudent: " + studentCount +
+                "\nSenior/PWD: " + seniorCount;
+
+        String dateTime = dateFormat.format(selectedCalendar.getTime()) + " " +
+                timeFormat.format(selectedCalendar.getTime());
+        String bookingId = "AR" + (System.currentTimeMillis() % 10000);
+        String fare = "₱45.00";
+
+        Intent intent = new Intent(BookingActivity.this, TicketConfirmationActivity.class);
+        intent.putExtra("booking_id", bookingId);
+        intent.putExtra("from_location", fromLocation);
+        intent.putExtra("to_location", toLocation);
+        intent.putExtra("date_time", dateTime);
+        intent.putExtra("passengers", passengers);
+        intent.putExtra("payment_method", paymentMethod);
+        intent.putExtra("fare", fare);
         startActivity(intent);
-        finish();
     }
 
     private void cancelBooking() {

@@ -42,6 +42,12 @@
             android:exported="false"
             android:theme="@style/Theme.Arangkada" />
 
+        <!-- Ticket Confirmation Activity -->
+        <activity
+            android:name=".activities.TicketConfirmationActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Arangkada" />
+
     </application>
 
 </manifest>
