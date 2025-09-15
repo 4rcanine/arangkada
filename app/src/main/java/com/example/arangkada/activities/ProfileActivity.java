@@ -2,47 +2,44 @@ package com.example.arangkada.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
 import com.example.arangkada.MainActivity;
 import com.example.arangkada.R;
-import com.example.arangkada.activities.InfoActivity;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class ProfileActivity extends AppCompatActivity {
 
     private ImageView profileImage;
-    private TextView userName;
-    private TextView userEmail;
-    private TextView userPhone;
-
-    private CardView editProfileCard;
-    private CardView bookingHistoryCard;
-    private CardView paymentMethodsCard;
-    private CardView notificationSettingsCard;
-    private CardView helpSupportCard;
-    private CardView aboutAppCard;
-
-    private TextView totalTripsCount;
-    private TextView favoriteRoute;
-    private TextView memberSince;
-
+    private TextView userName, userEmail, userPhone;
+    private TextView totalTripsCount, favoriteRoute, memberSince;
+    private CardView editProfileCard, bookingHistoryCard, paymentMethodsCard, notificationSettingsCard, helpSupportCard, aboutAppCard;
     private Button logoutButton;
+
+    private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
+        mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
+
         initializeViews();
-        loadUserData();
+        loadUserData(); // <-- Load from Firestore
         setupClickListeners();
     }
 
@@ -67,156 +64,95 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void loadUserData() {
-        // In a real app, this would come from SharedPreferences or API
-        userName.setText("Juan Dela Cruz");
-        userEmail.setText("juan.delacruz@email.com");
-        userPhone.setText("+63 912 345 6789");
+        if (mAuth.getCurrentUser() == null) {
+            Toast.makeText(this, "No logged-in user", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        // Statistics (dummy data)
-        totalTripsCount.setText("15");
-        favoriteRoute.setText("Cervantes → Baguio");
-        memberSince.setText("December 2024");
+        String userId = mAuth.getCurrentUser().getUid();
+
+        db.collection("accounts").document(userId)
+                .get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists()) {
+                            String name = documentSnapshot.getString("name");
+                            String email = documentSnapshot.getString("email");
+                            String number = documentSnapshot.getString("number");
+
+                            userName.setText(name != null ? name : "Unknown");
+                            userEmail.setText(email != null ? email : "No email");
+                            userPhone.setText(number != null ? number : "No number");
+
+                            // Dummy stats (replace later if you store them in Firestore)
+                            totalTripsCount.setText("15");
+                            favoriteRoute.setText("Cervantes → Baguio");
+                            memberSince.setText("December 2024");
+                        } else {
+                            Toast.makeText(ProfileActivity.this, "No profile data found", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(ProfileActivity.this, "Error loading profile: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 
     private void setupClickListeners() {
-        editProfileCard.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openEditProfile();
-            }
-        });
-
-        bookingHistoryCard.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openBookingHistory();
-            }
-        });
-
-        paymentMethodsCard.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openPaymentMethods();
-            }
-        });
-
-        notificationSettingsCard.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openNotificationSettings();
-            }
-        });
-
-        helpSupportCard.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openHelpSupport();
-            }
-        });
-
-        aboutAppCard.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openAboutApp();
-            }
-        });
-
-        logoutButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                performLogout();
-            }
-        });
+        editProfileCard.setOnClickListener(v -> openEditProfile());
+        bookingHistoryCard.setOnClickListener(v -> openBookingHistory());
+        paymentMethodsCard.setOnClickListener(v -> openPaymentMethods());
+        notificationSettingsCard.setOnClickListener(v -> openNotificationSettings());
+        helpSupportCard.setOnClickListener(v -> openHelpSupport());
+        aboutAppCard.setOnClickListener(v -> openAboutApp());
+        logoutButton.setOnClickListener(v -> performLogout());
     }
 
     private void openEditProfile() {
         Toast.makeText(this, "Edit Profile - Coming soon!", Toast.LENGTH_SHORT).show();
-        // TODO: Navigate to EditProfileActivity
-        // Intent intent = new Intent(this, EditProfileActivity.class);
-        // startActivity(intent);
     }
 
     private void openBookingHistory() {
-        String historyMessage = "Booking History:\n\n" +
-                "Recent Trips:\n" +
-                "• Dec 15, 2024 - Cervantes → Baguio (₱45)\n" +
-                "• Dec 12, 2024 - Baguio → Cervantes (₱45)\n" +
-                "• Dec 10, 2024 - Cervantes → Baguio (₱45)\n" +
-                "• Dec 8, 2024 - Baguio → Cervantes (₱45)\n\n" +
-                "Total Spent: ₱675.00";
-
-        Toast.makeText(this, historyMessage, Toast.LENGTH_LONG).show();
-        // TODO: Navigate to BookingHistoryActivity
+        Toast.makeText(this, "Booking history coming soon!", Toast.LENGTH_SHORT).show();
     }
 
     private void openPaymentMethods() {
-        String paymentInfo = "Payment Methods:\n\n" +
-                "• Cash (Default)\n" +
-                "• GCash (Coming Soon)\n" +
-                "• Credit Card (Coming Soon)\n\n" +
-                "Manage your payment preferences here.";
-
-        Toast.makeText(this, paymentInfo, Toast.LENGTH_LONG).show();
-        // TODO: Navigate to PaymentMethodsActivity
+        Toast.makeText(this, "Payment methods coming soon!", Toast.LENGTH_SHORT).show();
     }
 
     private void openNotificationSettings() {
-        String notificationInfo = "Notification Settings:\n\n" +
-                "Current Settings:\n" +
-                "• Booking Confirmations: ON\n" +
-                "• Trip Reminders: ON\n" +
-                "• Promotional Offers: OFF\n" +
-                "• App Updates: ON\n\n" +
-                "Customize your notification preferences.";
-
-        Toast.makeText(this, notificationInfo, Toast.LENGTH_LONG).show();
-        // TODO: Navigate to NotificationSettingsActivity
+        Toast.makeText(this, "Notification settings coming soon!", Toast.LENGTH_SHORT).show();
     }
 
     private void openHelpSupport() {
-        String helpInfo = "Help & Support:\n\n" +
-                "Contact Information:\n" +
-                "• Email: support@arangkada.ph\n" +
-                "• Phone: +63 917 123 4567\n" +
-                "• Hours: 6:00 AM - 10:00 PM\n\n" +
-                "Frequently Asked Questions:\n" +
-                "• How to cancel a booking?\n" +
-                "• Payment methods available?\n" +
-                "• UV Express schedule information?";
-
-        Toast.makeText(this, helpInfo, Toast.LENGTH_LONG).show();
-        // TODO: Navigate to HelpSupportActivity
+        Toast.makeText(this, "Help & Support coming soon!", Toast.LENGTH_SHORT).show();
     }
 
     private void openAboutApp() {
-        String aboutInfo = "About Arangkada:\n\n" +
-                "Version: 1.0.0\n" +
-                "Build: 2024.12.15\n\n" +
-                "Arangkada is your convenient UV Express booking companion for routes in Northern Luzon, specifically Cervantes to Baguio and vice versa.\n\n" +
-                "\"Your Ride, Your Way!\"\n\n" +
-                "© 2024 Arangkada Philippines";
-
-        Toast.makeText(this, aboutInfo, Toast.LENGTH_LONG).show();
-        // TODO: Navigate to AboutAppActivity
+        Toast.makeText(this, "About App coming soon!", Toast.LENGTH_SHORT).show();
     }
 
     private void performLogout() {
+        // Sign out from FirebaseAuth
+        mAuth.signOut();
+
         Toast.makeText(this, "Logging out...", Toast.LENGTH_SHORT).show();
 
-        // Clear any stored user data here (SharedPreferences, etc.)
-        // TODO: Clear user session data
-
-        // Navigate back to InfoActivity
-        Intent intent = new Intent(ProfileActivity.this, InfoActivity.class);
+        // Redirect to InfoActivity (or AuthActivity if you prefer login screen)
+        Intent intent = new Intent(ProfileActivity.this, AuthActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         finish();
     }
 
+
     @Override
     public void onBackPressed() {
-        // Go back to dashboard
         Intent intent = new Intent(ProfileActivity.this, MainActivity.class);
         startActivity(intent);
         finish();

@@ -232,29 +232,49 @@ public class AuthActivity extends AppCompatActivity {
             return;
         }
 
-        // Firebase signup
+        // Create Firebase Authentication user
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
+                        // Get the created user
                         FirebaseUser user = mAuth.getCurrentUser();
+                        if (user == null) {
+                            Toast.makeText(AuthActivity.this, "Signup failed: user is null", Toast.LENGTH_LONG).show();
+                            return;
+                        }
 
-                        // Prepare user data
+                        final String uid = user.getUid();
+
+                        // Prepare user data to save in Firestore
                         Map<String, Object> userData = new HashMap<>();
+                        userData.put("userId", uid);
                         userData.put("name", fullName);
                         userData.put("email", email);
                         userData.put("number", phone);
-                        userData.put("password", password); // ⚠️ Not recommended in real apps
+                        // DO NOT store password in Firestore for security reasons
 
-                        // Save to Firestore (document named with email)
+                        // Save user data under accounts/{uid}
                         db.collection("accounts")
-                                .document(email)
+                                .document(uid)
                                 .set(userData)
                                 .addOnSuccessListener(aVoid -> {
                                     Toast.makeText(AuthActivity.this, "Account created! Welcome " + fullName, Toast.LENGTH_SHORT).show();
                                     navigateToMainActivity();
                                 })
                                 .addOnFailureListener(e -> {
+                                    // Firestore save failed — inform user. Optionally clean up the created auth account.
                                     Toast.makeText(AuthActivity.this, "Failed to save user data: " + e.getMessage(), Toast.LENGTH_LONG).show();
+
+                                    // Optional: Remove the created auth user to keep consistency (best-effort).
+                                    // Note: deleting the user here will succeed because the user was just created and is signed-in.
+                                    if (mAuth.getCurrentUser() != null) {
+                                        mAuth.getCurrentUser().delete()
+                                                .addOnCompleteListener(delTask -> {
+                                                    if (delTask.isSuccessful()) {
+                                                        Toast.makeText(AuthActivity.this, "Cleaned up partially-created account due to Firestore error.", Toast.LENGTH_SHORT).show();
+                                                    }
+                                                });
+                                    }
                                 });
 
                     } else {

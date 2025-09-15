@@ -15,6 +15,11 @@ import androidx.cardview.widget.CardView;
 import com.example.arangkada.activities.InfoActivity;
 import com.example.arangkada.activities.BookingActivity;
 import com.example.arangkada.activities.ProfileActivity;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -29,11 +34,16 @@ public class MainActivity extends AppCompatActivity {
     private Button baguioToCervantesButton;
     private Button logoutButton;
     private ImageView notificationBadge;
+    private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
         initializeViews();
         setupClickListeners();
@@ -106,21 +116,31 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Logout button
-        logoutButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                logout();
-            }
-        });
     }
 
     private void setupUserInfo() {
-        // In a real app, you'd get this from SharedPreferences or user session
-        userNameTextView.setText("Matthew Dela Cruz");
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            String userId = currentUser.getUid();
 
-        // Show notification badge (dummy data)
-        notificationBadge.setVisibility(View.VISIBLE);
+            DocumentReference docRef = db.collection("accounts").document(userId);
+            docRef.get().addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        String name = document.getString("name");
+                        userNameTextView.setText(name);
+                    } else {
+                        userNameTextView.setText("Unknown User");
+                    }
+                } else {
+                    userNameTextView.setText("Error loading user");
+                }
+            });
+        } else {
+            // No user is logged in
+            userNameTextView.setText("Guest");
+        }
     }
 
     private void openBookingPage() {
@@ -155,16 +175,7 @@ public class MainActivity extends AppCompatActivity {
         // TODO: Implement quick booking logic
     }
 
-    private void logout() {
-        // Clear any stored user data here (SharedPreferences, etc.)
-        Toast.makeText(this, "Logging out...", Toast.LENGTH_SHORT).show();
 
-        // Navigate back to InfoActivity
-        Intent intent = new Intent(MainActivity.this, InfoActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
-    }
 
     @Override
     public void onBackPressed() {

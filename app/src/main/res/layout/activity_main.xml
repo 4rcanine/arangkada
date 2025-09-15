@@ -38,7 +38,7 @@
                     android:id="@+id/tv_user_name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Juan"
+                    android:text=""
                     android:textColor="@color/white"
                     android:textSize="24sp"
                     android:textStyle="bold" />
@@ -421,24 +421,7 @@
 
         </LinearLayout>
 
-        <!-- Logout Button -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="20dp">
 
-            <Button
-                android:id="@+id/btn_logout"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:text="Logout"
-                android:textSize="16sp"
-                android:textColor="@color/white"
-                android:background="@drawable/button_logout"
-                android:elevation="0dp" />
-
-        </LinearLayout>
 
     </LinearLayout>
 
