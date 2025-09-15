@@ -14,6 +14,7 @@ import androidx.cardview.widget.CardView;
 
 import com.example.arangkada.activities.InfoActivity;
 import com.example.arangkada.activities.BookingActivity;
+import com.example.arangkada.activities.ProfileActivity;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -145,8 +146,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openProfile() {
-        Toast.makeText(this, "Opening profile...", Toast.LENGTH_SHORT).show();
-        // TODO: Navigate to ProfileActivity
+        Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+        startActivity(intent);
     }
 
     private void quickBookRide(String from, String to) {
