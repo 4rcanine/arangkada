@@ -43,7 +43,7 @@ android {
 }
 
 dependencies {
-    // Core dependencies from libs.versions.toml (now compatible with AGP 8.7.2!)
+    // Core dependencies from libs.versions.toml
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -60,11 +60,15 @@ dependencies {
     implementation("androidx.activity:activity-ktx:1.8.2")
     implementation("androidx.fragment:fragment-ktx:1.6.2")
 
-    // implementing firebase
+    // Firebase
     implementation(platform("com.google.firebase:firebase-bom:34.2.0"))
     implementation("com.google.firebase:firebase-analytics")
-    implementation(libs.firebase.auth)
-    implementation(libs.firebase.firestore)
+    implementation("com.google.firebase:firebase-auth:22.1.1")
+    implementation("com.google.firebase:firebase-firestore:24.7.0")
+
+    // RecyclerView and CardView
+    implementation("androidx.recyclerview:recyclerview:1.3.1")
+    implementation("androidx.cardview:cardview:1.0.0")
 
     // QR code
     implementation("com.google.zxing:core:3.5.1")
@@ -79,6 +83,4 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
-    implementation("androidx.cardview:cardview:1.0.0")
 }
