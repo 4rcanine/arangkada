@@ -1,19 +1,16 @@
 package com.example.arangkada.activities;
 
-import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 
-import com.example.arangkada.MainActivity;
 import com.example.arangkada.R;
 
 public class CancellationActivity extends AppCompatActivity {
@@ -27,127 +24,73 @@ public class CancellationActivity extends AppCompatActivity {
     private TextView paymentMethodText;
     private TextView passengersText;
     private TextView totalPriceText;
+    private TextView tripStatusText;
     private Button cancelRideButton;
-    private ImageView vanImage;
-    private TextView historyText; // History button
-
+    private Button backToTripsButton;
+    private ImageView vanImage; // optional, if you still want a vehicle image
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cancellation);
 
-        // Initialize views
         initializeViews();
-
-        // Set hardcoded data
-        setHardcodedData();
-
-        // Set click listeners
         setupClickListeners();
-
-
+        loadDummyData(); // replace later with actual Firestore or intent extras
     }
 
     private void initializeViews() {
-        tripNumberText = findViewById(R.id.tripNumberText);
+        // Bind views from XML
+        tripNumberText = findViewById(R.id.tv_trip_status); // renamed status
         fromLocationText = findViewById(R.id.fromLocationText);
-        toLocationText = findViewById(R.id.toLocationText);
-        timeText = findViewById(R.id.timeText);
+        toLocationText = null; // Removed in new XML, route combined into one text
+        timeText = null;       // Removed, we now have date+time together
         dateText = findViewById(R.id.dateText);
-        paymentTypeText = findViewById(R.id.paymentTypeText);
+        paymentTypeText = null; // Removed, only "paymentMethodText" exists now
         paymentMethodText = findViewById(R.id.paymentMethodText);
-        passengersText = findViewById(R.id.passengersText);
+        passengersText = null;  // Removed in new XML
         totalPriceText = findViewById(R.id.totalPriceText);
+        tripStatusText = findViewById(R.id.tv_trip_status);
         cancelRideButton = findViewById(R.id.cancelRideButton);
-        vanImage = findViewById(R.id.vanImage);
-        historyText = findViewById(R.id.historyText); // Initialize history text
-    }
-
-    private void setHardcodedData() {
-        tripNumberText.setText("1");
-        fromLocationText.setText("Baguio Terminal");
-        toLocationText.setText("Baguio");
-        timeText.setText("5:00 - 6:00 AM");
-        dateText.setText("Thu, Aug 17");
-        paymentTypeText.setText("Type of Payment:");
-        paymentMethodText.setText("Cash on hand");
-        passengersText.setText("Regular (2)");
-        totalPriceText.setText("₱ 700.00");
-
-        // Replace with your van image
-        vanImage.setImageResource(R.drawable.ic_van);
+        backToTripsButton = findViewById(R.id.btn_back_to_trips);
+        vanImage = null; // removed, unless you add it to XML
     }
 
     private void setupClickListeners() {
-        // Cancel ride button
-        if (cancelRideButton != null) {
-            cancelRideButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    showCancellationDialog();
-                }
-            });
-        }
+        // Cancel Ride button
+        cancelRideButton.setOnClickListener(v -> showCancelConfirmationDialog());
 
-        // History button
-        if (historyText != null) {
-            historyText.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    navigateToMyTrips();
-                }
-            });
-        }
-    }
-
-    private void showCancellationDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Cancel Ride");
-        builder.setMessage("Are you sure you want to cancel this ride? This action cannot be undone.");
-
-        builder.setPositiveButton("Yes, Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                cancelRide();
+        // Back to Trips button
+        backToTripsButton.setOnClickListener(v -> {
+            try {
+                Intent intent = new Intent(CancellationActivity.this, MyTripsActivity.class);
+                startActivity(intent);
+            } catch (Exception e) {
+                Toast.makeText(this,
+                        "MyTripsActivity not found. Please create MyTripsActivity.java",
+                        Toast.LENGTH_LONG).show();
             }
         });
-
-        builder.setNegativeButton("No, Keep Ride", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
-
-        AlertDialog dialog = builder.create();
-        dialog.show();
-
-        // Button colors
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-                .setTextColor(ContextCompat.getColor(this, R.color.red_accent));
-        dialog.getButton(AlertDialog.BUTTON_NEGATIVE)
-                .setTextColor(ContextCompat.getColor(this, R.color.teal_primary));
     }
 
-    private void cancelRide() {
-        Toast.makeText(this, "Ride cancelled successfully", Toast.LENGTH_SHORT).show();
-        finish(); // close activity
+    private void loadDummyData() {
+        // In real app, get data from intent or Firestore
+        fromLocationText.setText("Baguio Terminal → Cervantes");
+        dateText.setText("Thu, Aug 17 - 5:00 AM");
+        paymentMethodText.setText("Cash on hand");
+        totalPriceText.setText("₱700.00");
+        tripStatusText.setText("ACTIVE");
     }
 
-    private void navigateToMyTrips() {
-        try {
-            Intent intent = new Intent(this, MyTripsActivity.class);
-            startActivity(intent);
-        } catch (Exception e) {
-            Toast.makeText(this,
-                    "MyTripsActivity not found. Please create MyTripsActivity.java",
-                    Toast.LENGTH_LONG).show();
-        }
-    }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
+    private void showCancelConfirmationDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Cancel Ride")
+                .setMessage("Are you sure you want to cancel this ride?")
+                .setPositiveButton("Yes", (DialogInterface dialog, int which) -> {
+                    Toast.makeText(this, "Ride Cancelled", Toast.LENGTH_SHORT).show();
+                    tripStatusText.setText("CANCELLED");
+                })
+                .setNegativeButton("No", (dialog, which) -> dialog.dismiss())
+                .show();
     }
 }
