@@ -14,15 +14,15 @@ import androidx.cardview.widget.CardView;
 import com.example.arangkada.activities.InfoActivity;
 import com.example.arangkada.activities.BookingActivity;
 import com.example.arangkada.activities.ProfileActivity;
-import com.example.arangkada.activities.BaseActivity;         // <-- added
-import com.example.arangkada.activities.MyTripsActivity;     // <-- added
+import com.example.arangkada.activities.BaseActivity;
+import com.example.arangkada.activities.MyTripsActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-public class MainActivity extends BaseActivity { // <-- extend BaseActivity (was AppCompatActivity)
+public class MainActivity extends BaseActivity {
 
     private TextView welcomeTextView;
     private TextView userNameTextView;
@@ -44,8 +44,8 @@ public class MainActivity extends BaseActivity { // <-- extend BaseActivity (was
         setContentView(R.layout.activity_main);
 
         // Wire BaseActivity's drawer/navigation into this activity
-        setupNavigation();          // <-- NEW: attach drawer/menu/back handlers
-        onNavigationSetup();        // <-- NEW: allow activity-specific nav setup
+        setupNavigation();
+        onNavigationSetup();
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
@@ -70,7 +70,6 @@ public class MainActivity extends BaseActivity { // <-- extend BaseActivity (was
     }
 
     private void setupClickListeners() {
-        // Main feature cards
         bookRideCard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -99,7 +98,6 @@ public class MainActivity extends BaseActivity { // <-- extend BaseActivity (was
             }
         });
 
-        // Cervantes -> Baguio button (starts BookingActivity with route extras)
         cervantesToBaguioButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -110,7 +108,6 @@ public class MainActivity extends BaseActivity { // <-- extend BaseActivity (was
             }
         });
 
-        // Baguio -> Cervantes button (starts BookingActivity with route extras)
         baguioToCervantesButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -120,7 +117,6 @@ public class MainActivity extends BaseActivity { // <-- extend BaseActivity (was
                 startActivity(intent);
             }
         });
-
     }
 
     private void setupUserInfo() {
@@ -143,31 +139,24 @@ public class MainActivity extends BaseActivity { // <-- extend BaseActivity (was
                 }
             });
         } else {
-            // No user is logged in
             userNameTextView.setText("Guest");
         }
     }
 
     private void openBookingPage() {
         Toast.makeText(this, "Opening booking page...", Toast.LENGTH_SHORT).show();
-        // If you want this to open BookingActivity, uncomment:
         // Intent intent = new Intent(this, BookingActivity.class);
         // startActivity(intent);
     }
 
     private void openMyTrips() {
-        // Open MyTripsActivity
-        Intent intent = new Intent(MainActivity.this, MyTripsActivity.class); // <-- FIXED: open MyTripsActivity
+        Intent intent = new Intent(MainActivity.this, MyTripsActivity.class);
         startActivity(intent);
     }
 
-
-
     private void openNotifications() {
         Toast.makeText(this, "2 new notifications", Toast.LENGTH_SHORT).show();
-        // Hide notification badge when opened
         notificationBadge.setVisibility(View.GONE);
-        // TODO: Navigate to NotificationsActivity
     }
 
     private void openProfile() {
@@ -177,25 +166,20 @@ public class MainActivity extends BaseActivity { // <-- extend BaseActivity (was
 
     private void quickBookRide(String from, String to) {
         Toast.makeText(this, "Quick booking: " + from + " → " + to + "\nSearching available rides...", Toast.LENGTH_LONG).show();
-        // TODO: Implement quick booking logic
     }
-
-
 
     @Override
     public void onBackPressed() {
-        // Show confirmation dialog before exiting app
         Toast.makeText(this, "Press back again to exit", Toast.LENGTH_SHORT).show();
-        // TODO: Implement proper back button handling with exit confirmation
     }
 
     // -----------------------------------------------------------------------------------------
-    // Implement required abstract hook from BaseActivity (do not change BaseActivity file)
+    // Implement required abstract hook from BaseActivity
     // -----------------------------------------------------------------------------------------
     @Override
     protected void onNavigationSetup() {
-        // Optional: show the menu button (BaseActivity handles drawer open/close).
-        // You can also hide/show back button here using showBackButton()/showMenuButton()
+        // Show menu (hamburger) button
         showMenuButton();
+        // ❌ No toolbar title here → Dashboard stays clean
     }
 }

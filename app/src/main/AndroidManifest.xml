@@ -11,8 +11,9 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Arangkada"
+        android:theme="@style/Theme.Arangkada.NoActionBar"
         tools:targetApi="31">
+
         <activity
             android:name=".activities.CancellationActivity"
             android:exported="false" />

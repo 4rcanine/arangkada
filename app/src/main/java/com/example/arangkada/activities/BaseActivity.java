@@ -6,6 +6,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
+
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -65,7 +67,6 @@ public abstract class BaseActivity extends AppCompatActivity implements Navigati
         }
     }
 
-
     protected void showBackButton() {
         if (backButton != null && menuButton != null) {
             backButton.setVisibility(View.VISIBLE);
@@ -77,6 +78,14 @@ public abstract class BaseActivity extends AppCompatActivity implements Navigati
         if (backButton != null && menuButton != null) {
             backButton.setVisibility(View.GONE);
             menuButton.setVisibility(View.VISIBLE);
+        }
+    }
+
+    // 🔹 Helper to set toolbar text (optional: child activities can call this)
+    protected void setToolbarTitle(String title) {
+        TextView toolbarTitle = findViewById(R.id.toolbar_title);
+        if (toolbarTitle != null) {
+            toolbarTitle.setText(title);
         }
     }
 
@@ -104,26 +113,18 @@ public abstract class BaseActivity extends AppCompatActivity implements Navigati
 
     private void openNotifications() {
         Toast.makeText(this, "Notifications - Feature coming soon!", Toast.LENGTH_SHORT).show();
-        // TODO: Navigate to NotificationsActivity
-        // Intent intent = new Intent(this, NotificationsActivity.class);
-        // startActivity(intent);
     }
 
     private void openLanguageSettings() {
         Toast.makeText(this, "Language Settings: English/Filipino - Coming soon!", Toast.LENGTH_SHORT).show();
-        // TODO: Implement language selection dialog
     }
 
     private void openTermsAndConditions() {
         Toast.makeText(this, "Terms and Conditions - Feature coming soon!", Toast.LENGTH_SHORT).show();
-        // TODO: Navigate to TermsActivity or show dialog
-        // Intent intent = new Intent(this, TermsActivity.class);
-        // startActivity(intent);
     }
 
     private void openAccountDeletion() {
         Toast.makeText(this, "Account Deletion - Feature coming soon!", Toast.LENGTH_SHORT).show();
-        // TODO: Implement account deletion with confirmation
     }
 
     private void performLogout() {
@@ -149,6 +150,6 @@ public abstract class BaseActivity extends AppCompatActivity implements Navigati
         }
     }
 
-    // Abstract method for child activities to implement if needed
+    // 🔹 Abstract hook for child activities
     protected abstract void onNavigationSetup();
 }
