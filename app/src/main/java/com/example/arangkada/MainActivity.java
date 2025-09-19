@@ -9,19 +9,20 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
 import com.example.arangkada.activities.InfoActivity;
 import com.example.arangkada.activities.BookingActivity;
 import com.example.arangkada.activities.ProfileActivity;
+import com.example.arangkada.activities.BaseActivity;         // <-- added
+import com.example.arangkada.activities.MyTripsActivity;     // <-- added
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity { // <-- extend BaseActivity (was AppCompatActivity)
 
     private TextView welcomeTextView;
     private TextView userNameTextView;
@@ -41,6 +42,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Wire BaseActivity's drawer/navigation into this activity
+        setupNavigation();          // <-- NEW: attach drawer/menu/back handlers
+        onNavigationSetup();        // <-- NEW: allow activity-specific nav setup
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
@@ -152,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void openMyTrips() {
         // Open MyTripsActivity
-        Intent intent = new Intent(MainActivity.this, com.example.arangkada.activities.CancellationActivity.class);
+        Intent intent = new Intent(MainActivity.this, MyTripsActivity.class); // <-- FIXED: open MyTripsActivity
         startActivity(intent);
     }
 
@@ -182,5 +187,15 @@ public class MainActivity extends AppCompatActivity {
         // Show confirmation dialog before exiting app
         Toast.makeText(this, "Press back again to exit", Toast.LENGTH_SHORT).show();
         // TODO: Implement proper back button handling with exit confirmation
+    }
+
+    // -----------------------------------------------------------------------------------------
+    // Implement required abstract hook from BaseActivity (do not change BaseActivity file)
+    // -----------------------------------------------------------------------------------------
+    @Override
+    protected void onNavigationSetup() {
+        // Optional: show the menu button (BaseActivity handles drawer open/close).
+        // You can also hide/show back button here using showBackButton()/showMenuButton()
+        showMenuButton();
     }
 }
