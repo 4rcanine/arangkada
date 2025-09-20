@@ -1,7 +1,6 @@
 package com.example.arangkada.activities;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -71,32 +70,27 @@ public class MyTripsActivity extends AppCompatActivity {
                                         if (tripDoc.exists()) {
                                             Date departure = tripDoc.getTimestamp("departure").toDate();
                                             String destinationId = tripDoc.getString("destinationId");
-                                            String vanId = tripDoc.getString("vanId"); // 👈 get vanId
+                                            String plateNumber = tripDoc.getString("vanId"); // 👈 directly from trips
 
                                             if (destinationId != null) {
                                                 db.collection("destinations").document(destinationId).get()
                                                         .addOnSuccessListener(destDoc -> {
-                                                            String destinationName = destDoc.exists() ? destDoc.getString("name") : "Unknown";
+                                                            String destinationName = destDoc.exists()
+                                                                    ? destDoc.getString("name")
+                                                                    : "Unknown";
 
-                                                            if (vanId != null) {
-                                                                db.collection("vans").document(vanId).get()
-                                                                        .addOnSuccessListener(vanDoc -> {
-                                                                            String plateNumber = vanDoc.exists() ? vanDoc.getString("plate_number") : "Unknown Plate";
-
-                                                                            // ✅ Now this matches your Trip.java model
-                                                                            Trip trip = new Trip(
-                                                                                    bookingId,
-                                                                                    status,
-                                                                                    type,
-                                                                                    seats,
-                                                                                    departure,
-                                                                                    destinationName,
-                                                                                    plateNumber
-                                                                            );
-                                                                            tripList.add(trip);
-                                                                            adapter.notifyDataSetChanged();
-                                                                        });
-                                                            }
+                                                            // ✅ Matches Trip.java model
+                                                            Trip trip = new Trip(
+                                                                    bookingId,
+                                                                    status,
+                                                                    type,
+                                                                    seats,
+                                                                    departure,
+                                                                    destinationName,
+                                                                    plateNumber
+                                                            );
+                                                            tripList.add(trip);
+                                                            adapter.notifyDataSetChanged();
                                                         });
                                             }
                                         }
@@ -127,11 +121,12 @@ public class MyTripsActivity extends AppCompatActivity {
         public void onBindViewHolder(@NonNull TripViewHolder holder, int position) {
             Trip trip = trips.get(position);
 
-            holder.tvPlateNumber.setText(trip.getDestinationName()); // ✅ show van plate
+            holder.tvBookingId.setText("Booking ID: " + trip.getBookingId());
             holder.tvStatus.setText(trip.getStatus());
             holder.tvPassengers.setText(trip.getPassengerType() + ": " + trip.getSeats());
             holder.tvDeparture.setText(sdf.format(trip.getDeparture()));
-            holder.tvDestination.setText("Plate No: " + trip.getPlateNumber());
+            holder.tvDestination.setText("To: " + trip.getDestinationName());
+            holder.tvPlateNumber.setText("Plate: " + trip.getPlateNumber());
         }
 
         @Override
@@ -141,15 +136,16 @@ public class MyTripsActivity extends AppCompatActivity {
 
         static class TripViewHolder extends RecyclerView.ViewHolder {
 
-            TextView tvPlateNumber, tvStatus, tvPassengers, tvDeparture, tvDestination;
+            TextView tvBookingId, tvStatus, tvPassengers, tvDeparture, tvDestination, tvPlateNumber;
 
             public TripViewHolder(@NonNull View itemView) {
                 super(itemView);
-                tvPlateNumber = itemView.findViewById(R.id.tv_booking_id); // 👈 repurpose this TextView for plate number
+                tvBookingId = itemView.findViewById(R.id.tv_booking_id);
                 tvStatus = itemView.findViewById(R.id.tv_status);
                 tvPassengers = itemView.findViewById(R.id.tv_passengers);
                 tvDeparture = itemView.findViewById(R.id.tv_departure);
                 tvDestination = itemView.findViewById(R.id.tv_destination);
+                tvPlateNumber = itemView.findViewById(R.id.tv_plate_number); // ✅ add this to item_trip.xml
             }
         }
     }
