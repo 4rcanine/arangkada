@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.arangkada.R;
+import com.example.arangkada.models.Trip; // ✅ use the real Trip model
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -70,43 +71,39 @@ public class MyTripsActivity extends AppCompatActivity {
                                         if (tripDoc.exists()) {
                                             Date departure = tripDoc.getTimestamp("departure").toDate();
                                             String destinationId = tripDoc.getString("destinationId");
+                                            String vanId = tripDoc.getString("vanId"); // 👈 get vanId
 
                                             if (destinationId != null) {
                                                 db.collection("destinations").document(destinationId).get()
                                                         .addOnSuccessListener(destDoc -> {
                                                             String destinationName = destDoc.exists() ? destDoc.getString("name") : "Unknown";
 
-                                                            Trip trip = new Trip(
-                                                                    bookingId,
-                                                                    status,
-                                                                    type,
-                                                                    seats,
-                                                                    departure,
-                                                                    destinationName
-                                                            );
-                                                            tripList.add(trip);
-                                                            adapter.notifyDataSetChanged();
-                                                        })
-                                                        .addOnFailureListener(e -> Log.e("MyTripsActivity", "Failed to get destination", e));
-                                            } else {
-                                                Trip trip = new Trip(
-                                                        bookingId,
-                                                        status,
-                                                        type,
-                                                        seats,
-                                                        departure,
-                                                        "Unknown"
-                                                );
-                                                tripList.add(trip);
-                                                adapter.notifyDataSetChanged();
+                                                            if (vanId != null) {
+                                                                db.collection("vans").document(vanId).get()
+                                                                        .addOnSuccessListener(vanDoc -> {
+                                                                            String plateNumber = vanDoc.exists() ? vanDoc.getString("plate_number") : "Unknown Plate";
+
+                                                                            // ✅ Now this matches your Trip.java model
+                                                                            Trip trip = new Trip(
+                                                                                    bookingId,
+                                                                                    status,
+                                                                                    type,
+                                                                                    seats,
+                                                                                    departure,
+                                                                                    destinationName,
+                                                                                    plateNumber
+                                                                            );
+                                                                            tripList.add(trip);
+                                                                            adapter.notifyDataSetChanged();
+                                                                        });
+                                                            }
+                                                        });
                                             }
                                         }
-                                    })
-                                    .addOnFailureListener(e -> Log.e("MyTripsActivity", "Failed to get trip", e));
+                                    });
                         }
                     }
-                })
-                .addOnFailureListener(e -> Log.e("MyTripsActivity", "Failed to get bookings", e));
+                });
     }
 
     // RecyclerView Adapter
@@ -130,11 +127,11 @@ public class MyTripsActivity extends AppCompatActivity {
         public void onBindViewHolder(@NonNull TripViewHolder holder, int position) {
             Trip trip = trips.get(position);
 
-            holder.tvBookingId.setText("Booking ID: " + trip.bookingId);
-            holder.tvStatus.setText(trip.status);
-            holder.tvPassengers.setText(trip.type + ": " + trip.seats);
-            holder.tvDeparture.setText(sdf.format(trip.departure));
-            holder.tvDestination.setText(trip.destination);
+            holder.tvPlateNumber.setText(trip.getDestinationName()); // ✅ show van plate
+            holder.tvStatus.setText(trip.getStatus());
+            holder.tvPassengers.setText(trip.getPassengerType() + ": " + trip.getSeats());
+            holder.tvDeparture.setText(sdf.format(trip.getDeparture()));
+            holder.tvDestination.setText("Plate No: " + trip.getPlateNumber());
         }
 
         @Override
@@ -144,36 +141,16 @@ public class MyTripsActivity extends AppCompatActivity {
 
         static class TripViewHolder extends RecyclerView.ViewHolder {
 
-            TextView tvBookingId, tvStatus, tvPassengers, tvDeparture, tvDestination;
+            TextView tvPlateNumber, tvStatus, tvPassengers, tvDeparture, tvDestination;
 
             public TripViewHolder(@NonNull View itemView) {
                 super(itemView);
-                tvDestination = itemView.findViewById(R.id.tv_booking_id);
+                tvPlateNumber = itemView.findViewById(R.id.tv_booking_id); // 👈 repurpose this TextView for plate number
                 tvStatus = itemView.findViewById(R.id.tv_status);
                 tvPassengers = itemView.findViewById(R.id.tv_passengers);
                 tvDeparture = itemView.findViewById(R.id.tv_departure);
-                tvBookingId = itemView.findViewById(R.id.tv_destination);
-
+                tvDestination = itemView.findViewById(R.id.tv_destination);
             }
-        }
-    }
-
-    // Model class
-    private static class Trip {
-        String bookingId;
-        String status;
-        String type;
-        long seats;
-        Date departure;
-        String destination;
-
-        public Trip(String bookingId, String status, String type, long seats, Date departure, String destination) {
-            this.bookingId = bookingId;
-            this.status = status;
-            this.type = type;
-            this.seats = seats;
-            this.departure = departure;
-            this.destination = destination;
         }
     }
 }

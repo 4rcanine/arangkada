@@ -33,7 +33,9 @@ public class TripsAdapter extends RecyclerView.Adapter<TripsAdapter.TripViewHold
     @Override
     public void onBindViewHolder(@NonNull TripViewHolder holder, int position) {
         Trip trip = tripList.get(position);
-        holder.bookingId.setText("Booking ID: " + trip.getBookingId());
+
+        // Show van plate number instead of bookingId
+        holder.plateNumber.setText("Plate: " + trip.getPlateNumber());
         holder.status.setText(trip.getStatus());
         holder.passengers.setText(trip.getPassengerType() + ": " + trip.getSeats());
         holder.destination.setText(trip.getDestinationName());
@@ -48,11 +50,11 @@ public class TripsAdapter extends RecyclerView.Adapter<TripsAdapter.TripViewHold
     }
 
     static class TripViewHolder extends RecyclerView.ViewHolder {
-        TextView bookingId, status, passengers, departure, destination;
+        TextView plateNumber, status, passengers, departure, destination;
 
         public TripViewHolder(@NonNull View itemView) {
             super(itemView);
-            bookingId = itemView.findViewById(R.id.tv_booking_id);
+            plateNumber = itemView.findViewById(R.id.tv_booking_id); // 👈 reuse tv_booking_id for plate
             status = itemView.findViewById(R.id.tv_status);
             passengers = itemView.findViewById(R.id.tv_passengers);
             departure = itemView.findViewById(R.id.tv_departure);

@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import androidx.cardview.widget.CardView;
 
+import com.example.arangkada.activities.CancellationActivity;
 import com.example.arangkada.activities.InfoActivity;
 import com.example.arangkada.activities.BookingActivity;
 import com.example.arangkada.activities.ProfileActivity;
@@ -150,7 +151,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void openMyTrips() {
-        Intent intent = new Intent(MainActivity.this, MyTripsActivity.class);
+        Intent intent = new Intent(MainActivity.this, CancellationActivity.class);
         startActivity(intent);
     }
 
