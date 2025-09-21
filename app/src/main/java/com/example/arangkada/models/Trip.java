@@ -10,10 +10,11 @@ public class Trip {
     private Date departure;
     private String destinationName;
     private String plateNumber; // 👈 new field
+    private double totalFare;
 
     public Trip() {} // empty constructor for Firebase
 
-    public Trip(String bookingId, String status, String passengerType, long seats, Date departure, String destinationName, String plateNumber) {
+    public Trip(String bookingId, String status, String passengerType, long seats, Date departure, String destinationName, String plateNumber, double totalFare) {
         this.bookingId = bookingId;
         this.status = status;
         this.passengerType = passengerType;
@@ -40,4 +41,7 @@ public class Trip {
     public void setDeparture(Date departure) { this.departure = departure; }
     public void setDestinationName(String destinationName) { this.destinationName = destinationName; }
     public void setPlateNumber(String plateNumber) { this.plateNumber = plateNumber; }
+
+    public double getTotalFare() { return totalFare; }
+    public void setTotalFare(double totalFare) { this.totalFare = totalFare; }
 }

@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import androidx.cardview.widget.CardView;
 
+import com.example.arangkada.activities.BookRideActivity;
 import com.example.arangkada.activities.CancellationActivity;
 import com.example.arangkada.activities.InfoActivity;
 import com.example.arangkada.activities.BookingActivity;
@@ -145,9 +146,8 @@ public class MainActivity extends BaseActivity {
     }
 
     private void openBookingPage() {
-        Toast.makeText(this, "Opening booking page...", Toast.LENGTH_SHORT).show();
-        // Intent intent = new Intent(this, BookingActivity.class);
-        // startActivity(intent);
+        Intent intent = new Intent(MainActivity.this, BookRideActivity.class);
+        startActivity(intent);
     }
 
     private void openMyTrips() {

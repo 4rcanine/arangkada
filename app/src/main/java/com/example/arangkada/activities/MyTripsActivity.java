@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.arangkada.R;
-import com.example.arangkada.models.Trip; // ✅ use the real Trip model
+import com.example.arangkada.models.Trip;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -64,13 +64,17 @@ public class MyTripsActivity extends AppCompatActivity {
                         long seats = bookingDoc.getLong("seats") != null ? bookingDoc.getLong("seats") : 0;
                         String tripId = bookingDoc.getString("tripId");
 
+                        // ✅ Correct: fetch totalFare from booking document itself
+                        Double totalFareObj = bookingDoc.getDouble("totalFare");
+                        double totalFare = (totalFareObj != null) ? totalFareObj : 0.0;
+
                         if (tripId != null) {
                             db.collection("trips").document(tripId).get()
                                     .addOnSuccessListener(tripDoc -> {
                                         if (tripDoc.exists()) {
                                             Date departure = tripDoc.getTimestamp("departure").toDate();
                                             String destinationId = tripDoc.getString("destinationId");
-                                            String plateNumber = tripDoc.getString("vanId"); // 👈 directly from trips
+                                            String plateNumber = tripDoc.getString("vanId");
 
                                             if (destinationId != null) {
                                                 db.collection("destinations").document(destinationId).get()
@@ -79,7 +83,6 @@ public class MyTripsActivity extends AppCompatActivity {
                                                                     ? destDoc.getString("name")
                                                                     : "Unknown";
 
-                                                            // ✅ Matches Trip.java model
                                                             Trip trip = new Trip(
                                                                     bookingId,
                                                                     status,
@@ -87,8 +90,10 @@ public class MyTripsActivity extends AppCompatActivity {
                                                                     seats,
                                                                     departure,
                                                                     destinationName,
-                                                                    plateNumber
+                                                                    plateNumber,
+                                                                    totalFare
                                                             );
+
                                                             tripList.add(trip);
                                                             adapter.notifyDataSetChanged();
                                                         });
@@ -99,6 +104,8 @@ public class MyTripsActivity extends AppCompatActivity {
                     }
                 });
     }
+
+
 
     // RecyclerView Adapter
     private static class TripAdapter extends RecyclerView.Adapter<TripAdapter.TripViewHolder> {
@@ -127,6 +134,7 @@ public class MyTripsActivity extends AppCompatActivity {
             holder.tvDeparture.setText(sdf.format(trip.getDeparture()));
             holder.tvDestination.setText("To: " + trip.getDestinationName());
             holder.tvPlateNumber.setText("Plate: " + trip.getPlateNumber());
+            holder.tvTotalFare.setText("₱" + String.format("%.2f", trip.getTotalFare())); // ✅ display totalFare
         }
 
         @Override
@@ -136,7 +144,7 @@ public class MyTripsActivity extends AppCompatActivity {
 
         static class TripViewHolder extends RecyclerView.ViewHolder {
 
-            TextView tvBookingId, tvStatus, tvPassengers, tvDeparture, tvDestination, tvPlateNumber;
+            TextView tvBookingId, tvStatus, tvPassengers, tvDeparture, tvDestination, tvPlateNumber, tvTotalFare;
 
             public TripViewHolder(@NonNull View itemView) {
                 super(itemView);
@@ -145,7 +153,8 @@ public class MyTripsActivity extends AppCompatActivity {
                 tvPassengers = itemView.findViewById(R.id.tv_passengers);
                 tvDeparture = itemView.findViewById(R.id.tv_departure);
                 tvDestination = itemView.findViewById(R.id.tv_destination);
-                tvPlateNumber = itemView.findViewById(R.id.tv_plate_number); // ✅ add this to item_trip.xml
+                tvPlateNumber = itemView.findViewById(R.id.tv_plate_number);
+                tvTotalFare = itemView.findViewById(R.id.tv_total_fare); // ✅ connect totalFare TextView
             }
         }
     }
