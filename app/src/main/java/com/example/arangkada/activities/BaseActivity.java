@@ -112,7 +112,8 @@ public abstract class BaseActivity extends AppCompatActivity implements Navigati
     }
 
     private void openNotifications() {
-        Toast.makeText(this, "Notifications - Feature coming soon!", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(this, NotificationsActivity.class);
+        startActivity(intent);
     }
 
     private void openLanguageSettings() {

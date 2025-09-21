@@ -18,6 +18,7 @@ import com.example.arangkada.activities.BookingActivity;
 import com.example.arangkada.activities.ProfileActivity;
 import com.example.arangkada.activities.BaseActivity;
 import com.example.arangkada.activities.MyTripsActivity;
+import com.example.arangkada.activities.NotificationsActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
@@ -156,8 +157,12 @@ public class MainActivity extends BaseActivity {
     }
 
     private void openNotifications() {
-        Toast.makeText(this, "2 new notifications", Toast.LENGTH_SHORT).show();
+        // Clear badge when user checks notifications
         notificationBadge.setVisibility(View.GONE);
+
+        // Open the notifications activity
+        Intent intent = new Intent(this, NotificationsActivity.class);
+        startActivity(intent);
     }
 
     private void openProfile() {
