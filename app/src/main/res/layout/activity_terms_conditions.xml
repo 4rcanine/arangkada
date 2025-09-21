@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="@color/background_primary">
+
+    <TextView
+        android:id="@+id/tv_terms_conditions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Dummy Terms and Conditions:\n\n1. Hi everyone.\n2. terms? later na .\n3. bb hold on bb hold on."
+        android:textSize="15sp"
+        android:lineSpacingExtra="4dp"
+        android:textColor="@color/text_primary" />
+</ScrollView>

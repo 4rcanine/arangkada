@@ -121,7 +121,8 @@ public abstract class BaseActivity extends AppCompatActivity implements Navigati
     }
 
     private void openTermsAndConditions() {
-        Toast.makeText(this, "Terms and Conditions - Feature coming soon!", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(BaseActivity.this, TermsAndConditionsActivity.class);
+        startActivity(intent);
     }
 
     private void openAccountDeletion() {
