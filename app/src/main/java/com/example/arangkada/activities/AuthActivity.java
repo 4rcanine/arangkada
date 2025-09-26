@@ -13,6 +13,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.arangkada.MainActivity;
 import com.example.arangkada.R;
+import androidx.cardview.widget.CardView;
+import com.google.android.material.textfield.TextInputLayout;
+import com.google.android.material.textfield.TextInputEditText;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -20,15 +23,15 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
 
-
-
 public class AuthActivity extends AppCompatActivity {
 
     // Views
     private LinearLayout loginLayout;
     private LinearLayout signupLayout;
+    private LinearLayout adminSignupLayout;
     private TextView titleTextView;
     private TextView switchModeTextView;
+    private TextView switchToAdminTextView;
 
     // Login Views
     private EditText loginEmailEditText;
@@ -43,13 +46,20 @@ public class AuthActivity extends AppCompatActivity {
     private EditText signupPasswordEditText;
     private EditText signupConfirmPasswordEditText;
     private Button signupButton;
+
+    // Admin Signup Views
+    private EditText adminFullNameEditText;
+    private EditText adminEmailEditText;
+    private EditText adminPhoneEditText;
+    private EditText adminPasswordEditText;
+    private EditText adminConfirmPasswordEditText;
+    private Button adminSignupButton;
+
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
 
-
-
     // State
-    private boolean isLoginMode = true;
+    private int currentMode = 0; // 0 = login, 1 = signup, 2 = admin signup
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,16 +71,16 @@ public class AuthActivity extends AppCompatActivity {
         showLoginMode();
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
-
-
     }
 
     private void initializeViews() {
         // Common Views
         titleTextView = findViewById(R.id.tv_title);
         switchModeTextView = findViewById(R.id.tv_switch_mode);
+        switchToAdminTextView = findViewById(R.id.tv_switch_to_admin);
         loginLayout = findViewById(R.id.layout_login);
         signupLayout = findViewById(R.id.layout_signup);
+        adminSignupLayout = findViewById(R.id.layout_admin_signup);
 
         // Login Views
         loginEmailEditText = findViewById(R.id.et_login_email);
@@ -85,14 +95,29 @@ public class AuthActivity extends AppCompatActivity {
         signupPasswordEditText = findViewById(R.id.et_signup_password);
         signupConfirmPasswordEditText = findViewById(R.id.et_signup_confirm_password);
         signupButton = findViewById(R.id.btn_signup);
+
+        // Admin Signup Views
+        adminFullNameEditText = findViewById(R.id.et_admin_fullname);
+        adminEmailEditText = findViewById(R.id.et_admin_email);
+        adminPhoneEditText = findViewById(R.id.et_admin_phone);
+        adminPasswordEditText = findViewById(R.id.et_admin_password);
+        adminConfirmPasswordEditText = findViewById(R.id.et_admin_confirm_password);
+        adminSignupButton = findViewById(R.id.btn_admin_signup);
     }
 
     private void setupClickListeners() {
-        // Switch between login and signup
+        // Switch between modes
         switchModeTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                toggleAuthMode();
+                toggleMode();
+            }
+        });
+
+        switchToAdminTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showAdminSignupMode();
             }
         });
 
@@ -108,7 +133,15 @@ public class AuthActivity extends AppCompatActivity {
         signupButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                performSignup();
+                performSignup(false);
+            }
+        });
+
+        // Admin Signup button
+        adminSignupButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                performSignup(true);
             }
         });
 
@@ -121,30 +154,43 @@ public class AuthActivity extends AppCompatActivity {
         });
     }
 
-    private void toggleAuthMode() {
-        isLoginMode = !isLoginMode;
-        if (isLoginMode) {
-            showLoginMode();
-        } else {
+    private void toggleMode() {
+        if (currentMode == 0) {
             showSignupMode();
+        } else {
+            showLoginMode();
         }
         clearFields();
     }
 
     private void showLoginMode() {
-        isLoginMode = true;
-        titleTextView.setText(R.string.login_title);
+        currentMode = 0;
+        titleTextView.setText("Welcome Back");
         loginLayout.setVisibility(View.VISIBLE);
         signupLayout.setVisibility(View.GONE);
-        switchModeTextView.setText(R.string.switch_to_signup);
+        adminSignupLayout.setVisibility(View.GONE);
+        switchModeTextView.setText("Don't have an account? Sign up");
+        switchToAdminTextView.setVisibility(View.VISIBLE);
     }
 
     private void showSignupMode() {
-        isLoginMode = false;
-        titleTextView.setText(R.string.signup_title);
+        currentMode = 1;
+        titleTextView.setText("Create Account");
         loginLayout.setVisibility(View.GONE);
         signupLayout.setVisibility(View.VISIBLE);
-        switchModeTextView.setText(R.string.switch_to_login);
+        adminSignupLayout.setVisibility(View.GONE);
+        switchModeTextView.setText("Already have an account? Log in");
+        switchToAdminTextView.setVisibility(View.VISIBLE);
+    }
+
+    private void showAdminSignupMode() {
+        currentMode = 2;
+        titleTextView.setText("Admin Registration");
+        loginLayout.setVisibility(View.GONE);
+        signupLayout.setVisibility(View.GONE);
+        adminSignupLayout.setVisibility(View.VISIBLE);
+        switchModeTextView.setText("Back to regular signup");
+        switchToAdminTextView.setVisibility(View.GONE);
     }
 
     private void clearFields() {
@@ -158,6 +204,13 @@ public class AuthActivity extends AppCompatActivity {
         signupPhoneEditText.setText("");
         signupPasswordEditText.setText("");
         signupConfirmPasswordEditText.setText("");
+
+        // Clear admin signup fields
+        adminFullNameEditText.setText("");
+        adminEmailEditText.setText("");
+        adminPhoneEditText.setText("");
+        adminPasswordEditText.setText("");
+        adminConfirmPasswordEditText.setText("");
     }
 
     private void performLogin() {
@@ -188,47 +241,57 @@ public class AuthActivity extends AppCompatActivity {
                 });
     }
 
+    private void performSignup(boolean isAdmin) {
+        String fullName, email, phone, password, confirmPassword;
 
-    private void performSignup() {
-        String fullName = signupFullNameEditText.getText().toString().trim();
-        String email = signupEmailEditText.getText().toString().trim();
-        String phone = signupPhoneEditText.getText().toString().trim();
-        String password = signupPasswordEditText.getText().toString().trim();
-        String confirmPassword = signupConfirmPasswordEditText.getText().toString().trim();
+        if (isAdmin) {
+            fullName = adminFullNameEditText.getText().toString().trim();
+            email = adminEmailEditText.getText().toString().trim();
+            phone = adminPhoneEditText.getText().toString().trim();
+            password = adminPasswordEditText.getText().toString().trim();
+            confirmPassword = adminConfirmPasswordEditText.getText().toString().trim();
+        } else {
+            fullName = signupFullNameEditText.getText().toString().trim();
+            email = signupEmailEditText.getText().toString().trim();
+            phone = signupPhoneEditText.getText().toString().trim();
+            password = signupPasswordEditText.getText().toString().trim();
+            confirmPassword = signupConfirmPasswordEditText.getText().toString().trim();
+        }
 
+        // Validation
         if (fullName.isEmpty()) {
-            signupFullNameEditText.setError("Full name is required");
-            signupFullNameEditText.requestFocus();
+            setError(isAdmin ? adminFullNameEditText : signupFullNameEditText, "Full name is required");
             return;
         }
         if (email.isEmpty()) {
-            signupEmailEditText.setError("Email is required");
-            signupEmailEditText.requestFocus();
+            setError(isAdmin ? adminEmailEditText : signupEmailEditText, "Email is required");
             return;
         }
         if (!isValidEmail(email)) {
-            signupEmailEditText.setError("Please enter a valid email");
-            signupEmailEditText.requestFocus();
+            setError(isAdmin ? adminEmailEditText : signupEmailEditText, "Please enter a valid email");
             return;
         }
+
+        // Admin email validation
+        if (isAdmin && !email.contains("@admin")) {
+            setError(adminEmailEditText, "Admin email must contain '@admin'");
+            return;
+        }
+
         if (phone.isEmpty()) {
-            signupPhoneEditText.setError("Phone number is required");
-            signupPhoneEditText.requestFocus();
+            setError(isAdmin ? adminPhoneEditText : signupPhoneEditText, "Phone number is required");
             return;
         }
         if (password.isEmpty()) {
-            signupPasswordEditText.setError("Password is required");
-            signupPasswordEditText.requestFocus();
+            setError(isAdmin ? adminPasswordEditText : signupPasswordEditText, "Password is required");
             return;
         }
         if (password.length() < 6) {
-            signupPasswordEditText.setError("Password must be at least 6 characters");
-            signupPasswordEditText.requestFocus();
+            setError(isAdmin ? adminPasswordEditText : signupPasswordEditText, "Password must be at least 6 characters");
             return;
         }
         if (!password.equals(confirmPassword)) {
-            signupConfirmPasswordEditText.setError("Passwords do not match");
-            signupConfirmPasswordEditText.requestFocus();
+            setError(isAdmin ? adminConfirmPasswordEditText : signupConfirmPasswordEditText, "Passwords do not match");
             return;
         }
 
@@ -236,7 +299,6 @@ public class AuthActivity extends AppCompatActivity {
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
-                        // Get the created user
                         FirebaseUser user = mAuth.getCurrentUser();
                         if (user == null) {
                             Toast.makeText(AuthActivity.this, "Signup failed: user is null", Toast.LENGTH_LONG).show();
@@ -251,27 +313,30 @@ public class AuthActivity extends AppCompatActivity {
                         userData.put("name", fullName);
                         userData.put("email", email);
                         userData.put("number", phone);
-                        // DO NOT store password in Firestore for security reasons
+                        userData.put("userType", isAdmin ? "admin" : "user");
+                        userData.put("isAdmin", isAdmin);
 
-                        // Save user data under accounts/{uid}
-                        db.collection("accounts")
+                        // Choose collection based on user type
+                        String collection = isAdmin ? "admins" : "accounts";
+
+                        db.collection(collection)
                                 .document(uid)
                                 .set(userData)
                                 .addOnSuccessListener(aVoid -> {
-                                    Toast.makeText(AuthActivity.this, "Account created! Welcome " + fullName, Toast.LENGTH_SHORT).show();
+                                    String welcomeMessage = isAdmin ?
+                                            "Admin account created! Welcome " + fullName :
+                                            "Account created! Welcome " + fullName;
+                                    Toast.makeText(AuthActivity.this, welcomeMessage, Toast.LENGTH_SHORT).show();
                                     navigateToMainActivity();
                                 })
                                 .addOnFailureListener(e -> {
-                                    // Firestore save failed — inform user. Optionally clean up the created auth account.
                                     Toast.makeText(AuthActivity.this, "Failed to save user data: " + e.getMessage(), Toast.LENGTH_LONG).show();
 
-                                    // Optional: Remove the created auth user to keep consistency (best-effort).
-                                    // Note: deleting the user here will succeed because the user was just created and is signed-in.
                                     if (mAuth.getCurrentUser() != null) {
                                         mAuth.getCurrentUser().delete()
                                                 .addOnCompleteListener(delTask -> {
                                                     if (delTask.isSuccessful()) {
-                                                        Toast.makeText(AuthActivity.this, "Cleaned up partially-created account due to Firestore error.", Toast.LENGTH_SHORT).show();
+                                                        Toast.makeText(AuthActivity.this, "Cleaned up partially-created account due to error.", Toast.LENGTH_SHORT).show();
                                                     }
                                                 });
                                     }
@@ -283,7 +348,10 @@ public class AuthActivity extends AppCompatActivity {
                 });
     }
 
-
+    private void setError(EditText editText, String error) {
+        editText.setError(error);
+        editText.requestFocus();
+    }
 
     private boolean isValidEmail(String email) {
         return email.contains("@") && email.contains(".");
@@ -303,14 +371,18 @@ public class AuthActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        // Go back to InfoActivity
-        Intent intent = new Intent(AuthActivity.this, InfoActivity.class);
-        startActivity(intent);
-        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-        finish();
+        if (currentMode == 2) {
+            showSignupMode();
+        } else if (currentMode == 1) {
+            showLoginMode();
+        } else {
+            Intent intent = new Intent(AuthActivity.this, InfoActivity.class);
+            startActivity(intent);
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+            finish();
+        }
     }
 
-//    //PARA AUTO LOGIN
     @Override
     protected void onStart() {
         super.onStart();
@@ -319,7 +391,4 @@ public class AuthActivity extends AppCompatActivity {
             navigateToMainActivity();
         }
     }
-
 }
-
-
