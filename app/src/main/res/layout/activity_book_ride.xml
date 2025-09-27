@@ -3,120 +3,178 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#E1EFE4"
-    android:padding="16dp">
+    android:background="@color/background_primary"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Card for booking details -->
-        <androidx.cardview.widget.CardView
+        <!-- Header -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:background="@android:color/white"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="8dp">
+            android:background="@drawable/dashboard_header_background"
+            android:orientation="vertical"
+            android:padding="24dp">
 
-            <LinearLayout
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Book Your Ride"
+                android:textColor="@color/white"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Choose your travel details"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:alpha="0.9" />
+        </LinearLayout>
+
+        <!-- Destination Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Destination"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="16dp" />
+
+            <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <!-- Destination -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Choose Destination"
-                    android:textStyle="bold"
-                    android:textSize="16sp"
-                    android:layout_marginBottom="8dp"/>
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
 
                 <Spinner
                     android:id="@+id/spinnerDestinations"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:spinnerMode="dropdown"/>
+                    android:padding="16dp"
+                    android:background="@android:color/transparent"
+                    android:spinnerMode="dropdown" />
+            </androidx.cardview.widget.CardView>
+        </LinearLayout>
 
-                <!-- Trips -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Choose Trip"
-                    android:textStyle="bold"
-                    android:textSize="16sp"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginBottom="8dp"/>
+        <!-- Trip Schedule Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Trip Schedule"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="16dp" />
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
 
                 <Spinner
                     android:id="@+id/spinnerTrips"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:spinnerMode="dropdown"/>
+                    android:padding="16dp"
+                    android:background="@android:color/transparent"
+                    android:spinnerMode="dropdown" />
+            </androidx.cardview.widget.CardView>
 
-                <!-- Trip Details Preview -->
-                <LinearLayout
-                    android:id="@+id/layoutTripDetails"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:background="#F5F5F5"
-                    android:padding="12dp"
-                    android:layout_marginTop="12dp"
-                    android:visibility="gone">
+            <!-- Trip Details -->
+            <LinearLayout
+                android:id="@+id/layoutTripDetails"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@color/background_card"
+                android:padding="16dp"
+                android:layout_marginTop="12dp"
+                android:visibility="gone">
 
-                    <TextView
-                        android:id="@+id/tvTripDeparture"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Departure: -"
-                        android:textSize="14sp"
-                        android:layout_marginBottom="4dp"/>
-
-                    <TextView
-                        android:id="@+id/tvTripVan"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Van: -"
-                        android:textSize="14sp"
-                        android:layout_marginBottom="4dp"/>
-
-                    <TextView
-                        android:id="@+id/tvTripSeats"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Available Seats: -"
-                        android:textSize="14sp"/>
-                </LinearLayout>
-
-                <!-- Passenger Type -->
                 <TextView
+                    android:id="@+id/tvTripDeparture"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Passenger Type"
-                    android:textStyle="bold"
-                    android:textSize="16sp"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginBottom="8dp"/>
+                    android:text="Departure: -"
+                    android:textSize="14sp"
+                    android:layout_marginBottom="6dp" />
+
+                <TextView
+                    android:id="@+id/tvTripVan"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Van: -"
+                    android:textSize="14sp"
+                    android:layout_marginBottom="6dp" />
+
+                <TextView
+                    android:id="@+id/tvTripSeats"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Available Seats: -"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Passenger Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Passengers"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Passenger Type -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp"
+                android:layout_marginBottom="16dp">
 
                 <Spinner
                     android:id="@+id/spinnerPassengerType"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:spinnerMode="dropdown"/>
+                    android:padding="16dp"
+                    android:spinnerMode="dropdown"
+                    android:background="@android:color/transparent" />
+            </androidx.cardview.widget.CardView>
 
-                <!-- Passenger Count -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Number of Passengers"
-                    android:textStyle="bold"
-                    android:textSize="16sp"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginBottom="8dp"/>
+            <!-- Passenger Count -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
 
                 <EditText
                     android:id="@+id/etPassengerCount"
@@ -124,32 +182,58 @@
                     android:layout_height="wrap_content"
                     android:inputType="number"
                     android:hint="Enter number of passengers"
-                    android:padding="12dp"
-                    android:background="@android:drawable/edit_text"/>
+                    android:padding="16dp"
+                    android:background="@android:color/transparent" />
+            </androidx.cardview.widget.CardView>
+        </LinearLayout>
 
-                <!-- Total Fare -->
-                <TextView
-                    android:id="@+id/tvTotalFare"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Total Fare: ₱0"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:layout_marginTop="16dp"/>
+        <!-- Fare Summary -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
 
-                <!-- Book Button -->
-                <Button
-                    android:id="@+id/btnBookNow"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Book Now"
-                    android:textAllCaps="false"
-                    android:backgroundTint="#4CAF50"
-                    android:textColor="@android:color/white"
-                    android:layout_marginTop="24dp"
-                    android:padding="12dp"/>
+            <TextView
+                android:id="@+id/tvTotalFare"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Total Fare: ₱0"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/primary_color" />
+        </LinearLayout>
 
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
+        <!-- Action Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="20dp"
+            android:weightSum="2">
+
+            <Button
+                android:id="@+id/btn_cancel"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="Cancel"
+                android:textSize="16sp"
+                android:textColor="@color/text_primary"
+                android:background="@drawable/button_cancel" />
+
+            <Button
+                android:id="@+id/btnBookNow"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="Confirm Booking"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:background="@drawable/button_primary" />
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>

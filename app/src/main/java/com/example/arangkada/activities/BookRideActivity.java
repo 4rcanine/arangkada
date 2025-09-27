@@ -1,6 +1,8 @@
 package com.example.arangkada.activities;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -15,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.arangkada.R;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -91,7 +94,23 @@ public class BookRideActivity extends AppCompatActivity {
             }
         });
 
-        // Book button
+        // Real-time fare calculation when passenger count changes
+        etPassengerCount.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                updateFarePreview();
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        });
+
+        // Optionally update fare when passenger type changes (so price updates immediately)
+        spinnerPassengerType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                updateFarePreview();
+            }
+            @Override public void onNothingSelected(AdapterView<?> parent) {}
+        });
+
         btnBookNow.setOnClickListener(v -> saveBooking());
     }
 
@@ -103,7 +122,7 @@ public class BookRideActivity extends AppCompatActivity {
             for (DocumentSnapshot doc : queryDocumentSnapshots) {
                 String name = doc.getString("name");
                 destinationNames.add(name != null ? name : "Unknown");
-                destinationIds.add(doc.getId()); // use documentId (destination1, destination2)
+                destinationIds.add(doc.getId());
             }
 
             ArrayAdapter<String> adapter = new ArrayAdapter<>(
@@ -138,8 +157,7 @@ public class BookRideActivity extends AppCompatActivity {
                     for (DocumentSnapshot doc : queryDocumentSnapshots) {
                         tripList.add(doc);
 
-                        // Get departure timestamp
-                        com.google.firebase.Timestamp departure = doc.getTimestamp("departure");
+                        Timestamp departure = doc.getTimestamp("departure");
                         String formattedDate = "-";
 
                         if (departure != null) {
@@ -147,7 +165,6 @@ public class BookRideActivity extends AppCompatActivity {
                             formattedDate = dateFormat.format(date);
                         }
 
-                        // ✅ Only add date/time to spinner
                         tripNames.add(formattedDate);
                     }
 
@@ -167,11 +184,12 @@ public class BookRideActivity extends AppCompatActivity {
     private void showTripDetails(DocumentSnapshot tripDoc) {
         String departure = formatDeparture(tripDoc.get("departure"));
         String vanPlate = tripDoc.getString("vanId");
-        Long availableSeats = tripDoc.getLong("availableSeats");
+        Long availableSeatsObj = tripDoc.getLong("availableSeats");
+        long availableSeats = (availableSeatsObj != null) ? availableSeatsObj : 0L;
 
         tvTripDeparture.setText("Departure: " + departure);
         tvTripVan.setText("Van: " + (vanPlate != null ? vanPlate : "-"));
-        tvTripSeats.setText("Available Seats: " + (availableSeats != null ? availableSeats : 0));
+        tvTripSeats.setText("Available Seats: " + availableSeats);
 
         layoutTripDetails.setVisibility(View.VISIBLE);
     }
@@ -184,6 +202,38 @@ public class BookRideActivity extends AppCompatActivity {
         } else {
             return "-";
         }
+    }
+
+    // 🔥 Real-time fare calculation
+    private void updateFarePreview() {
+        if (selectedTripIndex == -1) {
+            // No trip selected yet — still allow showing fare if user inputs count
+            String passengerCountStr = etPassengerCount.getText().toString();
+            if (passengerCountStr.isEmpty()) {
+                tvTotalFare.setText("Total Fare: ₱0");
+                return;
+            }
+            int passengerCount = Integer.parseInt(passengerCountStr);
+            String passengerType = spinnerPassengerType.getSelectedItem().toString();
+            int farePerPerson = passengerType.equals("Regular") ? 350 : 300;
+            int totalFare = farePerPerson * passengerCount;
+            tvTotalFare.setText("Total Fare: ₱" + totalFare);
+            return;
+        }
+
+        String passengerCountStr = etPassengerCount.getText().toString();
+        if (passengerCountStr.isEmpty()) {
+            tvTotalFare.setText("Total Fare: ₱0");
+            return;
+        }
+
+        int passengerCount = Integer.parseInt(passengerCountStr);
+        String passengerType = spinnerPassengerType.getSelectedItem().toString();
+
+        int farePerPerson = passengerType.equals("Regular") ? 350 : 300;
+        int totalFare = farePerPerson * passengerCount;
+
+        tvTotalFare.setText("Total Fare: ₱" + totalFare);
     }
 
     private void saveBooking() {
@@ -201,44 +251,59 @@ public class BookRideActivity extends AppCompatActivity {
         }
 
         int passengerCount = Integer.parseInt(passengerCountStr);
-
         DocumentSnapshot selectedTrip = tripList.get(selectedTripIndex);
+
+        // Make a final primitive copy to allow use inside callbacks (fixes the compile error)
+        Long availableSeatsObj = selectedTrip.getLong("availableSeats");
+        final long availableSeats = (availableSeatsObj != null) ? availableSeatsObj : 0L;
+
+        if (passengerCount > availableSeats) {
+            Toast.makeText(this, "Not enough available seats", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         Timestamp departure = selectedTrip.getTimestamp("departure");
         String destinationId = selectedTrip.getString("destinationId");
         String tripId = selectedTrip.getId();
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        // Fare calculation
         int farePerPerson = passengerType.equals("Regular") ? 350 : 300;
         int totalFare = farePerPerson * passengerCount;
         tvTotalFare.setText("Total Fare: ₱" + totalFare);
 
-        // 🔥 Generate sequential bookingId
+        // 🔥 Generate sequential bookingId (keeps your original approach)
         db.collection("bookings")
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     int nextBookingNumber = querySnapshot.size() + 1;
                     String bookingId = "booking" + nextBookingNumber;
 
-                    // ✅ Save booking with custom field names
                     Map<String, Object> booking = new HashMap<>();
                     booking.put("bookingId", bookingId);
                     booking.put("status", "Pending");
-                    booking.put("type", passengerType);       // changed from passengerType
-                    booking.put("seats", passengerCount);     // changed from passengerCount
+                    booking.put("type", passengerType);
+                    booking.put("seats", passengerCount);
                     booking.put("departure", departure);
                     booking.put("destinationId", destinationId);
                     booking.put("tripId", tripId);
                     booking.put("userId", userId);
                     booking.put("totalFare", totalFare);
 
-                    // Save with Firestore auto-ID
                     db.collection("bookings")
                             .add(booking)
-                            .addOnSuccessListener(documentReference ->
-                                    Toast.makeText(this, "Booking saved as " + bookingId, Toast.LENGTH_SHORT).show()
-                            )
+                            .addOnSuccessListener(documentReference -> {
+                                // ✅ Update availableSeats in trips (uses the final primitive copy)
+                                DocumentReference tripRef = db.collection("trips").document(tripId);
+                                long newSeats = availableSeats - passengerCount;
+                                tripRef.update("availableSeats", newSeats)
+                                        .addOnSuccessListener(aVoid -> {
+                                            Toast.makeText(this, "Booking saved as " + bookingId, Toast.LENGTH_SHORT).show();
+                                            tvTripSeats.setText("Available Seats: " + newSeats);
+                                        })
+                                        .addOnFailureListener(e ->
+                                                Toast.makeText(this, "Booking saved, but failed to update seats", Toast.LENGTH_SHORT).show()
+                                        );
+                            })
                             .addOnFailureListener(e ->
                                     Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show()
                             );
