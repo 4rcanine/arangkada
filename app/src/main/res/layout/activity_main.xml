@@ -188,7 +188,7 @@
                             android:textSize="14sp"
                             android:textStyle="bold"
                             android:textColor="@color/white"
-                            android:background="@drawable/button_secondary"
+                            android:background="@drawable/button_primary"
                             android:gravity="center" />
 
                     </LinearLayout>

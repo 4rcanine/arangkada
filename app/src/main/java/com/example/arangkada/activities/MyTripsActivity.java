@@ -128,14 +128,17 @@ public class MyTripsActivity extends AppCompatActivity {
         public void onBindViewHolder(@NonNull TripViewHolder holder, int position) {
             Trip trip = trips.get(position);
 
-            holder.tvBookingId.setText("Booking ID: " + trip.getBookingId());
+            // Top title now shows Route instead of Booking ID
+            holder.tvBookingId.setText("Route: " + trip.getDestinationName());
+
             holder.tvStatus.setText(trip.getStatus());
             holder.tvPassengers.setText(trip.getPassengerType() + ": " + trip.getSeats());
             holder.tvDeparture.setText(sdf.format(trip.getDeparture()));
             holder.tvDestination.setText("To: " + trip.getDestinationName());
             holder.tvPlateNumber.setText("Plate: " + trip.getPlateNumber());
-            holder.tvTotalFare.setText("₱" + String.format("%.2f", trip.getTotalFare())); // ✅ display totalFare
+            holder.tvTotalFare.setText("₱" + String.format("%.2f", trip.getTotalFare()));
         }
+
 
         @Override
         public int getItemCount() {

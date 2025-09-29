@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.arangkada.AdminActivity;
 import com.example.arangkada.MainActivity;
 import com.example.arangkada.R;
 import androidx.cardview.widget.CardView;
@@ -71,6 +72,8 @@ public class AuthActivity extends AppCompatActivity {
         showLoginMode();
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
+
+
     }
 
     private void initializeViews() {
@@ -233,13 +236,15 @@ public class AuthActivity extends AppCompatActivity {
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         FirebaseUser user = mAuth.getCurrentUser();
-                        Toast.makeText(AuthActivity.this, "Login successful! Welcome " + user.getEmail(), Toast.LENGTH_SHORT).show();
-                        navigateToMainActivity();
+                        if (user != null) {
+                            checkUserType(user.getUid()); // 🔹 check Firestore user type
+                        }
                     } else {
                         Toast.makeText(AuthActivity.this, "Login failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
     }
+
 
     private void performSignup(boolean isAdmin) {
         String fullName, email, phone, password, confirmPassword;
@@ -388,7 +393,33 @@ public class AuthActivity extends AppCompatActivity {
         super.onStart();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
-            navigateToMainActivity();
+            checkUserType(currentUser.getUid()); // 🔹 ensure redirect works after reopening app
         }
     }
+
+    private void checkUserType(String userId) {
+        db.collection("accounts").document(userId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        Boolean isAdmin = documentSnapshot.getBoolean("isAdmin");
+                        if (isAdmin != null && isAdmin) {
+                            // Navigate to Admin Dashboard
+                            Intent intent = new Intent(AuthActivity.this, AdminActivity.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            startActivity(intent);
+                            overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right);
+                            finish();
+                        } else {
+                            // Navigate to User Dashboard
+                            navigateToMainActivity();
+                        }
+                    } else {
+                        Toast.makeText(AuthActivity.this, "User record not found", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(AuthActivity.this, "Error checking user type: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
+    }
+
 }
