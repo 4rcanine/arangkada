@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- white fill -->
+    <solid android:color="#FFFFFF" />
+
+    <!-- rounded corners -->
+    <corners android:radius="8dp" />
+
+    <!-- border (use any hex here; #CCCCCC is a neutral light gray) -->
+    <stroke
+        android:width="1dp"
+        android:color="#CCCCCC" />
+
+    <!-- optional inner padding so text doesn't touch the border -->
+    <padding
+        android:left="8dp"
+        android:top="8dp"
+        android:right="8dp"
+        android:bottom="8dp" />
+</shape>

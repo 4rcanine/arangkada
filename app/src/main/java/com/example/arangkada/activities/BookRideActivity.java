@@ -20,6 +20,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Transaction;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -31,8 +33,8 @@ import java.util.Map;
 
 public class BookRideActivity extends AppCompatActivity {
 
-    private Spinner spinnerDestinations, spinnerTrips, spinnerPassengerType;
-    private EditText etPassengerCount;
+    private Spinner spinnerDestinations, spinnerTrips;
+    private EditText etRegularCount, etStudentCount, etSeniorCount;
     private TextView tvTotalFare, tvTripDeparture, tvTripVan, tvTripSeats;
     private View layoutTripDetails;
     private Button btnBookNow;
@@ -54,8 +56,9 @@ public class BookRideActivity extends AppCompatActivity {
 
         spinnerDestinations = findViewById(R.id.spinnerDestinations);
         spinnerTrips = findViewById(R.id.spinnerTrips);
-        spinnerPassengerType = findViewById(R.id.spinnerPassengerType);
-        etPassengerCount = findViewById(R.id.etPassengerCount);
+        etRegularCount = findViewById(R.id.et_regular_count);
+        etStudentCount = findViewById(R.id.et_student_count);
+        etSeniorCount = findViewById(R.id.et_senior_count);
         tvTotalFare = findViewById(R.id.tvTotalFare);
 
         // Trip details preview
@@ -69,55 +72,31 @@ public class BookRideActivity extends AppCompatActivity {
         // Load destinations from Firestore
         loadDestinations();
 
-        // Passenger type spinner
-        ArrayAdapter<String> passengerTypeAdapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_spinner_item,
-                new String[]{"Regular", "Student", "Senior Citizen/PWD"}
-        );
-        passengerTypeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerPassengerType.setAdapter(passengerTypeAdapter);
-
-        // When a trip is selected → show trip details
-        spinnerTrips.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (tripList != null && !tripList.isEmpty() && position < tripList.size()) {
-                    selectedTripIndex = position;
-                    showTripDetails(tripList.get(position));
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                layoutTripDetails.setVisibility(View.GONE);
-            }
-        });
-
-        // Real-time fare calculation when passenger count changes
-        etPassengerCount.addTextChangedListener(new TextWatcher() {
+        // Real-time fare calculation
+        TextWatcher fareWatcher = new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
                 updateFarePreview();
             }
             @Override public void afterTextChanged(Editable s) {}
-        });
+        };
+        etRegularCount.addTextChangedListener(fareWatcher);
+        etStudentCount.addTextChangedListener(fareWatcher);
+        etSeniorCount.addTextChangedListener(fareWatcher);
 
-        // Optionally update fare when passenger type changes (so price updates immediately)
-        spinnerPassengerType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                updateFarePreview();
+        // Use anonymous OnClickListener to avoid lambda/resolution issues
+        btnBookNow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                saveBooking();
             }
-            @Override public void onNothingSelected(AdapterView<?> parent) {}
         });
-
-        btnBookNow.setOnClickListener(v -> saveBooking());
     }
 
     private void loadDestinations() {
         db.collection("destinations").get().addOnSuccessListener(queryDocumentSnapshots -> {
             List<String> destinationNames = new ArrayList<>();
-            List<String> destinationIds = new ArrayList<>();
+            final List<String> destinationIds = new ArrayList<>();
 
             for (DocumentSnapshot doc : queryDocumentSnapshots) {
                 String name = doc.getString("name");
@@ -175,6 +154,21 @@ public class BookRideActivity extends AppCompatActivity {
                     );
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     spinnerTrips.setAdapter(adapter);
+
+                    spinnerTrips.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                        @Override
+                        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                            if (tripList != null && !tripList.isEmpty() && position < tripList.size()) {
+                                selectedTripIndex = position;
+                                showTripDetails(tripList.get(position));
+                            }
+                        }
+
+                        @Override
+                        public void onNothingSelected(AdapterView<?> parent) {
+                            layoutTripDetails.setVisibility(View.GONE);
+                        }
+                    });
                 })
                 .addOnFailureListener(e ->
                         Toast.makeText(this, "Failed to load trips: " + e.getMessage(), Toast.LENGTH_SHORT).show()
@@ -204,36 +198,22 @@ public class BookRideActivity extends AppCompatActivity {
         }
     }
 
-    // 🔥 Real-time fare calculation
+    // Real-time fare calculation
     private void updateFarePreview() {
-        if (selectedTripIndex == -1) {
-            // No trip selected yet — still allow showing fare if user inputs count
-            String passengerCountStr = etPassengerCount.getText().toString();
-            if (passengerCountStr.isEmpty()) {
-                tvTotalFare.setText("Total Fare: ₱0");
-                return;
-            }
-            int passengerCount = Integer.parseInt(passengerCountStr);
-            String passengerType = spinnerPassengerType.getSelectedItem().toString();
-            int farePerPerson = passengerType.equals("Regular") ? 350 : 300;
-            int totalFare = farePerPerson * passengerCount;
-            tvTotalFare.setText("Total Fare: ₱" + totalFare);
-            return;
-        }
+        int regular = parseIntSafe(etRegularCount.getText().toString());
+        int student = parseIntSafe(etStudentCount.getText().toString());
+        int senior = parseIntSafe(etSeniorCount.getText().toString());
 
-        String passengerCountStr = etPassengerCount.getText().toString();
-        if (passengerCountStr.isEmpty()) {
-            tvTotalFare.setText("Total Fare: ₱0");
-            return;
-        }
-
-        int passengerCount = Integer.parseInt(passengerCountStr);
-        String passengerType = spinnerPassengerType.getSelectedItem().toString();
-
-        int farePerPerson = passengerType.equals("Regular") ? 350 : 300;
-        int totalFare = farePerPerson * passengerCount;
-
+        int totalFare = (regular * 350) + (student * 300) + (senior * 300);
         tvTotalFare.setText("Total Fare: ₱" + totalFare);
+    }
+
+    private int parseIntSafe(String value) {
+        try {
+            return Integer.parseInt(value);
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     private void saveBooking() {
@@ -242,71 +222,81 @@ public class BookRideActivity extends AppCompatActivity {
             return;
         }
 
-        String passengerType = spinnerPassengerType.getSelectedItem().toString();
-        String passengerCountStr = etPassengerCount.getText().toString();
+        final int regular = parseIntSafe(etRegularCount.getText().toString());
+        final int student = parseIntSafe(etStudentCount.getText().toString());
+        final int senior = parseIntSafe(etSeniorCount.getText().toString());
+        final int passengerCount = regular + student + senior;
 
-        if (passengerCountStr.isEmpty()) {
-            Toast.makeText(this, "Enter number of passengers", Toast.LENGTH_SHORT).show();
+        if (passengerCount <= 0) {
+            Toast.makeText(this, "Enter at least one passenger", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        int passengerCount = Integer.parseInt(passengerCountStr);
-        DocumentSnapshot selectedTrip = tripList.get(selectedTripIndex);
+        final DocumentSnapshot selectedTrip = tripList.get(selectedTripIndex);
+        final String tripId = selectedTrip.getId();
+        final String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        final Timestamp departure = selectedTrip.getTimestamp("departure");
+        final String destinationId = selectedTrip.getString("destinationId");
+        final int totalFare = (regular * 350) + (student * 300) + (senior * 300);
 
-        // Make a final primitive copy to allow use inside callbacks (fixes the compile error)
-        Long availableSeatsObj = selectedTrip.getLong("availableSeats");
-        final long availableSeats = (availableSeatsObj != null) ? availableSeatsObj : 0L;
+        // Transaction ensures correct deduction
+        db.runTransaction(new Transaction.Function<Void>() {
+            @Override
+            public Void apply(Transaction transaction) throws FirebaseFirestoreException {
+                DocumentReference tripRef = db.collection("trips").document(tripId);
+                DocumentSnapshot tripSnapshot = transaction.get(tripRef);
 
-        if (passengerCount > availableSeats) {
-            Toast.makeText(this, "Not enough available seats", Toast.LENGTH_SHORT).show();
-            return;
-        }
+                Long availableSeatsObj = tripSnapshot.getLong("availableSeats");
+                long availableSeats = (availableSeatsObj != null) ? availableSeatsObj : 0L;
 
-        Timestamp departure = selectedTrip.getTimestamp("departure");
-        String destinationId = selectedTrip.getString("destinationId");
-        String tripId = selectedTrip.getId();
-        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                if (passengerCount > availableSeats) {
+                    // If thrown, the transaction fails and onFailureListener will run
+                    throw new FirebaseFirestoreException(
+                            "Not enough available seats",
+                            FirebaseFirestoreException.Code.ABORTED
+                    );
+                }
 
-        int farePerPerson = passengerType.equals("Regular") ? 350 : 300;
-        int totalFare = farePerPerson * passengerCount;
-        tvTotalFare.setText("Total Fare: ₱" + totalFare);
+                long newSeats = availableSeats - passengerCount;
+                transaction.update(tripRef, "availableSeats", newSeats);
 
-        // 🔥 Generate sequential bookingId (keeps your original approach)
-        db.collection("bookings")
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    int nextBookingNumber = querySnapshot.size() + 1;
-                    String bookingId = "booking" + nextBookingNumber;
+                // Create booking document with generated ID and store that ID in booking map
+                DocumentReference bookingRef = db.collection("bookings").document(); // auto ID
+                String bookingId = bookingRef.getId();
 
-                    Map<String, Object> booking = new HashMap<>();
-                    booking.put("bookingId", bookingId);
-                    booking.put("status", "Pending");
-                    booking.put("type", passengerType);
-                    booking.put("seats", passengerCount);
-                    booking.put("departure", departure);
-                    booking.put("destinationId", destinationId);
-                    booking.put("tripId", tripId);
-                    booking.put("userId", userId);
-                    booking.put("totalFare", totalFare);
+                Map<String, Object> booking = new HashMap<>();
+                booking.put("bookingId", bookingId);
+                booking.put("status", "Pending");
+                booking.put("regularCount", regular);
+                booking.put("studentCount", student);
+                booking.put("seniorCount", senior);
+                booking.put("seats", passengerCount);
+                booking.put("departure", departure);
+                booking.put("destinationId", destinationId);
+                booking.put("tripId", tripId);
+                booking.put("userId", userId);
+                booking.put("totalFare", totalFare);
 
-                    db.collection("bookings")
-                            .add(booking)
-                            .addOnSuccessListener(documentReference -> {
-                                // ✅ Update availableSeats in trips (uses the final primitive copy)
-                                DocumentReference tripRef = db.collection("trips").document(tripId);
-                                long newSeats = availableSeats - passengerCount;
-                                tripRef.update("availableSeats", newSeats)
-                                        .addOnSuccessListener(aVoid -> {
-                                            Toast.makeText(this, "Booking saved as " + bookingId, Toast.LENGTH_SHORT).show();
-                                            tvTripSeats.setText("Available Seats: " + newSeats);
-                                        })
-                                        .addOnFailureListener(e ->
-                                                Toast.makeText(this, "Booking saved, but failed to update seats", Toast.LENGTH_SHORT).show()
-                                        );
-                            })
-                            .addOnFailureListener(e ->
-                                    Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                            );
-                });
+                transaction.set(bookingRef, booking);
+
+                return null;
+            }
+        }).addOnSuccessListener(aVoid -> {
+            Toast.makeText(BookRideActivity.this, "Booking confirmed!", Toast.LENGTH_SHORT).show();
+
+            // Reload the trip doc to refresh UI seats (and update the local tripList snapshot for consistency)
+            db.collection("trips").document(tripId)
+                    .get()
+                    .addOnSuccessListener(updatedTrip -> {
+                        // Update local tripList entry (if selectedTripIndex still valid)
+                        if (selectedTripIndex >= 0 && selectedTripIndex < tripList.size()) {
+                            tripList.set(selectedTripIndex, updatedTrip);
+                        }
+                        showTripDetails(updatedTrip);
+                    });
+
+        }).addOnFailureListener(e -> {
+            Toast.makeText(BookRideActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        });
     }
 }
