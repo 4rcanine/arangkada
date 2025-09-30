@@ -4,32 +4,16 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Spinner;
-import android.widget.TextView;
-import android.widget.Toast;
-
+import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.arangkada.R;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.Transaction;
+import com.google.firebase.firestore.*;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 public class BookRideActivity extends AppCompatActivity {
 
@@ -38,6 +22,7 @@ public class BookRideActivity extends AppCompatActivity {
     private TextView tvTotalFare, tvTripDeparture, tvTripVan, tvTripSeats;
     private View layoutTripDetails;
     private Button btnBookNow;
+    private ProgressBar progressBar;
 
     private FirebaseFirestore db;
 
@@ -46,6 +31,8 @@ public class BookRideActivity extends AppCompatActivity {
 
     private final SimpleDateFormat dateFormat =
             new SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.getDefault());
+
+    private ListenerRegistration tripsListener; // 🔹 to stop listening when needed
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +55,7 @@ public class BookRideActivity extends AppCompatActivity {
         layoutTripDetails = findViewById(R.id.layoutTripDetails);
 
         btnBookNow = findViewById(R.id.btnBookNow);
+        progressBar = findViewById(R.id.progressBar);
 
         // Load destinations from Firestore
         loadDestinations();
@@ -84,13 +72,7 @@ public class BookRideActivity extends AppCompatActivity {
         etStudentCount.addTextChangedListener(fareWatcher);
         etSeniorCount.addTextChangedListener(fareWatcher);
 
-        // Use anonymous OnClickListener to avoid lambda/resolution issues
-        btnBookNow.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saveBooking();
-            }
-        });
+        btnBookNow.setOnClickListener(v -> saveBooking());
     }
 
     private void loadDestinations() {
@@ -126,10 +108,23 @@ public class BookRideActivity extends AppCompatActivity {
     }
 
     private void loadTrips(String destinationId) {
-        db.collection("trips")
+        // 🔹 Remove old listener if switching destinations
+        if (tripsListener != null) {
+            tripsListener.remove();
+        }
+
+        tripsListener = db.collection("trips")
                 .whereEqualTo("destinationId", destinationId)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
+                .addSnapshotListener((queryDocumentSnapshots, e) -> {
+                    if (e != null) {
+                        Toast.makeText(this, "Failed to listen to trips: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (queryDocumentSnapshots == null) return;
+
+                    // 🔹 Save previous selection
+                    int previousSelection = spinnerTrips.getSelectedItemPosition();
+
                     tripList.clear();
                     List<String> tripNames = new ArrayList<>();
 
@@ -144,6 +139,13 @@ public class BookRideActivity extends AppCompatActivity {
                             formattedDate = dateFormat.format(date);
                         }
 
+                        Long availableSeatsObj = doc.getLong("availableSeats");
+                        long availableSeats = (availableSeatsObj != null) ? availableSeatsObj : 0L;
+
+                        if (availableSeats == 0) {
+                            formattedDate += "  -- Sold Out --";
+                        }
+
                         tripNames.add(formattedDate);
                     }
 
@@ -154,6 +156,11 @@ public class BookRideActivity extends AppCompatActivity {
                     );
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     spinnerTrips.setAdapter(adapter);
+
+                    // 🔹 Restore previous selection if valid
+                    if (previousSelection >= 0 && previousSelection < tripList.size()) {
+                        spinnerTrips.setSelection(previousSelection);
+                    }
 
                     spinnerTrips.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                         @Override
@@ -169,10 +176,7 @@ public class BookRideActivity extends AppCompatActivity {
                             layoutTripDetails.setVisibility(View.GONE);
                         }
                     });
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Failed to load trips: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                );
+                });
     }
 
     private void showTripDetails(DocumentSnapshot tripDoc) {
@@ -186,6 +190,44 @@ public class BookRideActivity extends AppCompatActivity {
         tvTripSeats.setText("Available Seats: " + availableSeats);
 
         layoutTripDetails.setVisibility(View.VISIBLE);
+
+        // 🔹 Disable passenger input + booking if sold out
+        boolean isSoldOut = (availableSeats == 0);
+        etRegularCount.setEnabled(!isSoldOut);
+        etStudentCount.setEnabled(!isSoldOut);
+        etSeniorCount.setEnabled(!isSoldOut);
+        btnBookNow.setEnabled(!isSoldOut);
+
+        if (isSoldOut) {
+            etRegularCount.setText("0");
+            etStudentCount.setText("0");
+            etSeniorCount.setText("0");
+            tvTotalFare.setText("Total Fare: ₱0");
+        }
+
+        // 🔹 Real-time listener for just this trip
+        db.collection("trips").document(tripDoc.getId())
+                .addSnapshotListener((snapshot, e) -> {
+                    if (snapshot != null && snapshot.exists()) {
+                        Long seats = snapshot.getLong("availableSeats");
+                        long liveSeats = (seats != null) ? seats : 0L;
+
+                        tvTripSeats.setText("Available Seats: " + liveSeats);
+
+                        boolean nowSoldOut = (liveSeats == 0);
+                        etRegularCount.setEnabled(!nowSoldOut);
+                        etStudentCount.setEnabled(!nowSoldOut);
+                        etSeniorCount.setEnabled(!nowSoldOut);
+                        btnBookNow.setEnabled(!nowSoldOut);
+
+                        if (nowSoldOut) {
+                            etRegularCount.setText("0");
+                            etStudentCount.setText("0");
+                            etSeniorCount.setText("0");
+                            tvTotalFare.setText("Total Fare: ₱0");
+                        }
+                    }
+                });
     }
 
     private String formatDeparture(Object departureObj) {
@@ -239,64 +281,67 @@ public class BookRideActivity extends AppCompatActivity {
         final String destinationId = selectedTrip.getString("destinationId");
         final int totalFare = (regular * 350) + (student * 300) + (senior * 300);
 
-        // Transaction ensures correct deduction
-        db.runTransaction(new Transaction.Function<Void>() {
-            @Override
-            public Void apply(Transaction transaction) throws FirebaseFirestoreException {
-                DocumentReference tripRef = db.collection("trips").document(tripId);
-                DocumentSnapshot tripSnapshot = transaction.get(tripRef);
+        // Show loading state
+        progressBar.setVisibility(View.VISIBLE);
+        btnBookNow.setEnabled(false);
 
-                Long availableSeatsObj = tripSnapshot.getLong("availableSeats");
-                long availableSeats = (availableSeatsObj != null) ? availableSeatsObj : 0L;
+        db.runTransaction((Transaction.Function<Void>) transaction -> {
+            DocumentReference tripRef = db.collection("trips").document(tripId);
+            DocumentSnapshot tripSnapshot = transaction.get(tripRef);
 
-                if (passengerCount > availableSeats) {
-                    // If thrown, the transaction fails and onFailureListener will run
-                    throw new FirebaseFirestoreException(
-                            "Not enough available seats",
-                            FirebaseFirestoreException.Code.ABORTED
-                    );
-                }
+            Long availableSeatsObj = tripSnapshot.getLong("availableSeats");
+            long availableSeats = (availableSeatsObj != null) ? availableSeatsObj : 0L;
 
-                long newSeats = availableSeats - passengerCount;
-                transaction.update(tripRef, "availableSeats", newSeats);
-
-                // Create booking document with generated ID and store that ID in booking map
-                DocumentReference bookingRef = db.collection("bookings").document(); // auto ID
-                String bookingId = bookingRef.getId();
-
-                Map<String, Object> booking = new HashMap<>();
-                booking.put("bookingId", bookingId);
-                booking.put("status", "Pending");
-                booking.put("regularCount", regular);
-                booking.put("studentCount", student);
-                booking.put("seniorCount", senior);
-                booking.put("seats", passengerCount);
-                booking.put("departure", departure);
-                booking.put("destinationId", destinationId);
-                booking.put("tripId", tripId);
-                booking.put("userId", userId);
-                booking.put("totalFare", totalFare);
-
-                transaction.set(bookingRef, booking);
-
-                return null;
+            if (passengerCount > availableSeats) {
+                throw new FirebaseFirestoreException(
+                        "Not enough available seats",
+                        FirebaseFirestoreException.Code.ABORTED
+                );
             }
+
+            long newSeats = availableSeats - passengerCount;
+            transaction.update(tripRef, "availableSeats", newSeats);
+
+            DocumentReference bookingRef = db.collection("bookings").document(); // auto ID
+            String bookingId = bookingRef.getId();
+
+            Map<String, Object> booking = new HashMap<>();
+            booking.put("bookingId", bookingId);
+            booking.put("status", "Pending");
+            booking.put("regularCount", regular);
+            booking.put("studentCount", student);
+            booking.put("seniorCount", senior);
+            booking.put("seats", passengerCount);
+            booking.put("departure", departure);
+            booking.put("destinationId", destinationId);
+            booking.put("tripId", tripId);
+            booking.put("userId", userId);
+            booking.put("totalFare", totalFare);
+
+            transaction.set(bookingRef, booking);
+
+            return null;
         }).addOnSuccessListener(aVoid -> {
             Toast.makeText(BookRideActivity.this, "Booking confirmed!", Toast.LENGTH_SHORT).show();
 
-            // Reload the trip doc to refresh UI seats (and update the local tripList snapshot for consistency)
-            db.collection("trips").document(tripId)
-                    .get()
-                    .addOnSuccessListener(updatedTrip -> {
-                        // Update local tripList entry (if selectedTripIndex still valid)
-                        if (selectedTripIndex >= 0 && selectedTripIndex < tripList.size()) {
-                            tripList.set(selectedTripIndex, updatedTrip);
-                        }
-                        showTripDetails(updatedTrip);
-                    });
+            // 🔹 Reset passenger inputs & fare
+            etRegularCount.setText("0");
+            etStudentCount.setText("0");
+            etSeniorCount.setText("0");
+            updateFarePreview();
 
-        }).addOnFailureListener(e -> {
-            Toast.makeText(BookRideActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }).addOnFailureListener(e ->
+                Toast.makeText(BookRideActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+        ).addOnCompleteListener(task -> {
+            progressBar.setVisibility(View.GONE);
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (tripsListener != null) {
+            tripsListener.remove();
+        }
     }
 }
