@@ -82,15 +82,15 @@ public class ManageReservationsActivity extends AppCompatActivity {
                 });
     }
 
-    // ✅ Updated Cancel logic to restore seats
+    // =====================
+    // Update booking status
+    // =====================
     private void updateBookingStatus(String bookingId, String status, int seats, String tripId) {
         if ("Cancelled".equals(status)) {
-            // First restore seats to the trip
             db.collection("trips")
                     .document(tripId)
                     .update("availableSeats", FieldValue.increment(seats))
                     .addOnSuccessListener(unused -> {
-                        // Then update booking status
                         db.collection("bookings")
                                 .document(bookingId)
                                 .update("status", status)
@@ -105,7 +105,6 @@ public class ManageReservationsActivity extends AppCompatActivity {
                             Toast.makeText(this, "Error restoring seats: " + e.getMessage(), Toast.LENGTH_SHORT).show()
                     );
         } else {
-            // For Confirm, only update status
             db.collection("bookings")
                     .document(bookingId)
                     .update("status", status)
@@ -119,12 +118,13 @@ public class ManageReservationsActivity extends AppCompatActivity {
     }
 
     // =====================
-    // ADAPTER CLASS INSIDE
+    // Adapter class
     // =====================
     private class ManageReservationsAdapter extends RecyclerView.Adapter<ManageReservationsAdapter.BookingViewHolder> {
 
         private List<Booking> bookings;
         private FirebaseFirestore db;
+        private final SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.getDefault());
 
         public ManageReservationsAdapter(List<Booking> bookings) {
             this.bookings = bookings;
@@ -163,7 +163,6 @@ public class ManageReservationsActivity extends AppCompatActivity {
                             String destinationId = tripDoc.getString("destinationId");
                             String vanId = tripDoc.getString("vanId");
 
-                            // Show Van (no prefix)
                             holder.tvVan.setText(vanId != null ? vanId : "Unknown");
 
                             if (destinationId != null) {
@@ -181,47 +180,57 @@ public class ManageReservationsActivity extends AppCompatActivity {
                         }
                     });
 
-            // ✅ Fetch seats
+            // Fetch seats and passenger types
             db.collection("bookings")
                     .document(booking.getBookingId())
                     .get()
                     .addOnSuccessListener(seatDoc -> {
-                        if (seatDoc.exists() && seatDoc.contains("seats")) {
-                            long seats = seatDoc.getLong("seats");
-                            holder.tvPassengers.setText(String.valueOf(seats));
+                        if (seatDoc.exists()) {
+                            long seats = seatDoc.getLong("seats") != null ? seatDoc.getLong("seats") : 0;
+                            long regularCount = seatDoc.getLong("regularCount") != null ? seatDoc.getLong("regularCount") : 0;
+                            long studentCount = seatDoc.getLong("studentCount") != null ? seatDoc.getLong("studentCount") : 0;
+                            long seniorCount = seatDoc.getLong("seniorCount") != null ? seatDoc.getLong("seniorCount") : 0;
 
-                            // Confirm button
+                            // Build breakdown string
+                            StringBuilder breakdown = new StringBuilder();
+                            if (regularCount > 0) breakdown.append("Regular-").append(regularCount);
+                            if (studentCount > 0) {
+                                if (breakdown.length() > 0) breakdown.append(", ");
+                                breakdown.append("Student-").append(studentCount);
+                            }
+                            if (seniorCount > 0) {
+                                if (breakdown.length() > 0) breakdown.append(", ");
+                                breakdown.append("Senior-").append(seniorCount);
+                            }
+
+                            // Set passengers TextView
+                            if (breakdown.length() > 0) {
+                                holder.tvPassengers.setText(seats + " (" + breakdown.toString() + ")");
+                            } else {
+                                holder.tvPassengers.setText(String.valueOf(seats));
+                            }
+
+                            // Buttons
                             holder.btnConfirm.setOnClickListener(v ->
                                     updateBookingStatus(booking.getBookingId(), "Confirmed", (int) seats, booking.getTripId())
                             );
-
-                            // Cancel button (restore seats)
                             holder.btnCancel.setOnClickListener(v ->
                                     updateBookingStatus(booking.getBookingId(), "Cancelled", (int) seats, booking.getTripId())
                             );
                         } else {
                             holder.tvPassengers.setText("N/A");
-
-                            holder.btnConfirm.setOnClickListener(v ->
-                                    updateBookingStatus(booking.getBookingId(), "Confirmed", 0, booking.getTripId())
-                            );
-                            holder.btnCancel.setOnClickListener(v ->
-                                    updateBookingStatus(booking.getBookingId(), "Cancelled", 0, booking.getTripId())
-                            );
                         }
                     });
 
-            // Format date (no prefix)
-            SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.getDefault());
+            // Departure date
             String dateStr = booking.getDeparture() != null ? sdf.format(booking.getDeparture().toDate()) : "N/A";
             holder.tvDeparture.setText(dateStr);
 
-            // Show total fare (only value with ₱)
+            // Total fare
             holder.tvTotalFare.setText("₱" + booking.getTotalFare());
 
-            // ✅ Status with background color
+            // Status with background
             holder.tvStatus.setText(booking.getStatus());
-
             switch (booking.getStatus()) {
                 case "Confirmed":
                     holder.tvStatus.setBackgroundResource(R.drawable.bg_status_confirmed);
@@ -238,7 +247,6 @@ public class ManageReservationsActivity extends AppCompatActivity {
                     break;
             }
         }
-
 
         @Override
         public int getItemCount() {
