@@ -82,7 +82,7 @@ public class ManageReservationsActivity extends AppCompatActivity {
                 });
     }
 
-    // ✅ Updated to handle Cancel restoring seats
+    // ✅ Updated Cancel logic to restore seats
     private void updateBookingStatus(String bookingId, String status, int seats, String tripId) {
         if ("Cancelled".equals(status)) {
             // First restore seats to the trip
@@ -163,8 +163,8 @@ public class ManageReservationsActivity extends AppCompatActivity {
                             String destinationId = tripDoc.getString("destinationId");
                             String vanId = tripDoc.getString("vanId");
 
-                            // Show Van
-                            holder.tvVan.setText("Van: " + (vanId != null ? vanId : "Unknown"));
+                            // Show Van (no prefix)
+                            holder.tvVan.setText(vanId != null ? vanId : "Unknown");
 
                             if (destinationId != null) {
                                 db.collection("destinations")
@@ -172,9 +172,9 @@ public class ManageReservationsActivity extends AppCompatActivity {
                                         .get()
                                         .addOnSuccessListener(destDoc -> {
                                             if (destDoc.exists()) {
-                                                holder.tvRoute.setText("Route: " + destDoc.getString("name"));
+                                                holder.tvRoute.setText(destDoc.getString("name"));
                                             } else {
-                                                holder.tvRoute.setText("Route: Unknown");
+                                                holder.tvRoute.setText("Unknown");
                                             }
                                         });
                             }
@@ -188,7 +188,7 @@ public class ManageReservationsActivity extends AppCompatActivity {
                     .addOnSuccessListener(seatDoc -> {
                         if (seatDoc.exists() && seatDoc.contains("seats")) {
                             long seats = seatDoc.getLong("seats");
-                            holder.tvPassengers.setText("Seats: " + seats);
+                            holder.tvPassengers.setText(String.valueOf(seats));
 
                             // Confirm button
                             holder.btnConfirm.setOnClickListener(v ->
@@ -200,7 +200,7 @@ public class ManageReservationsActivity extends AppCompatActivity {
                                     updateBookingStatus(booking.getBookingId(), "Cancelled", (int) seats, booking.getTripId())
                             );
                         } else {
-                            holder.tvPassengers.setText("Seats: N/A");
+                            holder.tvPassengers.setText("N/A");
 
                             holder.btnConfirm.setOnClickListener(v ->
                                     updateBookingStatus(booking.getBookingId(), "Confirmed", 0, booking.getTripId())
@@ -211,14 +211,34 @@ public class ManageReservationsActivity extends AppCompatActivity {
                         }
                     });
 
-            // Format date
+            // Format date (no prefix)
             SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.getDefault());
             String dateStr = booking.getDeparture() != null ? sdf.format(booking.getDeparture().toDate()) : "N/A";
-            holder.tvDeparture.setText("Departure: " + dateStr);
+            holder.tvDeparture.setText(dateStr);
 
-            holder.tvTotalFare.setText("Total Fare: ₱" + booking.getTotalFare());
-            holder.tvStatus.setText("Status: " + booking.getStatus());
+            // Show total fare (only value with ₱)
+            holder.tvTotalFare.setText("₱" + booking.getTotalFare());
+
+            // ✅ Status with background color
+            holder.tvStatus.setText(booking.getStatus());
+
+            switch (booking.getStatus()) {
+                case "Confirmed":
+                    holder.tvStatus.setBackgroundResource(R.drawable.bg_status_confirmed);
+                    break;
+                case "Completed":
+                    holder.tvStatus.setBackgroundResource(R.drawable.bg_status_completed);
+                    break;
+                case "Cancelled":
+                    holder.tvStatus.setBackgroundResource(R.drawable.bg_status_cancelled);
+                    break;
+                case "Pending":
+                default:
+                    holder.tvStatus.setBackgroundResource(R.drawable.bg_status_pending);
+                    break;
+            }
         }
+
 
         @Override
         public int getItemCount() {

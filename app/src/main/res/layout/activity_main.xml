@@ -175,7 +175,7 @@
                             android:textSize="14sp"
                             android:textStyle="bold"
                             android:textColor="@color/white"
-                            android:background="@drawable/button_primary"
+                            android:backgroundTint="@color/secondary_color"
                             android:gravity="center" />
 
                         <Button
