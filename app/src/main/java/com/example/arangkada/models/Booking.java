@@ -7,13 +7,12 @@ public class Booking {
     private String status;
     private String passengerType;
     private int passengerCount;
-    private Timestamp departure;   // 🔥 Use Firestore Timestamp
-    private String destinationId;  // store reference ID instead of plain string
+    private Timestamp departure;
+    private String destinationId;
     private String tripId;
     private String userId;
     private int totalFare;
 
-    // Empty constructor required for Firestore
     public Booking() {}
 
     public Booking(String bookingId,
@@ -36,7 +35,6 @@ public class Booking {
         this.totalFare = totalFare;
     }
 
-    // Getters & Setters
     public String getBookingId() { return bookingId; }
     public void setBookingId(String bookingId) { this.bookingId = bookingId; }
 

@@ -1,0 +1,99 @@
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    android:elevation="4dp"
+    android:padding="12dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- User name -->
+        <TextView
+            android:id="@+id/txtUser"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="User Name"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Route -->
+        <TextView
+            android:id="@+id/tv_route"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Route: "
+            android:textStyle="bold"
+            android:textSize="15sp" />
+
+        <!-- Van -->
+        <TextView
+            android:id="@+id/tv_van"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Van: "
+            android:layout_marginTop="4dp"
+            android:textStyle="italic" />
+
+        <!-- Departure -->
+        <TextView
+            android:id="@+id/tv_departure"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Departure:"
+            android:layout_marginTop="4dp" />
+
+        <!-- Passengers -->
+        <TextView
+            android:id="@+id/tv_passengers"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Passengers:"
+            android:layout_marginTop="4dp" />
+
+        <!-- Total fare -->
+        <TextView
+            android:id="@+id/tv_total_fare"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Total Fare:"
+            android:layout_marginTop="4dp"
+            android:textStyle="bold" />
+
+        <!-- Status -->
+        <TextView
+            android:id="@+id/tv_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Status:"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/secondary_color" />
+
+        <!-- Action buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end"
+            android:layout_marginTop="10dp">
+
+            <Button
+                android:id="@+id/btnConfirm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Confirm"
+                android:textColor="@android:color/white" />
+
+            <Button
+                android:id="@+id/btnCancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cancel"
+                android:layout_marginStart="12dp"
+                android:textColor="@android:color/white" />
+        </LinearLayout>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>
