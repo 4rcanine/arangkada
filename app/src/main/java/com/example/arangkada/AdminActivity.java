@@ -11,6 +11,7 @@ import androidx.cardview.widget.CardView;
 
 import com.example.arangkada.activities.AuthActivity;
 import com.example.arangkada.activities.BaseActivity;
+import com.example.arangkada.activities.CurrentVanScheduleActivity;
 import com.example.arangkada.activities.ManageReservationsActivity;
 import com.example.arangkada.activities.ManageVansActivity;
 import com.google.firebase.auth.FirebaseAuth;
@@ -78,7 +79,7 @@ public class AdminActivity extends BaseActivity {
     private void setupClickListeners() {
         // TODO: Uncomment when activities are ready
         cardReservations.setOnClickListener(v -> startActivity(new Intent(this, ManageReservationsActivity.class)));
-        cardSchedule.setOnClickListener(v -> startActivity(new Intent(this, ManageVansActivity.class)));
+        cardSchedule.setOnClickListener(v -> startActivity(new Intent(this, CurrentVanScheduleActivity.class)));
 //        cardTerminals.setOnClickListener(v -> startActivity(new Intent(this, TerminalManagementActivity.class)));
 //        cardUsers.setOnClickListener(v -> startActivity(new Intent(this, UserManagementActivity.class)));
 //        cardCancelled.setOnClickListener(v -> startActivity(new Intent(this, CancelledTripsActivity.class)));
