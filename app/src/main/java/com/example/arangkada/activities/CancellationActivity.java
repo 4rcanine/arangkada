@@ -1,96 +1,231 @@
 package com.example.arangkada.activities;
 
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.arangkada.R;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
+import javax.annotation.Nullable;
 
 public class CancellationActivity extends AppCompatActivity {
 
-    private TextView tripNumberText;
-    private TextView fromLocationText;
-    private TextView toLocationText;
-    private TextView timeText;
-    private TextView dateText;
-    private TextView paymentTypeText;
-    private TextView paymentMethodText;
-    private TextView passengersText;
-    private TextView totalPriceText;
-    private TextView tripStatusText;
-    private Button cancelRideButton;
-    private Button backToTripsButton;
-    private ImageView vanImage; // optional, if you still want a vehicle image
+    private RecyclerView recyclerView;
+    private BookingAdapter adapter;
+    private List<Booking> bookingList = new ArrayList<>();
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cancellation);
 
-        initializeViews();
-        setupClickListeners();
-        loadDummyData(); // replace later with actual Firestore or intent extras
+        recyclerView = findViewById(R.id.recyclerBookings);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        adapter = new BookingAdapter(bookingList);
+        recyclerView.setAdapter(adapter);
+
+        db = FirebaseFirestore.getInstance();
+
+        loadBookings();
     }
 
-    private void initializeViews() {
-        // Bind views from XML
-        tripNumberText = findViewById(R.id.tv_trip_status); // renamed status
-        fromLocationText = findViewById(R.id.fromLocationText);
-        toLocationText = null; // Removed in new XML, route combined into one text
-        timeText = null;       // Removed, we now have date+time together
-        dateText = findViewById(R.id.dateText);
-        paymentTypeText = null; // Removed, only "paymentMethodText" exists now
-        paymentMethodText = findViewById(R.id.paymentMethodText);
-        passengersText = null;  // Removed in new XML
-        totalPriceText = findViewById(R.id.totalPriceText);
-        tripStatusText = findViewById(R.id.tv_trip_status);
-        cancelRideButton = findViewById(R.id.cancelRideButton);
-        backToTripsButton = findViewById(R.id.btn_back_to_trips);
-        vanImage = null; // removed, unless you add it to XML
+    private void loadBookings() {
+        db.collection("bookings")
+                .whereIn("status", List.of("Pending", "Confirmed"))
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                        if (error != null) {
+                            Toast.makeText(CancellationActivity.this, "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        bookingList.clear();
+                        if (value != null) {
+                            for (DocumentSnapshot doc : value.getDocuments()) {
+                                Booking booking = doc.toObject(Booking.class);
+                                if (booking != null) {
+                                    booking.setBookingId(doc.getId());
+                                    bookingList.add(booking);
+                                }
+                            }
+                        }
+                        adapter.notifyDataSetChanged();
+                    }
+                });
     }
 
-    private void setupClickListeners() {
-        // Cancel Ride button
-        cancelRideButton.setOnClickListener(v -> showCancelConfirmationDialog());
+    // ================================
+    // Booking Model (inner class)
+    // ================================
+    public static class Booking {
+        private String bookingId;
+        private String userId;
+        private String tripId;
+        private String status;
+        private double totalFare;
+        private com.google.firebase.Timestamp departure;
+        private int seats;
 
-        // Back to Trips button
-        backToTripsButton.setOnClickListener(v -> {
-            try {
-                Intent intent = new Intent(CancellationActivity.this, MyTripsActivity.class);
-                startActivity(intent);
-            } catch (Exception e) {
-                Toast.makeText(this,
-                        "MyTripsActivity not found. Please create MyTripsActivity.java",
-                        Toast.LENGTH_LONG).show();
+        public Booking() {} // Needed for Firestore
+
+        public String getBookingId() { return bookingId; }
+        public void setBookingId(String bookingId) { this.bookingId = bookingId; }
+
+        public String getUserId() { return userId; }
+        public String getTripId() { return tripId; }
+        public String getStatus() { return status; }
+        public double getTotalFare() { return totalFare; }
+        public com.google.firebase.Timestamp getDeparture() { return departure; }
+        public int getSeats() { return seats; }
+    }
+
+    // ================================
+    // Adapter (inner class)
+    // ================================
+    private class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingViewHolder> {
+
+        private List<Booking> bookings;
+        private final SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.getDefault());
+
+        public BookingAdapter(List<Booking> bookings) {
+            this.bookings = bookings;
+        }
+
+        @NonNull
+        @Override
+        public BookingViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.item_cancellation_card, parent, false);
+            return new BookingViewHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull BookingViewHolder holder, int position) {
+            Booking booking = bookings.get(position);
+
+            // Fetch user name
+            db.collection("accounts")
+                    .document(booking.getUserId())
+                    .get()
+                    .addOnSuccessListener(doc -> {
+                        if (doc.exists()) {
+                            holder.txtUser.setText(doc.getString("name"));
+                        } else {
+                            holder.txtUser.setText("Unknown User");
+                        }
+                    });
+
+            // Fetch trip details
+            db.collection("trips")
+                    .document(booking.getTripId())
+                    .get()
+                    .addOnSuccessListener(tripDoc -> {
+                        if (tripDoc.exists()) {
+                            String destinationId = tripDoc.getString("destinationId");
+                            String vanId = tripDoc.getString("vanId");
+
+                            holder.tvVan.setText(vanId != null ? vanId : "Unknown");
+
+                            if (destinationId != null) {
+                                db.collection("destinations")
+                                        .document(destinationId)
+                                        .get()
+                                        .addOnSuccessListener(destDoc -> {
+                                            if (destDoc.exists()) {
+                                                holder.tvRoute.setText(destDoc.getString("name"));
+                                            } else {
+                                                holder.tvRoute.setText("Unknown");
+                                            }
+                                        });
+                            }
+                        }
+                    });
+
+            // Departure
+            String dateStr = booking.getDeparture() != null ? sdf.format(booking.getDeparture().toDate()) : "N/A";
+            holder.tvDeparture.setText(dateStr);
+
+            // Passengers (seats count)
+            holder.tvPassengers.setText(String.valueOf(booking.getSeats()));
+
+            // Fare
+            holder.tvTotalFare.setText("₱" + booking.getTotalFare());
+
+            // Status
+            holder.tvStatus.setText(booking.getStatus());
+
+            // Cancel button
+            holder.btnCancel.setOnClickListener(v -> cancelBooking(booking));
+        }
+
+        @Override
+        public int getItemCount() {
+            return bookings.size();
+        }
+
+        class BookingViewHolder extends RecyclerView.ViewHolder {
+            TextView txtUser, tvRoute, tvVan, tvDeparture, tvPassengers, tvTotalFare, tvStatus;
+            Button btnCancel;
+
+            public BookingViewHolder(@NonNull View itemView) {
+                super(itemView);
+                txtUser = itemView.findViewById(R.id.txtUser);
+                tvRoute = itemView.findViewById(R.id.tv_route);
+                tvVan = itemView.findViewById(R.id.tv_van);
+                tvDeparture = itemView.findViewById(R.id.tv_departure);
+                tvPassengers = itemView.findViewById(R.id.tv_passengers);
+                tvTotalFare = itemView.findViewById(R.id.tv_total_fare);
+                tvStatus = itemView.findViewById(R.id.tv_status);
+                btnCancel = itemView.findViewById(R.id.btnCancel);
             }
-        });
+        }
     }
 
-    private void loadDummyData() {
-        // In real app, get data from intent or Firestore
-        fromLocationText.setText("Baguio Terminal → Cervantes");
-        dateText.setText("Thu, Aug 17 - 5:00 AM");
-        paymentMethodText.setText("Cash on hand");
-        totalPriceText.setText("₱700.00");
-        tripStatusText.setText("ACTIVE");
-    }
-
-    private void showCancelConfirmationDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle("Cancel Ride")
-                .setMessage("Are you sure you want to cancel this ride?")
-                .setPositiveButton("Yes", (DialogInterface dialog, int which) -> {
-                    Toast.makeText(this, "Ride Cancelled", Toast.LENGTH_SHORT).show();
-                    tripStatusText.setText("CANCELLED");
+    // ================================
+    // Cancel booking + seat restoration
+    // ================================
+    private void cancelBooking(Booking booking) {
+        // Step 1: Restore seats in trip
+        db.collection("trips")
+                .document(booking.getTripId())
+                .update("availableSeats", FieldValue.increment(booking.getSeats()))
+                .addOnSuccessListener(unused -> {
+                    // Step 2: Mark booking as Cancelled
+                    db.collection("bookings")
+                            .document(booking.getBookingId())
+                            .update("status", "Cancelled")
+                            .addOnSuccessListener(unused2 ->
+                                    Toast.makeText(this, "Booking Cancelled", Toast.LENGTH_SHORT).show()
+                            )
+                            .addOnFailureListener(e ->
+                                    Toast.makeText(this, "Error updating booking: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                            );
                 })
-                .setNegativeButton("No", (dialog, which) -> dialog.dismiss())
-                .show();
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Error restoring seats: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                );
     }
 }
