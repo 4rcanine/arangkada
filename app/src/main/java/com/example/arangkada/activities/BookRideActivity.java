@@ -281,6 +281,11 @@ public class BookRideActivity extends AppCompatActivity {
         final String destinationId = selectedTrip.getString("destinationId");
         final int totalFare = (regular * 350) + (student * 300) + (senior * 300);
 
+        // 🔹 Get current time in UTC+8
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Manila"));
+        Date now = calendar.getTime();
+        final Timestamp createdAt = new Timestamp(now);
+
         // Show loading state
         progressBar.setVisibility(View.VISIBLE);
         btnBookNow.setEnabled(false);
@@ -317,6 +322,7 @@ public class BookRideActivity extends AppCompatActivity {
             booking.put("tripId", tripId);
             booking.put("userId", userId);
             booking.put("totalFare", totalFare);
+            booking.put("createdAt", createdAt); // 🔹 store booking time
 
             transaction.set(bookingRef, booking);
 
