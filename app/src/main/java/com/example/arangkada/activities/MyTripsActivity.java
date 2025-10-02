@@ -1,36 +1,46 @@
 package com.example.arangkada.activities;
 
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.arangkada.R;
-import com.example.arangkada.models.Trip;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.annotation.Nullable;
 
 public class MyTripsActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private TripAdapter adapter;
-    private ArrayList<Trip> tripList;
-
+    private List<Booking> bookingList = new ArrayList<>();
     private FirebaseFirestore db;
     private FirebaseUser user;
+
+    private Button btnClearHistory;
+    private TextView tvEmpty;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,9 +50,11 @@ public class MyTripsActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerTrips);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        tripList = new ArrayList<>();
-        adapter = new TripAdapter(tripList);
+        adapter = new TripAdapter(bookingList);
         recyclerView.setAdapter(adapter);
+
+        btnClearHistory = findViewById(R.id.btnClearHistory);
+        tvEmpty = findViewById(R.id.tvEmpty);
 
         db = FirebaseFirestore.getInstance();
         user = FirebaseAuth.getInstance().getCurrentUser();
@@ -50,71 +62,102 @@ public class MyTripsActivity extends AppCompatActivity {
         if (user != null) {
             loadUserBookings();
         }
+
+        btnClearHistory.setOnClickListener(v -> showClearConfirmation());
     }
 
     private void loadUserBookings() {
         db.collection("bookings")
                 .whereEqualTo("userId", user.getUid())
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    for (QueryDocumentSnapshot bookingDoc : querySnapshot) {
-                        String bookingId = bookingDoc.getId();
-                        String status = bookingDoc.getString("status");
-                        String type = bookingDoc.getString("type");
-                        long seats = bookingDoc.getLong("seats") != null ? bookingDoc.getLong("seats") : 0;
-                        String tripId = bookingDoc.getString("tripId");
-
-                        // ✅ Correct: fetch totalFare from booking document itself
-                        Double totalFareObj = bookingDoc.getDouble("totalFare");
-                        double totalFare = (totalFareObj != null) ? totalFareObj : 0.0;
-
-                        if (tripId != null) {
-                            db.collection("trips").document(tripId).get()
-                                    .addOnSuccessListener(tripDoc -> {
-                                        if (tripDoc.exists()) {
-                                            Date departure = tripDoc.getTimestamp("departure").toDate();
-                                            String destinationId = tripDoc.getString("destinationId");
-                                            String plateNumber = tripDoc.getString("vanId");
-
-                                            if (destinationId != null) {
-                                                db.collection("destinations").document(destinationId).get()
-                                                        .addOnSuccessListener(destDoc -> {
-                                                            String destinationName = destDoc.exists()
-                                                                    ? destDoc.getString("name")
-                                                                    : "Unknown";
-
-                                                            Trip trip = new Trip(
-                                                                    bookingId,
-                                                                    status,
-                                                                    type,
-                                                                    seats,
-                                                                    departure,
-                                                                    destinationName,
-                                                                    plateNumber,
-                                                                    totalFare
-                                                            );
-
-                                                            tripList.add(trip);
-                                                            adapter.notifyDataSetChanged();
-                                                        });
-                                            }
-                                        }
-                                    });
-                        }
+                .whereIn("status", Arrays.asList("Cancelled", "Completed"))
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .addSnapshotListener((@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) -> {
+                    if (error != null) {
+                        Toast.makeText(MyTripsActivity.this, "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                        return;
                     }
+
+                    bookingList.clear();
+                    if (value != null && !value.isEmpty()) {
+                        for (DocumentSnapshot doc : value.getDocuments()) {
+                            Booking booking = doc.toObject(Booking.class);
+                            if (booking != null) {
+                                booking.setBookingId(doc.getId());
+                                bookingList.add(booking);
+                            }
+                        }
+
+                        // Auto-delete if more than 10
+                        if (bookingList.size() > 10) {
+                            Booking oldest = bookingList.get(bookingList.size() - 1);
+                            db.collection("bookings").document(oldest.getBookingId()).delete();
+                            bookingList.remove(bookingList.size() - 1);
+                        }
+
+                        tvEmpty.setVisibility(View.GONE);
+                        btnClearHistory.setVisibility(View.VISIBLE);
+                    } else {
+                        tvEmpty.setVisibility(View.VISIBLE);
+                        btnClearHistory.setVisibility(View.GONE);
+                    }
+
+                    adapter.notifyDataSetChanged();
                 });
     }
 
+    private void showClearConfirmation() {
+        new AlertDialog.Builder(this)
+                .setTitle("Clear History")
+                .setMessage("Are you sure you want to clear all history?")
+                .setPositiveButton("Yes", (dialog, which) -> clearUserHistory())
+                .setNegativeButton("No", null)
+                .show();
+    }
 
+    private void clearUserHistory() {
+        db.collection("bookings")
+                .whereEqualTo("userId", user.getUid())
+                .whereIn("status", Arrays.asList("Cancelled", "Completed"))
+                .get()
+                .addOnSuccessListener(query -> {
+                    for (DocumentSnapshot doc : query.getDocuments()) {
+                        doc.getReference().delete();
+                    }
+                    Toast.makeText(MyTripsActivity.this, "History cleared.", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> Toast.makeText(MyTripsActivity.this, "Error clearing history: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
 
-    // RecyclerView Adapter
-    private static class TripAdapter extends RecyclerView.Adapter<TripAdapter.TripViewHolder> {
+    // Booking Model
+    public static class Booking {
+        private String bookingId;
+        private String userId;
+        private String tripId;
+        private String status;
+        private double totalFare;
+        private Timestamp departure;
+        private Timestamp createdAt;
+        private int seats;
 
-        private final ArrayList<Trip> trips;
-        private final SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy 'at' hh:mm a", Locale.getDefault());
+        public Booking() {}
 
-        public TripAdapter(ArrayList<Trip> trips) {
-            this.trips = trips;
+        public String getBookingId() { return bookingId; }
+        public void setBookingId(String bookingId) { this.bookingId = bookingId; }
+        public String getUserId() { return userId; }
+        public String getTripId() { return tripId; }
+        public String getStatus() { return status; }
+        public double getTotalFare() { return totalFare; }
+        public Timestamp getDeparture() { return departure; }
+        public Timestamp getCreatedAt() { return createdAt; }
+        public int getSeats() { return seats; }
+    }
+
+    // Adapter
+    private class TripAdapter extends RecyclerView.Adapter<TripAdapter.TripViewHolder> {
+        private final List<Booking> bookings;
+
+        public TripAdapter(List<Booking> bookings) {
+            this.bookings = bookings;
         }
 
         @NonNull
@@ -126,38 +169,122 @@ public class MyTripsActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(@NonNull TripViewHolder holder, int position) {
-            Trip trip = trips.get(position);
+            Booking booking = bookings.get(position);
 
-            // Top title now shows Route instead of Booking ID
-            holder.tvBookingId.setText("Route: " + trip.getDestinationName());
+            // Status
+            if (holder.tvStatus != null) {
+                holder.tvStatus.setText(booking.getStatus());
+            }
 
-            holder.tvStatus.setText(trip.getStatus());
-            holder.tvPassengers.setText(trip.getPassengerType() + ": " + trip.getSeats());
-            holder.tvDeparture.setText(sdf.format(trip.getDeparture()));
-            holder.tvDestination.setText("To: " + trip.getDestinationName());
-            holder.tvPlateNumber.setText("Plate: " + trip.getPlateNumber());
-            holder.tvTotalFare.setText("₱" + String.format("%.2f", trip.getTotalFare()));
+            // 🔹 Fetch username from accounts/{userId}
+            db.collection("accounts")
+                    .document(booking.getUserId())
+                    .get()
+                    .addOnSuccessListener(userDoc -> {
+                        if (userDoc.exists()) {
+                            holder.tvUsername.setText(userDoc.getString("name"));
+                        } else {
+                            holder.tvUsername.setText("Unknown User");
+                        }
+                    });
+
+            // Fetch trip details (Route & Van)
+            db.collection("trips")
+                    .document(booking.getTripId())
+                    .get()
+                    .addOnSuccessListener(tripDoc -> {
+                        if (tripDoc.exists()) {
+                            String destinationId = tripDoc.getString("destinationId");
+                            String vanId = tripDoc.getString("vanId");
+
+                            holder.tvVan.setText(vanId != null ? vanId : "Unknown");
+
+                            if (destinationId != null) {
+                                db.collection("destinations")
+                                        .document(destinationId)
+                                        .get()
+                                        .addOnSuccessListener(destDoc -> {
+                                            if (destDoc.exists()) {
+                                                holder.tvRoute.setText(destDoc.getString("name"));
+                                            } else {
+                                                holder.tvRoute.setText("Unknown");
+                                            }
+                                        });
+                            }
+                        }
+                    });
+
+            // Departure
+            String departureStr = booking.getDeparture() != null
+                    ? DateFormat.format("MMM dd, yyyy hh:mm a", booking.getDeparture().toDate()).toString()
+                    : "N/A";
+            holder.tvDeparture.setText(departureStr);
+
+            // 🔹 Created At → fixed timestamp format
+            if (booking.getCreatedAt() != null) {
+                String createdStr = DateFormat.format("MMM dd, yyyy hh:mm a", booking.getCreatedAt().toDate()).toString();
+                holder.tvCreatedAt.setText(createdStr);
+            } else {
+                holder.tvCreatedAt.setText("N/A");
+            }
+
+            // Passengers with breakdown
+            db.collection("bookings")
+                    .document(booking.getBookingId())
+                    .get()
+                    .addOnSuccessListener(seatDoc -> {
+                        if (seatDoc.exists()) {
+                            long seats = seatDoc.getLong("seats") != null ? seatDoc.getLong("seats") : 0;
+                            long regularCount = seatDoc.getLong("regularCount") != null ? seatDoc.getLong("regularCount") : 0;
+                            long studentCount = seatDoc.getLong("studentCount") != null ? seatDoc.getLong("studentCount") : 0;
+                            long seniorCount = seatDoc.getLong("seniorCount") != null ? seatDoc.getLong("seniorCount") : 0;
+
+                            // Build breakdown string
+                            StringBuilder breakdown = new StringBuilder();
+                            if (regularCount > 0) breakdown.append("Regular-").append(regularCount);
+                            if (studentCount > 0) {
+                                if (breakdown.length() > 0) breakdown.append(", ");
+                                breakdown.append("Student-").append(studentCount);
+                            }
+                            if (seniorCount > 0) {
+                                if (breakdown.length() > 0) breakdown.append(", ");
+                                breakdown.append("Senior-").append(seniorCount);
+                            }
+
+                            if (breakdown.length() > 0) {
+                                holder.tvPassengers.setText(seats + " (" + breakdown.toString() + ")");
+                            } else {
+                                holder.tvPassengers.setText(String.valueOf(seats));
+                            }
+                        } else {
+                            holder.tvPassengers.setText("N/A");
+                        }
+                    });
+
+            // Fare
+            holder.tvTotalFare.setText("₱" + String.format("%.2f", booking.getTotalFare()));
         }
-
 
         @Override
         public int getItemCount() {
-            return trips.size();
+            return bookings.size();
         }
 
-        static class TripViewHolder extends RecyclerView.ViewHolder {
-
-            TextView tvBookingId, tvStatus, tvPassengers, tvDeparture, tvDestination, tvPlateNumber, tvTotalFare;
+        class TripViewHolder extends RecyclerView.ViewHolder {
+            TextView tvRoute, tvVan, tvDeparture, tvPassengers, tvTotalFare,
+                    tvStatus, tvCreatedAt, tvPaymentMethod, tvUsername;
 
             public TripViewHolder(@NonNull View itemView) {
                 super(itemView);
-                tvBookingId = itemView.findViewById(R.id.tv_booking_id);
+                tvUsername = itemView.findViewById(R.id.txtUser);
                 tvStatus = itemView.findViewById(R.id.tv_status);
-                tvPassengers = itemView.findViewById(R.id.tv_passengers);
+                tvCreatedAt = itemView.findViewById(R.id.tv_created_at);
+                tvRoute = itemView.findViewById(R.id.tv_route);
+                tvVan = itemView.findViewById(R.id.tv_van);
                 tvDeparture = itemView.findViewById(R.id.tv_departure);
-                tvDestination = itemView.findViewById(R.id.tv_destination);
-                tvPlateNumber = itemView.findViewById(R.id.tv_plate_number);
-                tvTotalFare = itemView.findViewById(R.id.tv_total_fare); // ✅ connect totalFare TextView
+                tvPassengers = itemView.findViewById(R.id.tv_passengers);
+                tvPaymentMethod = itemView.findViewById(R.id.tv_payment_method);
+                tvTotalFare = itemView.findViewById(R.id.tv_total_fare);
             }
         }
     }

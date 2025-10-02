@@ -31,26 +31,33 @@
             android:alpha="0.9" />
     </LinearLayout>
 
-    <!-- No Active Booking Message -->
-    <TextView
-        android:id="@+id/tvNoBooking"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="No active booking as of the moment."
-        android:textSize="16sp"
-        android:gravity="center"
-        android:padding="16dp"
-        android:visibility="gone"
-        android:textColor="@color/text_primary" />
-
-    <!-- RecyclerView for Bookings -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerBookings"
+    <!-- Content Area -->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:padding="8dp"
-        android:clipToPadding="false" />
+        android:layout_weight="1">
+
+        <!-- No Active Booking Message -->
+        <TextView
+            android:id="@+id/tvNoBooking"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="No active booking as of the moment."
+            android:textSize="16sp"
+            android:gravity="center"
+            android:padding="16dp"
+            android:visibility="gone"
+            android:textColor="@color/text_primary" />
+
+        <!-- RecyclerView for Bookings -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerBookings"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="8dp"
+            android:clipToPadding="false" />
+
+    </FrameLayout>
 
     <!-- Action Button -->
     <LinearLayout
@@ -65,8 +72,8 @@
             android:layout_height="56dp"
             android:text="View History"
             android:textSize="16sp"
-            android:textColor="@color/text_primary"
-            android:background="@drawable/button_cancel"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/secondary_color"
             android:elevation="0dp" />
     </LinearLayout>
 </LinearLayout>

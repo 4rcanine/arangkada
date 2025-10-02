@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -11,28 +10,59 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/dashboard_header_background"
-        android:orientation="vertical"
-        android:padding="24dp">
+        android:orientation="horizontal"
+        android:padding="24dp"
+        android:gravity="center_vertical">
 
-        <TextView
+        <!-- Left: Title & Subtitle -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Booking History"
+                android:textColor="@color/white"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="View most recent booking history"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:alpha="0.9" />
+        </LinearLayout>
+
+        <!-- Right: Clear History Button -->
+        <Button
+            android:id="@+id/btnClearHistory"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="My Trips"
+            android:text="Clear"
+            android:backgroundTint="@color/secondary_color"
             android:textColor="@color/white"
-            android:textSize="28sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="View all your bookings and history"
-            android:textColor="@color/white"
-            android:textSize="16sp"
-            android:alpha="0.9" />
+            android:visibility="gone" />
     </LinearLayout>
 
-    <!-- RecyclerView for Trips -->
+    <!-- Empty message -->
+    <TextView
+        android:id="@+id/tvEmpty"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="No booking history."
+        android:textSize="16sp"
+        android:gravity="center"
+        android:padding="16dp"
+        android:visibility="gone"
+        android:textColor="@color/text_primary" />
+
+    <!-- RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerTrips"
         android:layout_width="match_parent"
