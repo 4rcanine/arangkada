@@ -14,6 +14,12 @@
         android:theme="@style/Theme.Arangkada.NoActionBar"
         tools:targetApi="31">
         <activity
+            android:name=".activities.CurrentTerminalActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.NewTerminalActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.CurrentVanScheduleActivity"
             android:exported="false" />
         <activity

@@ -14,6 +14,7 @@ import com.example.arangkada.activities.BaseActivity;
 import com.example.arangkada.activities.CurrentVanScheduleActivity;
 import com.example.arangkada.activities.ManageReservationsActivity;
 import com.example.arangkada.activities.ManageVansActivity;
+import com.example.arangkada.activities.NewTerminalActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -80,7 +81,7 @@ public class AdminActivity extends BaseActivity {
         // TODO: Uncomment when activities are ready
         cardReservations.setOnClickListener(v -> startActivity(new Intent(this, ManageReservationsActivity.class)));
         cardSchedule.setOnClickListener(v -> startActivity(new Intent(this, CurrentVanScheduleActivity.class)));
-//        cardTerminals.setOnClickListener(v -> startActivity(new Intent(this, TerminalManagementActivity.class)));
+        cardTerminals.setOnClickListener(v -> startActivity(new Intent(this, NewTerminalActivity.class)));
 //        cardUsers.setOnClickListener(v -> startActivity(new Intent(this, UserManagementActivity.class)));
 //        cardCancelled.setOnClickListener(v -> startActivity(new Intent(this, CancelledTripsActivity.class)));
 //        cardQR.setOnClickListener(v -> startActivity(new Intent(this, QRScannerActivity.class)));

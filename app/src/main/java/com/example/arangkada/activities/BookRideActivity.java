@@ -19,8 +19,8 @@ public class BookRideActivity extends AppCompatActivity {
 
     private Spinner spinnerDestinations, spinnerTrips;
     private EditText etRegularCount, etStudentCount, etSeniorCount;
-    private TextView tvTotalFare, tvTripDeparture, tvTripVan, tvTripSeats;
-    private View layoutTripDetails;
+    private TextView tvTotalFare, tvTripDeparture, tvTripVan, tvTripSeats, tvTripTravelTime;
+    private LinearLayout layoutTripDetails;
     private Button btnBookNow;
     private ProgressBar progressBar;
 
@@ -32,7 +32,13 @@ public class BookRideActivity extends AppCompatActivity {
     private final SimpleDateFormat dateFormat =
             new SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.getDefault());
 
-    private ListenerRegistration tripsListener; // 🔹 to stop listening when needed
+    private ListenerRegistration tripsListener;
+
+    // Fare + TravelTime
+    private int regularFare = 0;
+    private int studentFare = 0;
+    private int seniorFare = 0;
+    private int travelTimeMinutes = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,19 +54,24 @@ public class BookRideActivity extends AppCompatActivity {
         etSeniorCount = findViewById(R.id.et_senior_count);
         tvTotalFare = findViewById(R.id.tvTotalFare);
 
-        // Trip details preview
+        // Trip details
         tvTripDeparture = findViewById(R.id.tvTripDeparture);
         tvTripVan = findViewById(R.id.tvTripVan);
         tvTripSeats = findViewById(R.id.tvTripSeats);
+
         layoutTripDetails = findViewById(R.id.layoutTripDetails);
+
+        // 🔹 Dynamically add Travel Time TextView (no XML changes)
+        tvTripTravelTime = findViewById(R.id.tvTripTravelTime);
+
 
         btnBookNow = findViewById(R.id.btnBookNow);
         progressBar = findViewById(R.id.progressBar);
 
-        // Load destinations from Firestore
+        // Load destinations
         loadDestinations();
 
-        // Real-time fare calculation
+        // Real-time fare preview
         TextWatcher fareWatcher = new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -98,6 +109,7 @@ public class BookRideActivity extends AppCompatActivity {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                     String selectedDestinationId = destinationIds.get(position);
+                    loadDestinationDetails(selectedDestinationId); // load fares + travelTime
                     loadTrips(selectedDestinationId);
                 }
 
@@ -107,8 +119,30 @@ public class BookRideActivity extends AppCompatActivity {
         });
     }
 
+    private void loadDestinationDetails(String destinationId) {
+        db.collection("destinations").document(destinationId).get()
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        Long reg = doc.getLong("regularFare");
+                        Long stu = doc.getLong("studentFare");
+                        Long sen = doc.getLong("seniorFare");
+                        Long tTime = doc.getLong("travelTime");
+
+                        regularFare = (reg != null) ? reg.intValue() : 0;
+                        studentFare = (stu != null) ? stu.intValue() : 0;
+                        seniorFare = (sen != null) ? sen.intValue() : 0;
+                        travelTimeMinutes = (tTime != null) ? tTime.intValue() : 0;
+
+                        updateFarePreview();
+
+                        // 🔹 Show travel time immediately when destination loads
+                        tvTripTravelTime.setText("Travel Time: " + formatTravelTime(travelTimeMinutes));
+                        layoutTripDetails.setVisibility(View.VISIBLE);
+                    }
+                });
+    }
+
     private void loadTrips(String destinationId) {
-        // 🔹 Remove old listener if switching destinations
         if (tripsListener != null) {
             tripsListener.remove();
         }
@@ -122,7 +156,6 @@ public class BookRideActivity extends AppCompatActivity {
                     }
                     if (queryDocumentSnapshots == null) return;
 
-                    // 🔹 Save previous selection
                     int previousSelection = spinnerTrips.getSelectedItemPosition();
 
                     tripList.clear();
@@ -157,7 +190,6 @@ public class BookRideActivity extends AppCompatActivity {
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     spinnerTrips.setAdapter(adapter);
 
-                    // 🔹 Restore previous selection if valid
                     if (previousSelection >= 0 && previousSelection < tripList.size()) {
                         spinnerTrips.setSelection(previousSelection);
                     }
@@ -189,9 +221,11 @@ public class BookRideActivity extends AppCompatActivity {
         tvTripVan.setText("Van: " + (vanPlate != null ? vanPlate : "-"));
         tvTripSeats.setText("Available Seats: " + availableSeats);
 
+        // 🔹 Refresh travel time when showing trip
+        tvTripTravelTime.setText("Travel Time: " + formatTravelTime(travelTimeMinutes));
+
         layoutTripDetails.setVisibility(View.VISIBLE);
 
-        // 🔹 Disable passenger input + booking if sold out
         boolean isSoldOut = (availableSeats == 0);
         etRegularCount.setEnabled(!isSoldOut);
         etStudentCount.setEnabled(!isSoldOut);
@@ -205,7 +239,6 @@ public class BookRideActivity extends AppCompatActivity {
             tvTotalFare.setText("Total Fare: ₱0");
         }
 
-        // 🔹 Real-time listener for just this trip
         db.collection("trips").document(tripDoc.getId())
                 .addSnapshotListener((snapshot, e) -> {
                     if (snapshot != null && snapshot.exists()) {
@@ -240,13 +273,22 @@ public class BookRideActivity extends AppCompatActivity {
         }
     }
 
-    // Real-time fare calculation
+    private String formatTravelTime(int minutes) {
+        int hours = minutes / 60;
+        int mins = minutes % 60;
+        if (hours > 0) {
+            return hours + " hours " + mins + " minutes";
+        } else {
+            return mins + " minutes";
+        }
+    }
+
     private void updateFarePreview() {
         int regular = parseIntSafe(etRegularCount.getText().toString());
         int student = parseIntSafe(etStudentCount.getText().toString());
         int senior = parseIntSafe(etSeniorCount.getText().toString());
 
-        int totalFare = (regular * 350) + (student * 300) + (senior * 300);
+        int totalFare = (regular * regularFare) + (student * studentFare) + (senior * seniorFare);
         tvTotalFare.setText("Total Fare: ₱" + totalFare);
     }
 
@@ -279,14 +321,12 @@ public class BookRideActivity extends AppCompatActivity {
         final String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
         final Timestamp departure = selectedTrip.getTimestamp("departure");
         final String destinationId = selectedTrip.getString("destinationId");
-        final int totalFare = (regular * 350) + (student * 300) + (senior * 300);
+        final int totalFare = (regular * regularFare) + (student * studentFare) + (senior * seniorFare);
 
-        // 🔹 Get current time in UTC+8
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Manila"));
         Date now = calendar.getTime();
         final Timestamp createdAt = new Timestamp(now);
 
-        // Show loading state
         progressBar.setVisibility(View.VISIBLE);
         btnBookNow.setEnabled(false);
 
@@ -307,7 +347,7 @@ public class BookRideActivity extends AppCompatActivity {
             long newSeats = availableSeats - passengerCount;
             transaction.update(tripRef, "availableSeats", newSeats);
 
-            DocumentReference bookingRef = db.collection("bookings").document(); // auto ID
+            DocumentReference bookingRef = db.collection("bookings").document();
             String bookingId = bookingRef.getId();
 
             Map<String, Object> booking = new HashMap<>();
@@ -322,7 +362,7 @@ public class BookRideActivity extends AppCompatActivity {
             booking.put("tripId", tripId);
             booking.put("userId", userId);
             booking.put("totalFare", totalFare);
-            booking.put("createdAt", createdAt); // 🔹 store booking time
+            booking.put("createdAt", createdAt);
 
             transaction.set(bookingRef, booking);
 
@@ -330,7 +370,6 @@ public class BookRideActivity extends AppCompatActivity {
         }).addOnSuccessListener(aVoid -> {
             Toast.makeText(BookRideActivity.this, "Booking confirmed!", Toast.LENGTH_SHORT).show();
 
-            // 🔹 Reset passenger inputs & fare
             etRegularCount.setText("0");
             etStudentCount.setText("0");
             etSeniorCount.setText("0");

@@ -172,9 +172,20 @@ public class MyTripsActivity extends AppCompatActivity {
             Booking booking = bookings.get(position);
 
             // Status
+// Status + background based on booking status
             if (holder.tvStatus != null) {
-                holder.tvStatus.setText(booking.getStatus());
+                String status = booking.getStatus();
+                holder.tvStatus.setText(status);
+
+                if ("Completed".equalsIgnoreCase(status)) {
+                    holder.tvStatus.setBackgroundResource(R.drawable.bg_status_completed);
+                } else if ("Cancelled".equalsIgnoreCase(status)) {
+                    holder.tvStatus.setBackgroundResource(R.drawable.bg_status_cancelled);
+                } else {
+                    holder.tvStatus.setBackgroundResource(0); // default, no background
+                }
             }
+
 
             // 🔹 Fetch username from accounts/{userId}
             db.collection("accounts")
