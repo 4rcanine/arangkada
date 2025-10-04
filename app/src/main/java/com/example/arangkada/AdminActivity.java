@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import androidx.cardview.widget.CardView;
 
+import com.example.arangkada.activities.AdminCancellationActivity;
 import com.example.arangkada.activities.AuthActivity;
 import com.example.arangkada.activities.BaseActivity;
 import com.example.arangkada.activities.CurrentVanScheduleActivity;
@@ -85,7 +86,7 @@ public class AdminActivity extends BaseActivity {
         cardSchedule.setOnClickListener(v -> startActivity(new Intent(this, CurrentVanScheduleActivity.class)));
         cardTerminals.setOnClickListener(v -> startActivity(new Intent(this, NewTerminalActivity.class)));
         cardUsers.setOnClickListener(v -> startActivity(new Intent(this, UserManagementActivity.class)));
-//        cardCancelled.setOnClickListener(v -> startActivity(new Intent(this, CancelledTripsActivity.class)));
+        cardCancelled.setOnClickListener(v -> startActivity(new Intent(this, AdminCancellationActivity.class)));
 //        cardQR.setOnClickListener(v -> startActivity(new Intent(this, QRScannerActivity.class)));
 //        cardSettings.setOnClickListener(v -> startActivity(new Intent(this, ProfileActivity.class)));
     }
