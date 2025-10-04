@@ -117,7 +117,8 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void openBookingHistory() {
-        Toast.makeText(this, "Booking history coming soon!", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(ProfileActivity.this, MyTripsActivity.class);
+        startActivity(intent);
     }
 
     private void openPaymentMethods() {

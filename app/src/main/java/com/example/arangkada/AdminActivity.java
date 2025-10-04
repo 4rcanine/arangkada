@@ -15,6 +15,8 @@ import com.example.arangkada.activities.CurrentVanScheduleActivity;
 import com.example.arangkada.activities.ManageReservationsActivity;
 import com.example.arangkada.activities.ManageVansActivity;
 import com.example.arangkada.activities.NewTerminalActivity;
+import com.example.arangkada.activities.ProfileActivity;
+import com.example.arangkada.activities.UserManagementActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -82,10 +84,10 @@ public class AdminActivity extends BaseActivity {
         cardReservations.setOnClickListener(v -> startActivity(new Intent(this, ManageReservationsActivity.class)));
         cardSchedule.setOnClickListener(v -> startActivity(new Intent(this, CurrentVanScheduleActivity.class)));
         cardTerminals.setOnClickListener(v -> startActivity(new Intent(this, NewTerminalActivity.class)));
-//        cardUsers.setOnClickListener(v -> startActivity(new Intent(this, UserManagementActivity.class)));
+        cardUsers.setOnClickListener(v -> startActivity(new Intent(this, UserManagementActivity.class)));
 //        cardCancelled.setOnClickListener(v -> startActivity(new Intent(this, CancelledTripsActivity.class)));
 //        cardQR.setOnClickListener(v -> startActivity(new Intent(this, QRScannerActivity.class)));
-//        cardSettings.setOnClickListener(v -> startActivity(new Intent(this, SettingsActivity.class)));
+//        cardSettings.setOnClickListener(v -> startActivity(new Intent(this, ProfileActivity.class)));
     }
 
     private void loadAdminName(String userId) {

@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.drawerlayout.widget.DrawerLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true">
 
-    <!-- Main content -->
+    <!-- Main Screen -->
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@color/background_primary">
 
         <!-- Top Navigation -->
         <LinearLayout
@@ -19,32 +19,30 @@
             android:layout_height="56dp"
             android:background="@color/primary_color"
             android:gravity="center_vertical"
+            android:orientation="horizontal"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:elevation="4dp"
-            android:orientation="horizontal">
+            android:elevation="6dp">
 
             <TextView
                 android:id="@+id/toolbar_title"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:text="Admin Dashboard"
                 android:textColor="@color/white"
                 android:textSize="20sp"
                 android:textStyle="bold" />
-
         </LinearLayout>
 
-        <!-- ✅ Header Section -->
+        <!-- Header -->
         <LinearLayout
             android:id="@+id/header_container"
             android:layout_width="match_parent"
-            android:layout_height="105dp"
+            android:layout_height="130dp"
             android:layout_below="@id/navigation_container"
-            android:background="@drawable/dashboard_header_background"
-            android:gravity="bottom"
             android:orientation="vertical"
+            android:gravity="bottom"
+            android:background="@drawable/auth_gradient_background"
             android:padding="24dp">
 
             <TextView
@@ -58,11 +56,11 @@
                 android:id="@+id/tv_admin_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
                 android:text="Loading..."
                 android:textColor="@color/white"
-                android:textSize="24sp"
-                android:textStyle="bold" />
+                android:textSize="26sp"
+                android:textStyle="bold"
+                android:layout_marginTop="4dp" />
         </LinearLayout>
 
         <!-- Dashboard Content -->
@@ -70,14 +68,15 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@id/header_container"
-            android:background="@color/background_primary"
-            android:fillViewport="true">
+            android:fillViewport="true"
+            android:overScrollMode="never">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="20dp"
+                android:gravity="center_horizontal">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -88,128 +87,96 @@
                     android:textColor="@color/text_primary"
                     android:layout_marginBottom="16dp" />
 
-                <!-- Grid of Admin Features -->
-                <LinearLayout
+                <!-- Grid of Admin Cards -->
+                <GridLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:columnCount="2"
+                    android:alignmentMode="alignMargins"
+                    android:useDefaultMargins="true">
 
-                    <!-- Row 1 -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                    <!-- Important: include must specify layout_height when using layout_columnWeight -->
+                    <include
+                        android:id="@+id/card_reservations"
+                        layout="@layout/item_admin_card"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:weightSum="2"
-                        android:layout_marginBottom="16dp">
+                        android:layout_columnWeight="1"
+                        android:layout_margin="6dp" />
 
-                        <include layout="@layout/item_admin_card"
-                            android:id="@+id/card_reservations"
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="8dp" />
-
-                        <include layout="@layout/item_admin_card"
-                            android:id="@+id/card_schedule"
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp" />
-
-                    </LinearLayout>
-
-                    <!-- Row 2 -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                    <include
+                        android:id="@+id/card_schedule"
+                        layout="@layout/item_admin_card"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:weightSum="2"
-                        android:layout_marginBottom="16dp">
+                        android:layout_columnWeight="1"
+                        android:layout_margin="6dp" />
 
-                        <include layout="@layout/item_admin_card"
-                            android:id="@+id/card_terminals"
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="8dp" />
-
-                        <include layout="@layout/item_admin_card"
-                            android:id="@+id/card_users"
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp" />
-
-                    </LinearLayout>
-
-                    <!-- Row 3 -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                    <include
+                        android:id="@+id/card_terminals"
+                        layout="@layout/item_admin_card"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:weightSum="2">
+                        android:layout_columnWeight="1"
+                        android:layout_margin="6dp" />
 
-                        <include layout="@layout/item_admin_card"
-                            android:id="@+id/card_cancelled"
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="8dp" />
-
-                        <include layout="@layout/item_admin_card"
-                            android:id="@+id/card_qr"
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp" />
-
-                    </LinearLayout>
-
-                    <!-- Row 4 -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                    <include
+                        android:id="@+id/card_users"
+                        layout="@layout/item_admin_card"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:weightSum="2"
-                        android:layout_marginTop="16dp">
+                        android:layout_columnWeight="1"
+                        android:layout_margin="6dp" />
 
-                        <include layout="@layout/item_admin_card"
-                            android:id="@+id/card_settings"
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="8dp" />
+                    <include
+                        android:id="@+id/card_cancelled"
+                        layout="@layout/item_admin_card"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_columnWeight="1"
+                        android:layout_margin="6dp" />
 
-                        <View
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
-                            android:layout_height="0dp" />
-                        <Button
-                            android:id="@+id/btn_logout"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="Logout"
-                            android:textAllCaps="false"
-                            android:textColor="@color/white"
-                            android:background="@color/primary_color"
-                            android:layout_marginTop="24dp"
-                            android:padding="12dp"
-                            android:layout_gravity="center_horizontal"/>
+                    <include
+                        android:id="@+id/card_qr"
+                        layout="@layout/item_admin_card"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_columnWeight="1"
+                        android:layout_margin="6dp" />
 
+                    <!-- If you have an odd card count and want spacing, add a placeholder view -->
+                    <include
+                        android:id="@+id/card_settings"
+                        layout="@layout/item_admin_card"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_columnWeight="1"
+                        android:layout_margin="6dp" />
+                </GridLayout>
 
-                    </LinearLayout>
-                </LinearLayout>
+                <!-- Logout Button -->
+                <Button
+                    android:id="@+id/btn_logout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Logout"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:backgroundTint="@color/primary_color"
+                    android:layout_marginTop="32dp"
+                    android:padding="14dp"
+                    android:textSize="16sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:layout_gravity="center_horizontal" />
             </LinearLayout>
         </ScrollView>
     </RelativeLayout>
 
-    <!-- Right Navigation Drawer -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/nav_view"
         android:layout_width="280dp"
         android:layout_height="match_parent"
         android:layout_gravity="end"
         app:menu="@menu/activity_main_drawer" />
-
 
 </androidx.drawerlayout.widget.DrawerLayout>
