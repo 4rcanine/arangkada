@@ -5,7 +5,6 @@ import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,8 +38,8 @@ public class MyTripsActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private FirebaseUser user;
 
-    private Button btnClearHistory;
     private TextView tvEmpty;
+    private View btnClearHistory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,8 +52,8 @@ public class MyTripsActivity extends AppCompatActivity {
         adapter = new TripAdapter(bookingList);
         recyclerView.setAdapter(adapter);
 
-        btnClearHistory = findViewById(R.id.btnClearHistory);
         tvEmpty = findViewById(R.id.tvEmpty);
+        btnClearHistory = findViewById(R.id.btnClearHistory);
 
         db = FirebaseFirestore.getInstance();
         user = FirebaseAuth.getInstance().getCurrentUser();
@@ -134,6 +133,7 @@ public class MyTripsActivity extends AppCompatActivity {
         private String userId;
         private String tripId;
         private String status;
+        private String reason; // 🔹 Added field for cancellation reason
         private double totalFare;
         private Timestamp departure;
         private Timestamp createdAt;
@@ -146,6 +146,7 @@ public class MyTripsActivity extends AppCompatActivity {
         public String getUserId() { return userId; }
         public String getTripId() { return tripId; }
         public String getStatus() { return status; }
+        public String getReason() { return reason; } // 🔹 Getter
         public double getTotalFare() { return totalFare; }
         public Timestamp getDeparture() { return departure; }
         public Timestamp getCreatedAt() { return createdAt; }
@@ -171,26 +172,19 @@ public class MyTripsActivity extends AppCompatActivity {
         public void onBindViewHolder(@NonNull TripViewHolder holder, int position) {
             Booking booking = bookings.get(position);
 
-            // Status
-// Status + background based on booking status
-            if (holder.tvStatus != null) {
-                String status = booking.getStatus();
-                holder.tvStatus.setText(status);
-
-                if ("Completed".equalsIgnoreCase(status)) {
-                    holder.tvStatus.setBackgroundResource(R.drawable.bg_status_completed);
-                } else if ("Cancelled".equalsIgnoreCase(status)) {
-                    holder.tvStatus.setBackgroundResource(R.drawable.bg_status_cancelled);
-                } else {
-                    holder.tvStatus.setBackgroundResource(0); // default, no background
-                }
+            // Status + background
+            String status = booking.getStatus();
+            holder.tvStatus.setText(status);
+            if ("Completed".equalsIgnoreCase(status)) {
+                holder.tvStatus.setBackgroundResource(R.drawable.bg_status_completed);
+            } else if ("Cancelled".equalsIgnoreCase(status)) {
+                holder.tvStatus.setBackgroundResource(R.drawable.bg_status_cancelled);
+            } else {
+                holder.tvStatus.setBackgroundResource(0);
             }
 
-
-            // 🔹 Fetch username from accounts/{userId}
-            db.collection("accounts")
-                    .document(booking.getUserId())
-                    .get()
+            // Username
+            db.collection("accounts").document(booking.getUserId()).get()
                     .addOnSuccessListener(userDoc -> {
                         if (userDoc.exists()) {
                             holder.tvUsername.setText(userDoc.getString("name"));
@@ -199,21 +193,16 @@ public class MyTripsActivity extends AppCompatActivity {
                         }
                     });
 
-            // Fetch trip details (Route & Van)
-            db.collection("trips")
-                    .document(booking.getTripId())
-                    .get()
+            // Trip details
+            db.collection("trips").document(booking.getTripId()).get()
                     .addOnSuccessListener(tripDoc -> {
                         if (tripDoc.exists()) {
                             String destinationId = tripDoc.getString("destinationId");
                             String vanId = tripDoc.getString("vanId");
-
                             holder.tvVan.setText(vanId != null ? vanId : "Unknown");
 
                             if (destinationId != null) {
-                                db.collection("destinations")
-                                        .document(destinationId)
-                                        .get()
+                                db.collection("destinations").document(destinationId).get()
                                         .addOnSuccessListener(destDoc -> {
                                             if (destDoc.exists()) {
                                                 holder.tvRoute.setText(destDoc.getString("name"));
@@ -231,7 +220,7 @@ public class MyTripsActivity extends AppCompatActivity {
                     : "N/A";
             holder.tvDeparture.setText(departureStr);
 
-            // 🔹 Created At → fixed timestamp format
+            // Created At
             if (booking.getCreatedAt() != null) {
                 String createdStr = DateFormat.format("MMM dd, yyyy hh:mm a", booking.getCreatedAt().toDate()).toString();
                 holder.tvCreatedAt.setText(createdStr);
@@ -239,10 +228,8 @@ public class MyTripsActivity extends AppCompatActivity {
                 holder.tvCreatedAt.setText("N/A");
             }
 
-            // Passengers with breakdown
-            db.collection("bookings")
-                    .document(booking.getBookingId())
-                    .get()
+            // Passengers
+            db.collection("bookings").document(booking.getBookingId()).get()
                     .addOnSuccessListener(seatDoc -> {
                         if (seatDoc.exists()) {
                             long seats = seatDoc.getLong("seats") != null ? seatDoc.getLong("seats") : 0;
@@ -250,7 +237,6 @@ public class MyTripsActivity extends AppCompatActivity {
                             long studentCount = seatDoc.getLong("studentCount") != null ? seatDoc.getLong("studentCount") : 0;
                             long seniorCount = seatDoc.getLong("seniorCount") != null ? seatDoc.getLong("seniorCount") : 0;
 
-                            // Build breakdown string
                             StringBuilder breakdown = new StringBuilder();
                             if (regularCount > 0) breakdown.append("Regular-").append(regularCount);
                             if (studentCount > 0) {
@@ -267,8 +253,23 @@ public class MyTripsActivity extends AppCompatActivity {
                             } else {
                                 holder.tvPassengers.setText(String.valueOf(seats));
                             }
+
+                            // 🔹 Show Reason for Cancellation if exists
+                            if ("Cancelled".equalsIgnoreCase(booking.getStatus())) {
+                                String reason = seatDoc.getString("reason");
+                                if (reason != null && !reason.trim().isEmpty()) {
+                                    holder.tvReason.setVisibility(View.VISIBLE);
+                                    holder.tvReason.setText("Reason: " + reason);
+                                } else {
+                                    holder.tvReason.setVisibility(View.GONE);
+                                }
+                            } else {
+                                holder.tvReason.setVisibility(View.GONE);
+                            }
+
                         } else {
                             holder.tvPassengers.setText("N/A");
+                            holder.tvReason.setVisibility(View.GONE);
                         }
                     });
 
@@ -283,7 +284,7 @@ public class MyTripsActivity extends AppCompatActivity {
 
         class TripViewHolder extends RecyclerView.ViewHolder {
             TextView tvRoute, tvVan, tvDeparture, tvPassengers, tvTotalFare,
-                    tvStatus, tvCreatedAt, tvPaymentMethod, tvUsername;
+                    tvStatus, tvCreatedAt, tvUsername, tvReason;
 
             public TripViewHolder(@NonNull View itemView) {
                 super(itemView);
@@ -294,8 +295,8 @@ public class MyTripsActivity extends AppCompatActivity {
                 tvVan = itemView.findViewById(R.id.tv_van);
                 tvDeparture = itemView.findViewById(R.id.tv_departure);
                 tvPassengers = itemView.findViewById(R.id.tv_passengers);
-                tvPaymentMethod = itemView.findViewById(R.id.tv_payment_method);
                 tvTotalFare = itemView.findViewById(R.id.tv_total_fare);
+                tvReason = itemView.findViewById(R.id.tv_reason); // 🔹 Added new TextView
             }
         }
     }

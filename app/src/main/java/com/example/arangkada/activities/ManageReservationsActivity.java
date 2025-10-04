@@ -1,6 +1,10 @@
 package com.example.arangkada.activities;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.text.InputType;
+import android.widget.EditText;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -71,7 +75,7 @@ public class ManageReservationsActivity extends AppCompatActivity {
                         for (DocumentSnapshot doc : value.getDocuments()) {
                             Booking booking = doc.toObject(Booking.class);
                             if (booking != null) {
-                                booking.setBookingId(doc.getId()); // Firestore doc ID
+                                booking.setBookingId(doc.getId());
                                 bookingList.add(booking);
                             }
                         }
@@ -85,7 +89,7 @@ public class ManageReservationsActivity extends AppCompatActivity {
     // =====================
     // Update booking status
     // =====================
-    private void updateBookingStatus(String bookingId, String status, int seats, String tripId) {
+    private void updateBookingStatus(String bookingId, String status, int seats, String tripId, String reason) {
         if ("Cancelled".equals(status)) {
             db.collection("trips")
                     .document(tripId)
@@ -93,7 +97,7 @@ public class ManageReservationsActivity extends AppCompatActivity {
                     .addOnSuccessListener(unused -> {
                         db.collection("bookings")
                                 .document(bookingId)
-                                .update("status", status)
+                                .update("status", status, "reason", reason)
                                 .addOnSuccessListener(unused2 ->
                                         Toast.makeText(this, "Booking Cancelled & seats restored", Toast.LENGTH_SHORT).show()
                                 )
@@ -191,7 +195,6 @@ public class ManageReservationsActivity extends AppCompatActivity {
                             long studentCount = seatDoc.getLong("studentCount") != null ? seatDoc.getLong("studentCount") : 0;
                             long seniorCount = seatDoc.getLong("seniorCount") != null ? seatDoc.getLong("seniorCount") : 0;
 
-                            // Build breakdown string
                             StringBuilder breakdown = new StringBuilder();
                             if (regularCount > 0) breakdown.append("Regular-").append(regularCount);
                             if (studentCount > 0) {
@@ -203,33 +206,26 @@ public class ManageReservationsActivity extends AppCompatActivity {
                                 breakdown.append("Senior-").append(seniorCount);
                             }
 
-                            // Set passengers TextView
                             if (breakdown.length() > 0) {
                                 holder.tvPassengers.setText(seats + " (" + breakdown.toString() + ")");
                             } else {
                                 holder.tvPassengers.setText(String.valueOf(seats));
                             }
 
-                            // Buttons
                             holder.btnConfirm.setOnClickListener(v ->
-                                    updateBookingStatus(booking.getBookingId(), "Confirmed", (int) seats, booking.getTripId())
+                                    updateBookingStatus(booking.getBookingId(), "Confirmed", (int) seats, booking.getTripId(), null)
                             );
-                            holder.btnCancel.setOnClickListener(v ->
-                                    updateBookingStatus(booking.getBookingId(), "Cancelled", (int) seats, booking.getTripId())
-                            );
+
+                            holder.btnCancel.setOnClickListener(v -> showCancelReasonDialog(booking.getBookingId(), booking.getTripId(), (int) seats));
                         } else {
                             holder.tvPassengers.setText("N/A");
                         }
                     });
 
-            // Departure date
             String dateStr = booking.getDeparture() != null ? sdf.format(booking.getDeparture().toDate()) : "N/A";
             holder.tvDeparture.setText(dateStr);
-
-            // Total fare
             holder.tvTotalFare.setText("₱" + booking.getTotalFare());
 
-            // Status with background
             holder.tvStatus.setText(booking.getStatus());
             switch (booking.getStatus()) {
                 case "Confirmed":
@@ -246,6 +242,28 @@ public class ManageReservationsActivity extends AppCompatActivity {
                     holder.tvStatus.setBackgroundResource(R.drawable.bg_status_pending);
                     break;
             }
+        }
+
+        private void showCancelReasonDialog(String bookingId, String tripId, int seats) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(ManageReservationsActivity.this);
+            builder.setTitle("Reason for Cancellation");
+
+            final EditText input = new EditText(ManageReservationsActivity.this);
+            input.setHint("Enter reason...");
+            input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+            builder.setView(input);
+
+            builder.setPositiveButton("Submit", (dialog, which) -> {
+                String reason = input.getText().toString().trim();
+                if (reason.isEmpty()) {
+                    Toast.makeText(ManageReservationsActivity.this, "Please provide a reason.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                updateBookingStatus(bookingId, "Cancelled", seats, tripId, reason);
+            });
+
+            builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+            builder.show();
         }
 
         @Override
