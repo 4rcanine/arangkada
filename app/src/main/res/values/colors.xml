@@ -13,6 +13,7 @@
     <!-- Accent Colors -->
     <color name="accent_color">#FFD700</color> <!-- Gold - for highlights -->
     <color name="accent_light">#FFED4E</color>
+    <color name="primary_pink">#FF6F7D</color>
 
     <!-- Neutral Colors -->
     <color name="white">#FFFFFF</color>

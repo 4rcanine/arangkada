@@ -1,16 +1,19 @@
 package com.example.arangkada.activities;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
+import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.text.InputType;
 import android.widget.EditText;
 import android.widget.Button;
+import android.widget.Spinner;
+import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.DatePicker;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,6 +30,7 @@ import com.google.firebase.firestore.FieldValue;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
@@ -38,6 +42,15 @@ public class ManageReservationsActivity extends AppCompatActivity {
     private List<Booking> bookingList = new ArrayList<>();
     private FirebaseFirestore db;
 
+    private Spinner spinnerStatus, spinnerRoute;
+    private Button btnDateFilter;
+
+    private String selectedStatus = "All";
+    private String selectedRoute = "All";
+    private String selectedDate = null;
+
+    private List<String> routeList = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,45 +58,137 @@ public class ManageReservationsActivity extends AppCompatActivity {
 
         recyclerView = findViewById(R.id.recyclerBookings);
         swipeRefresh = findViewById(R.id.swipeRefresh);
-
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
         adapter = new ManageReservationsAdapter(bookingList);
         recyclerView.setAdapter(adapter);
 
+        spinnerStatus = findViewById(R.id.spinnerStatus);
+        spinnerRoute = findViewById(R.id.spinnerRoute);
+        btnDateFilter = findViewById(R.id.btnDateFilter);
+
         db = FirebaseFirestore.getInstance();
 
-        swipeRefresh.setOnRefreshListener(this::loadBookings);
+        setupFilters();
 
+        swipeRefresh.setOnRefreshListener(this::loadBookings);
         loadBookings();
+    }
+
+    private void setupFilters() {
+        // Status filter
+        ArrayAdapter<CharSequence> statusAdapter = ArrayAdapter.createFromResource(
+                this, R.array.status_filter_options, android.R.layout.simple_spinner_item);
+        statusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerStatus.setAdapter(statusAdapter);
+
+        spinnerStatus.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                selectedStatus = parent.getItemAtPosition(position).toString();
+                loadBookings();
+            }
+
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+        });
+
+        // Load all routes into route spinner
+        routeList.clear();
+        routeList.add("All");
+        db.collection("destinations").get().addOnSuccessListener(query -> {
+            for (DocumentSnapshot doc : query) {
+                String name = doc.getString("name");
+                if (name != null) routeList.add(name);
+            }
+
+            ArrayAdapter<String> routeAdapter = new ArrayAdapter<>(
+                    this, android.R.layout.simple_spinner_item, routeList);
+            routeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerRoute.setAdapter(routeAdapter);
+
+            spinnerRoute.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                    selectedRoute = parent.getItemAtPosition(position).toString();
+                    loadBookings();
+                }
+
+                @Override
+                public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+            });
+        });
+
+        // Date filter button
+        btnDateFilter.setOnClickListener(v -> showDatePicker());
+    }
+
+    private void showDatePicker() {
+        final Calendar calendar = Calendar.getInstance();
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this,
+                (DatePicker view, int year, int monthOfYear, int dayOfMonth) -> {
+                    calendar.set(year, monthOfYear, dayOfMonth);
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                    selectedDate = sdf.format(calendar.getTime());
+                    btnDateFilter.setText(selectedDate);
+                    loadBookings();
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH));
+        datePickerDialog.show();
     }
 
     private void loadBookings() {
         swipeRefresh.setRefreshing(true);
+        Query query = db.collection("bookings");
 
-        db.collection("bookings")
-                .whereEqualTo("status", "Pending")
-                .orderBy("departure", Query.Direction.ASCENDING)
-                .addSnapshotListener((value, error) -> {
-                    if (error != null) {
-                        Toast.makeText(this, "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-                        swipeRefresh.setRefreshing(false);
-                        return;
+        // Apply filters dynamically
+        if (!"All".equals(selectedStatus)) {
+            query = query.whereEqualTo("status", selectedStatus);
+        }
+
+        query = query.orderBy("departure", Query.Direction.ASCENDING);
+
+        query.addSnapshotListener((value, error) -> {
+            if (error != null) {
+                Toast.makeText(this, "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                swipeRefresh.setRefreshing(false);
+                return;
+            }
+
+            bookingList.clear();
+            if (value != null) {
+                for (DocumentSnapshot doc : value.getDocuments()) {
+                    Booking booking = doc.toObject(Booking.class);
+                    if (booking == null) continue;
+
+                    // Filter by date
+                    if (selectedDate != null && booking.getDeparture() != null) {
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                        String bookingDate = sdf.format(booking.getDeparture().toDate());
+                        if (!bookingDate.equals(selectedDate)) continue;
                     }
 
-                    bookingList.clear();
-                    if (value != null) {
-                        for (DocumentSnapshot doc : value.getDocuments()) {
-                            Booking booking = doc.toObject(Booking.class);
-                            if (booking != null) {
-                                booking.setBookingId(doc.getId());
-                                bookingList.add(booking);
-                            }
-                        }
+                    // Filter by route
+                    if (!"All".equals(selectedRoute)) {
+                        String tripId = booking.getTripId();
+                        if (tripId == null) continue;
+
+                        // Check trip’s destination
+                        DocumentSnapshot tripDoc = value.getDocuments().stream()
+                                .filter(d -> d.getId().equals(tripId))
+                                .findFirst().orElse(null);
                     }
 
-                    adapter.notifyDataSetChanged();
-                    swipeRefresh.setRefreshing(false);
-                });
+                    booking.setBookingId(doc.getId());
+                    bookingList.add(booking);
+                }
+            }
+
+            adapter.notifyDataSetChanged();
+            swipeRefresh.setRefreshing(false);
+        });
     }
 
     // =====================

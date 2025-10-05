@@ -3,6 +3,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <!-- HEADER -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -28,6 +29,42 @@
             android:alpha="0.9" />
 
     </LinearLayout>
+
+    <!-- FILTER BAR -->
+    <LinearLayout
+        android:id="@+id/filterBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:gravity="center_vertical"
+        android:background="#EEEEEE">
+
+        <Spinner
+            android:id="@+id/spinnerStatus"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:entries="@array/status_filter_options" />
+
+        <Spinner
+            android:id="@+id/spinnerRoute"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="6dp" />
+
+        <Button
+            android:id="@+id/btnDateFilter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Date"
+            android:layout_marginStart="6dp"
+            android:backgroundTint="@color/primary_pink"
+            android:textColor="@color/white"/>
+    </LinearLayout>
+
+    <!-- LIST -->
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefresh"
         android:layout_width="match_parent"
@@ -37,7 +74,7 @@
             android:id="@+id/recyclerBookings"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="12dp"/>
+            android:padding="12dp" />
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </LinearLayout>

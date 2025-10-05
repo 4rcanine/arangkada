@@ -73,70 +73,74 @@ public class CurrentVanScheduleActivity extends AppCompatActivity {
     private void loadTrips() {
         showLoading(true);
 
-        // Start & end of current day
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        Timestamp startOfDay = new Timestamp(cal.getTime());
-
-        cal.set(Calendar.HOUR_OF_DAY, 23);
-        cal.set(Calendar.MINUTE, 59);
-        cal.set(Calendar.SECOND, 59);
-        cal.set(Calendar.MILLISECOND, 999);
-        Timestamp endOfDay = new Timestamp(cal.getTime());
-
-        // Query trips within today
         db.collection("trips")
-                .whereGreaterThanOrEqualTo("departure", startOfDay)
-                .whereLessThanOrEqualTo("departure", endOfDay)
                 .orderBy("departure", Query.Direction.ASCENDING)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     items.clear();
-                    List<HashMap<String, Object>> upcoming = new ArrayList<>();
-                    List<HashMap<String, Object>> completed = new ArrayList<>();
+
+                    List<HashMap<String, Object>> tripsToday = new ArrayList<>();
+                    List<HashMap<String, Object>> upcomingTrips = new ArrayList<>();
+                    List<HashMap<String, Object>> completedToday = new ArrayList<>();
 
                     Timestamp now = Timestamp.now();
+                    Calendar cal = Calendar.getInstance();
+
+                    // Start of today
+                    cal.set(Calendar.HOUR_OF_DAY, 0);
+                    cal.set(Calendar.MINUTE, 0);
+                    cal.set(Calendar.SECOND, 0);
+                    cal.set(Calendar.MILLISECOND, 0);
+                    Timestamp startOfToday = new Timestamp(cal.getTime());
+
+                    // End of today
+                    cal.set(Calendar.HOUR_OF_DAY, 23);
+                    cal.set(Calendar.MINUTE, 59);
+                    cal.set(Calendar.SECOND, 59);
+                    cal.set(Calendar.MILLISECOND, 999);
+                    Timestamp endOfToday = new Timestamp(cal.getTime());
 
                     for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
                         if (!doc.exists()) continue;
+
                         HashMap<String, Object> map = new HashMap<>();
                         map.putAll(doc.getData() != null ? doc.getData() : Collections.emptyMap());
                         map.put("id", doc.getId());
 
-                        // canonicalize departure/availableSeats types
                         Object depObj = map.get("departure");
                         Timestamp depTs = (depObj instanceof Timestamp) ? (Timestamp) depObj : null;
+                        if (depTs == null) continue;
 
-                        if (depTs != null) {
-                            if (depTs.compareTo(now) >= 0) upcoming.add(map);
-                            else completed.add(map);
+                        // Categorize trip
+                        if (depTs.compareTo(startOfToday) >= 0 && depTs.compareTo(endOfToday) <= 0) {
+                            // It's a trip for today
+                            if (depTs.compareTo(now) < 0) {
+                                completedToday.add(map); // already departed
+                            } else {
+                                tripsToday.add(map); // will depart later today
+                            }
+                        } else if (depTs.compareTo(endOfToday) > 0) {
+                            upcomingTrips.add(map); // future trips (tomorrow+)
                         }
                     }
 
-                    // upcoming: ascending (next upcoming first)
-                    upcoming.sort((a, b) -> {
-                        Timestamp ta = (Timestamp) a.get("departure");
-                        Timestamp tb = (Timestamp) b.get("departure");
-                        return ta.compareTo(tb);
-                    });
+                    // Sort each list
+                    tripsToday.sort((a, b) -> ((Timestamp) a.get("departure")).compareTo((Timestamp) b.get("departure")));
+                    upcomingTrips.sort((a, b) -> ((Timestamp) a.get("departure")).compareTo((Timestamp) b.get("departure")));
+                    completedToday.sort((a, b) -> ((Timestamp) b.get("departure")).compareTo((Timestamp) a.get("departure")));
 
-                    // completed: descending (most recently completed first)
-                    completed.sort((a, b) -> {
-                        Timestamp ta = (Timestamp) a.get("departure");
-                        Timestamp tb = (Timestamp) b.get("departure");
-                        return tb.compareTo(ta);
-                    });
-
-                    if (!upcoming.isEmpty()) {
-                        items.add("Upcoming Trips");
-                        items.addAll(upcoming);
+                    // Add headers & trips
+                    if (!tripsToday.isEmpty()) {
+                        items.add("Trips Today");
+                        items.addAll(tripsToday);
                     }
-                    if (!completed.isEmpty()) {
-                        items.add("Completed Trips");
-                        items.addAll(completed);
+                    if (!upcomingTrips.isEmpty()) {
+                        items.add("Upcoming Trips");
+                        items.addAll(upcomingTrips);
+                    }
+                    if (!completedToday.isEmpty()) {
+                        items.add("Completed Trips Today");
+                        items.addAll(completedToday);
                     }
 
                     adapter.notifyDataSetChanged();
@@ -147,6 +151,7 @@ public class CurrentVanScheduleActivity extends AppCompatActivity {
                     Toast.makeText(CurrentVanScheduleActivity.this, "Error loading trips: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
     }
+
 
     private void showLoading(boolean show) {
         progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
