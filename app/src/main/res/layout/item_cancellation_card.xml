@@ -160,13 +160,30 @@
                 android:textStyle="bold"
                 android:layout_marginEnd="16dp" />
 
-            <Button
-                android:id="@+id/btnCancel"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Cancel"
-                android:textColor="@android:color/white"
-                android:backgroundTint="#B22222" />
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnViewQR"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="View QR Code"
+                    android:textColor="@android:color/white"
+                    android:backgroundTint="#2E8B57"
+                    android:layout_marginEnd="8dp"
+                    android:visibility="gone" />
+
+                <Button
+                    android:id="@+id/btnCancel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Cancel"
+                    android:textColor="@android:color/white"
+                    android:backgroundTint="#B22222" />
+            </LinearLayout>
+
         </LinearLayout>
 
     </LinearLayout>

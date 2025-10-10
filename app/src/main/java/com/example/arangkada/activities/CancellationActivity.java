@@ -1,12 +1,15 @@
 package com.example.arangkada.activities;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,6 +26,9 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+import com.google.zxing.qrcode.QRCodeWriter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +60,6 @@ public class CancellationActivity extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
 
-        // Go back to MyTrips
         btnBackToTrips.setOnClickListener(v -> {
             Intent intent = new Intent(CancellationActivity.this, MyTripsActivity.class);
             startActivity(intent);
@@ -83,7 +88,6 @@ public class CancellationActivity extends AppCompatActivity {
                         }
                     }
 
-                    // Show message if no active booking
                     if (bookingList.isEmpty()) {
                         recyclerView.setVisibility(View.GONE);
                         tvNoBooking.setVisibility(View.VISIBLE);
@@ -97,7 +101,7 @@ public class CancellationActivity extends AppCompatActivity {
     }
 
     // ================================
-    // Booking Model (inner class)
+    // Booking Model
     // ================================
     public static class Booking {
         private String bookingId;
@@ -113,7 +117,6 @@ public class CancellationActivity extends AppCompatActivity {
 
         public String getBookingId() { return bookingId; }
         public void setBookingId(String bookingId) { this.bookingId = bookingId; }
-
         public String getUserId() { return userId; }
         public String getTripId() { return tripId; }
         public String getStatus() { return status; }
@@ -146,19 +149,14 @@ public class CancellationActivity extends AppCompatActivity {
         public void onBindViewHolder(@NonNull BookingViewHolder holder, int position) {
             Booking booking = bookings.get(position);
 
-            // Fetch user name
             db.collection("accounts")
                     .document(booking.getUserId())
                     .get()
                     .addOnSuccessListener(doc -> {
-                        if (doc.exists()) {
-                            holder.txtUser.setText(doc.getString("name"));
-                        } else {
-                            holder.txtUser.setText("Unknown User");
-                        }
+                        if (doc.exists()) holder.txtUser.setText(doc.getString("name"));
+                        else holder.txtUser.setText("Unknown User");
                     });
 
-            // Fetch trip details
             db.collection("trips")
                     .document(booking.getTripId())
                     .get()
@@ -166,7 +164,6 @@ public class CancellationActivity extends AppCompatActivity {
                         if (tripDoc.exists()) {
                             String destinationId = tripDoc.getString("destinationId");
                             String vanId = tripDoc.getString("vanId");
-
                             holder.tvVan.setText(vanId != null ? vanId : "Unknown");
 
                             if (destinationId != null) {
@@ -174,33 +171,26 @@ public class CancellationActivity extends AppCompatActivity {
                                         .document(destinationId)
                                         .get()
                                         .addOnSuccessListener(destDoc -> {
-                                            if (destDoc.exists()) {
+                                            if (destDoc.exists())
                                                 holder.tvRoute.setText(destDoc.getString("name"));
-                                            } else {
-                                                holder.tvRoute.setText("Unknown");
-                                            }
+                                            else holder.tvRoute.setText("Unknown");
                                         });
                             }
                         }
                     });
 
-            // Departure
             String dateStr = booking.getDeparture() != null
                     ? android.text.format.DateFormat.format("MMM dd, yyyy hh:mm a", booking.getDeparture().toDate()).toString()
                     : "N/A";
             holder.tvDeparture.setText(dateStr);
 
-            // Created At → relative time
             if (booking.getCreatedAt() != null) {
                 long now = System.currentTimeMillis();
                 long createdMillis = booking.getCreatedAt().toDate().getTime();
                 CharSequence relativeTime = DateUtils.getRelativeTimeSpanString(createdMillis, now, DateUtils.MINUTE_IN_MILLIS);
                 holder.tvCreatedAt.setText(relativeTime);
-            } else {
-                holder.tvCreatedAt.setText("N/A");
-            }
+            } else holder.tvCreatedAt.setText("N/A");
 
-            // Passengers with type breakdown
             db.collection("bookings")
                     .document(booking.getBookingId())
                     .get()
@@ -211,7 +201,6 @@ public class CancellationActivity extends AppCompatActivity {
                             long studentCount = seatDoc.getLong("studentCount") != null ? seatDoc.getLong("studentCount") : 0;
                             long seniorCount = seatDoc.getLong("seniorCount") != null ? seatDoc.getLong("seniorCount") : 0;
 
-                            // Build breakdown string
                             StringBuilder breakdown = new StringBuilder();
                             if (regularCount > 0) breakdown.append("Regular-").append(regularCount);
                             if (studentCount > 0) {
@@ -223,21 +212,15 @@ public class CancellationActivity extends AppCompatActivity {
                                 breakdown.append("Senior-").append(seniorCount);
                             }
 
-                            if (breakdown.length() > 0) {
-                                holder.tvPassengers.setText(seats + " (" + breakdown.toString() + ")");
-                            } else {
-                                holder.tvPassengers.setText(String.valueOf(seats));
-                            }
-                        } else {
-                            holder.tvPassengers.setText("N/A");
-                        }
+                            if (breakdown.length() > 0)
+                                holder.tvPassengers.setText(seats + " (" + breakdown + ")");
+                            else holder.tvPassengers.setText(String.valueOf(seats));
+                        } else holder.tvPassengers.setText("N/A");
                     });
 
-            // Fare
             holder.tvTotalFare.setText("₱" + booking.getTotalFare());
-
-            // Status with rounded background
             holder.tvStatus.setText(booking.getStatus());
+
             int bgRes;
             switch (booking.getStatus()) {
                 case "Pending":
@@ -250,12 +233,21 @@ public class CancellationActivity extends AppCompatActivity {
                     bgRes = R.drawable.bg_status_cancelled;
                     break;
                 default:
-                    bgRes = R.drawable.bg_status_completed; // fallback
+                    bgRes = R.drawable.bg_status_completed;
             }
             holder.tvStatus.setBackgroundResource(bgRes);
 
-            // Cancel button
+            // ================================
+            // Buttons
+            // ================================
             holder.btnCancel.setOnClickListener(v -> showCancelConfirmationDialog(booking));
+
+            if ("Confirmed".equals(booking.getStatus())) {
+                holder.btnViewQR.setVisibility(View.VISIBLE);
+                holder.btnViewQR.setOnClickListener(v -> showQrCodeDialog(booking.getBookingId()));
+            } else {
+                holder.btnViewQR.setVisibility(View.GONE);
+            }
         }
 
         @Override
@@ -265,7 +257,7 @@ public class CancellationActivity extends AppCompatActivity {
 
         class BookingViewHolder extends RecyclerView.ViewHolder {
             TextView txtUser, tvRoute, tvVan, tvDeparture, tvPassengers, tvTotalFare, tvStatus, tvCreatedAt;
-            Button btnCancel;
+            Button btnCancel, btnViewQR;
 
             public BookingViewHolder(@NonNull View itemView) {
                 super(itemView);
@@ -278,12 +270,13 @@ public class CancellationActivity extends AppCompatActivity {
                 tvStatus = itemView.findViewById(R.id.tv_status);
                 tvCreatedAt = itemView.findViewById(R.id.tv_created_at);
                 btnCancel = itemView.findViewById(R.id.btnCancel);
+                btnViewQR = itemView.findViewById(R.id.btnViewQR);
             }
         }
     }
 
     // ================================
-    // Confirmation Dialog
+    // Cancel Confirmation
     // ================================
     private void showCancelConfirmationDialog(Booking booking) {
         new AlertDialog.Builder(this)
@@ -294,9 +287,6 @@ public class CancellationActivity extends AppCompatActivity {
                 .show();
     }
 
-    // ================================
-    // Cancel booking + seat restoration
-    // ================================
     private void cancelBooking(Booking booking) {
         db.collection("trips")
                 .document(booking.getTripId())
@@ -306,14 +296,43 @@ public class CancellationActivity extends AppCompatActivity {
                             .document(booking.getBookingId())
                             .update("status", "Cancelled")
                             .addOnSuccessListener(unused2 ->
-                                    Toast.makeText(this, "Booking Cancelled", Toast.LENGTH_SHORT).show()
-                            )
+                                    Toast.makeText(this, "Booking Cancelled", Toast.LENGTH_SHORT).show())
                             .addOnFailureListener(e ->
-                                    Toast.makeText(this, "Error updating booking: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                            );
+                                    Toast.makeText(this, "Error updating booking: " + e.getMessage(), Toast.LENGTH_SHORT).show());
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(this, "Error restoring seats: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                );
+                        Toast.makeText(this, "Error restoring seats: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
+
+    // ================================
+    // Show QR Code Dialog
+    // ================================
+    private void showQrCodeDialog(String bookingId) {
+        try {
+            QRCodeWriter writer = new QRCodeWriter();
+            int size = 600;
+            com.google.zxing.common.BitMatrix bitMatrix =
+                    writer.encode(bookingId, BarcodeFormat.QR_CODE, size, size);
+
+            Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.RGB_565);
+            for (int x = 0; x < size; x++) {
+                for (int y = 0; y < size; y++) {
+                    bitmap.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
+                }
+            }
+
+            ImageView imageView = new ImageView(this);
+            imageView.setImageBitmap(bitmap);
+            imageView.setPadding(24, 24, 24, 24);
+
+            new AlertDialog.Builder(this)
+                    .setTitle("Booking QR Code. Show this to the Dispatcher present.")
+                    .setView(imageView)
+                    .setPositiveButton("Close", null)
+                    .show();
+
+        } catch (WriterException e) {
+            Toast.makeText(this, "Error generating QR: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 }
