@@ -3,12 +3,11 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services")
-    //id("com.android.application")
 }
 
 android {
     namespace = "com.example.arangkada"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.arangkada"
@@ -16,7 +15,6 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -29,21 +27,24 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     kotlinOptions {
         jvmTarget = "11"
     }
+
     buildFeatures {
         compose = true
-        viewBinding = true // For XML layouts in authentication
+        viewBinding = true
     }
 }
 
 dependencies {
-    // Core dependencies from libs.versions.toml
+    // Core
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -54,31 +55,37 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.appcompat)
 
-    // Additional dependencies for XML authentication screens
+    // XML / UI
     implementation("com.google.android.material:material:1.10.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.activity:activity-ktx:1.8.2")
     implementation("androidx.fragment:fragment-ktx:1.6.2")
     implementation("androidx.cardview:cardview:1.0.0")
     implementation("androidx.drawerlayout:drawerlayout:1.2.0")
+    implementation(libs.androidx.swiperefreshlayout)
 
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:34.2.0"))
     implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.firebase:firebase-auth:22.1.1")
-    implementation("com.google.firebase:firebase-firestore:24.7.0")
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
 
-    // RecyclerView and CardView
+    // RecyclerView
     implementation("androidx.recyclerview:recyclerview:1.3.1")
-    implementation("androidx.cardview:cardview:1.0.0")
 
-    // QR code
+    // CameraX + ML Kit Barcode Scanning
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+    implementation(libs.google.mlkit.barcode.scanning)
+    implementation(libs.play.services.mlkit.barcode.scanning)
+
+    // Optional: ZXing (if you still need it for older QR use)
     implementation("com.google.zxing:core:3.5.1")
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
-    implementation(libs.androidx.activity)
-    implementation(libs.androidx.swiperefreshlayout)
 
-    // Testing dependencies
+    // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

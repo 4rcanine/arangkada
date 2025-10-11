@@ -17,6 +17,7 @@ import com.example.arangkada.activities.ManageReservationsActivity;
 import com.example.arangkada.activities.ManageVansActivity;
 import com.example.arangkada.activities.NewTerminalActivity;
 import com.example.arangkada.activities.ProfileActivity;
+import com.example.arangkada.activities.QRScannerActivity;
 import com.example.arangkada.activities.UserManagementActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -87,7 +88,7 @@ public class AdminActivity extends BaseActivity {
         cardTerminals.setOnClickListener(v -> startActivity(new Intent(this, NewTerminalActivity.class)));
         cardUsers.setOnClickListener(v -> startActivity(new Intent(this, UserManagementActivity.class)));
         cardCancelled.setOnClickListener(v -> startActivity(new Intent(this, AdminCancellationActivity.class)));
-//        cardQR.setOnClickListener(v -> startActivity(new Intent(this, QRScannerActivity.class)));
+        cardQR.setOnClickListener(v -> startActivity(new Intent(this, QRScannerActivity.class)));
 //        cardSettings.setOnClickListener(v -> startActivity(new Intent(this, ProfileActivity.class)));
     }
 
