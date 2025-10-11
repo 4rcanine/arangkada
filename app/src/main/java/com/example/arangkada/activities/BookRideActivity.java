@@ -1,5 +1,6 @@
 package com.example.arangkada.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -7,6 +8,7 @@ import android.view.View;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.arangkada.MainActivity;
 import com.example.arangkada.R;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
@@ -21,7 +23,7 @@ public class BookRideActivity extends AppCompatActivity {
     private EditText etRegularCount, etStudentCount, etSeniorCount;
     private TextView tvTotalFare, tvTripDeparture, tvTripVan, tvTripSeats, tvTripTravelTime;
     private LinearLayout layoutTripDetails;
-    private Button btnBookNow;
+    private Button btnBookNow, btnCancel;
     private ProgressBar progressBar;
 
     private FirebaseFirestore db;
@@ -58,14 +60,11 @@ public class BookRideActivity extends AppCompatActivity {
         tvTripDeparture = findViewById(R.id.tvTripDeparture);
         tvTripVan = findViewById(R.id.tvTripVan);
         tvTripSeats = findViewById(R.id.tvTripSeats);
-
+        tvTripTravelTime = findViewById(R.id.tvTripTravelTime);
         layoutTripDetails = findViewById(R.id.layoutTripDetails);
 
-        // 🔹 Dynamically add Travel Time TextView (no XML changes)
-        tvTripTravelTime = findViewById(R.id.tvTripTravelTime);
-
-
         btnBookNow = findViewById(R.id.btnBookNow);
+        btnCancel = findViewById(R.id.btn_cancel);
         progressBar = findViewById(R.id.progressBar);
 
         // Load destinations
@@ -84,6 +83,14 @@ public class BookRideActivity extends AppCompatActivity {
         etSeniorCount.addTextChangedListener(fareWatcher);
 
         btnBookNow.setOnClickListener(v -> saveBooking());
+
+        // 🔹 Cancel button returns to dashboard
+        btnCancel.setOnClickListener(v -> {
+            Intent intent = new Intent(BookRideActivity.this, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finish();
+        });
     }
 
     private void loadDestinations() {
@@ -109,7 +116,7 @@ public class BookRideActivity extends AppCompatActivity {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                     String selectedDestinationId = destinationIds.get(position);
-                    loadDestinationDetails(selectedDestinationId); // load fares + travelTime
+                    loadDestinationDetails(selectedDestinationId);
                     loadTrips(selectedDestinationId);
                 }
 
@@ -134,8 +141,6 @@ public class BookRideActivity extends AppCompatActivity {
                         travelTimeMinutes = (tTime != null) ? tTime.intValue() : 0;
 
                         updateFarePreview();
-
-                        // 🔹 Show travel time immediately when destination loads
                         tvTripTravelTime.setText("Travel Time: " + formatTravelTime(travelTimeMinutes));
                         layoutTripDetails.setVisibility(View.VISIBLE);
                     }
@@ -161,17 +166,22 @@ public class BookRideActivity extends AppCompatActivity {
                     tripList.clear();
                     List<String> tripNames = new ArrayList<>();
 
+                    // 🔹 Get current time in Manila
+                    Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Manila"));
+                    Date now = calendar.getTime();
+
                     for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                        Timestamp departure = doc.getTimestamp("departure");
+                        if (departure == null) continue;
+
+                        Date depDate = departure.toDate();
+
+                        // 🔹 Filter only future trips
+                        if (depDate.before(now)) continue;
+
                         tripList.add(doc);
 
-                        Timestamp departure = doc.getTimestamp("departure");
-                        String formattedDate = "-";
-
-                        if (departure != null) {
-                            Date date = departure.toDate();
-                            formattedDate = dateFormat.format(date);
-                        }
-
+                        String formattedDate = dateFormat.format(depDate);
                         Long availableSeatsObj = doc.getLong("availableSeats");
                         long availableSeats = (availableSeatsObj != null) ? availableSeatsObj : 0L;
 
@@ -220,10 +230,7 @@ public class BookRideActivity extends AppCompatActivity {
         tvTripDeparture.setText("Departure: " + departure);
         tvTripVan.setText("Van: " + (vanPlate != null ? vanPlate : "-"));
         tvTripSeats.setText("Available Seats: " + availableSeats);
-
-        // 🔹 Refresh travel time when showing trip
         tvTripTravelTime.setText("Travel Time: " + formatTravelTime(travelTimeMinutes));
-
         layoutTripDetails.setVisibility(View.VISIBLE);
 
         boolean isSoldOut = (availableSeats == 0);
