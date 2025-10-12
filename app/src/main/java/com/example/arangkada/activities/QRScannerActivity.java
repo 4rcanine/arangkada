@@ -3,6 +3,7 @@ package com.example.arangkada.activities;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -15,17 +16,16 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageProxy;
+import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
-import androidx.lifecycle.LifecycleOwner;
 
 import com.example.arangkada.R;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -35,19 +35,28 @@ import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
 import com.google.mlkit.vision.barcode.BarcodeScanning;
 import com.google.mlkit.vision.common.InputImage;
 
-import java.util.List;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class QRScannerActivity extends AppCompatActivity {
 
+    private static final String TAG = "QRScannerActivity";
     private FirebaseFirestore db;
     private PreviewView previewView;
     private boolean isProcessing = false;
+    private ExecutorService cameraExecutor;
+    private ProcessCameraProvider cameraProvider;
 
     private final ActivityResultLauncher<String> cameraPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
-                if (isGranted) startCamera();
-                else Toast.makeText(this, "Camera permission is required", Toast.LENGTH_SHORT).show();
+                if (isGranted) {
+                    Log.d(TAG, "Camera permission granted");
+                    startCamera();
+                } else {
+                    Log.e(TAG, "Camera permission denied");
+                    Toast.makeText(this, "Camera permission is required", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
             });
 
     @Override
@@ -57,156 +66,292 @@ public class QRScannerActivity extends AppCompatActivity {
 
         previewView = findViewById(R.id.previewView);
         db = FirebaseFirestore.getInstance();
+        cameraExecutor = Executors.newSingleThreadExecutor();
 
         // Request camera permission
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "Camera permission already granted");
             startCamera();
         } else {
+            Log.d(TAG, "Requesting camera permission");
             cameraPermissionLauncher.launch(Manifest.permission.CAMERA);
         }
     }
 
     private void startCamera() {
-        ListenableFuture<ProcessCameraProvider> cameraProviderFuture =
+        Log.d(TAG, "Starting camera...");
+
+        final ListenableFuture<ProcessCameraProvider> cameraProviderFuture =
                 ProcessCameraProvider.getInstance(this);
 
         cameraProviderFuture.addListener(() -> {
             try {
-                ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
-
-                BarcodeScannerOptions options = new BarcodeScannerOptions.Builder()
-                        .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
-                        .build();
-
-                BarcodeScanner scanner = BarcodeScanning.getClient(options);
-
-                ImageAnalysis analysis = new ImageAnalysis.Builder()
-                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                        .build();
-
-                analysis.setAnalyzer(ContextCompat.getMainExecutor(this), imageProxy -> {
-                    if (isProcessing) {
-                        imageProxy.close();
-                        return;
-                    }
-
-                    @SuppressWarnings("UnsafeOptInUsageError")
-                    InputImage image = InputImage.fromMediaImage(imageProxy.getImage(),
-                            imageProxy.getImageInfo().getRotationDegrees());
-
-                    scanner.process(image)
-                            .addOnSuccessListener(barcodes -> {
-                                for (Barcode barcode : barcodes) {
-                                    if (barcode.getRawValue() != null) {
-                                        String bookingId = barcode.getRawValue();
-                                        isProcessing = true;
-                                        fetchBookingDetails(bookingId);
-                                        break;
-                                    }
-                                }
-                            })
-                            .addOnFailureListener(e -> {})
-                            .addOnCompleteListener(task -> imageProxy.close());
-                });
-
-                cameraProvider.unbindAll();
-                cameraProvider.bindToLifecycle((LifecycleOwner) this,
-                        CameraSelector.DEFAULT_BACK_CAMERA, analysis);
-
-            } catch (ExecutionException | InterruptedException e) {
-                e.printStackTrace();
+                cameraProvider = cameraProviderFuture.get();
+                Log.d(TAG, "Camera provider obtained");
+                bindCameraUseCases();
+            } catch (Exception e) {
+                Log.e(TAG, "Error getting camera provider", e);
+                Toast.makeText(this, "Failed to start camera: " + e.getMessage(),
+                        Toast.LENGTH_LONG).show();
             }
         }, ContextCompat.getMainExecutor(this));
     }
 
+    private void bindCameraUseCases() {
+        if (cameraProvider == null) {
+            Log.e(TAG, "Camera provider is null");
+            return;
+        }
+
+        // Unbind all use cases before rebinding
+        cameraProvider.unbindAll();
+
+        // Select back camera
+        CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
+
+        // Build the preview use case
+        Preview preview = new Preview.Builder()
+                .build();
+
+        // Connect the preview to the PreviewView
+        preview.setSurfaceProvider(previewView.getSurfaceProvider());
+        Log.d(TAG, "Preview surface provider set");
+
+        // Build barcode scanner options
+        BarcodeScannerOptions options = new BarcodeScannerOptions.Builder()
+                .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+                .build();
+
+        BarcodeScanner scanner = BarcodeScanning.getClient(options);
+
+        // Build image analysis use case
+        ImageAnalysis imageAnalysis = new ImageAnalysis.Builder()
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                .build();
+
+        imageAnalysis.setAnalyzer(cameraExecutor, imageProxy -> {
+            processImageProxy(scanner, imageProxy);
+        });
+
+        try {
+            // Bind use cases to camera
+            Camera camera = cameraProvider.bindToLifecycle(
+                    this,
+                    cameraSelector,
+                    preview,
+                    imageAnalysis
+            );
+
+            Log.d(TAG, "Camera bound successfully");
+
+        } catch (Exception e) {
+            Log.e(TAG, "Use case binding failed", e);
+            Toast.makeText(this, "Camera binding failed: " + e.getMessage(),
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void processImageProxy(BarcodeScanner scanner, ImageProxy imageProxy) {
+        if (isProcessing) {
+            imageProxy.close();
+            return;
+        }
+
+        try {
+            @SuppressWarnings("UnsafeOptInUsageError")
+            android.media.Image mediaImage = imageProxy.getImage();
+
+            if (mediaImage == null) {
+                imageProxy.close();
+                return;
+            }
+
+            InputImage image = InputImage.fromMediaImage(
+                    mediaImage,
+                    imageProxy.getImageInfo().getRotationDegrees()
+            );
+
+            scanner.process(image)
+                    .addOnSuccessListener(barcodes -> {
+                        for (Barcode barcode : barcodes) {
+                            if (barcode.getRawValue() != null && !barcode.getRawValue().isEmpty()) {
+                                String bookingId = barcode.getRawValue();
+                                Log.d(TAG, "QR Code detected: " + bookingId);
+                                isProcessing = true;
+                                runOnUiThread(() -> fetchBookingDetails(bookingId));
+                                break;
+                            }
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Barcode scanning failed", e);
+                    })
+                    .addOnCompleteListener(task -> imageProxy.close());
+        } catch (Exception e) {
+            Log.e(TAG, "Error processing image", e);
+            imageProxy.close();
+        }
+    }
+
     private void fetchBookingDetails(String bookingId) {
+        Log.d(TAG, "Fetching booking details for: " + bookingId);
+
         db.collection("bookings").document(bookingId).get()
                 .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        showBookingDialog(documentSnapshot);
-                    } else {
-                        Toast.makeText(this, "Booking not found.", Toast.LENGTH_SHORT).show();
+                    try {
+                        if (documentSnapshot.exists()) {
+                            Log.d(TAG, "Booking found, showing dialog");
+                            showBookingDialog(documentSnapshot);
+                        } else {
+                            Log.w(TAG, "Booking not found");
+                            Toast.makeText(this, "Booking not found.", Toast.LENGTH_SHORT).show();
+                            isProcessing = false;
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error processing booking data", e);
+                        Toast.makeText(this, "Error loading booking: " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show();
                         isProcessing = false;
                     }
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Error fetching booking details.", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Error fetching booking", e);
+                    Toast.makeText(this, "Error fetching booking details: " + e.getMessage(),
+                            Toast.LENGTH_SHORT).show();
                     isProcessing = false;
                 });
     }
 
     private void showBookingDialog(DocumentSnapshot doc) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_booking_details, null);
-        builder.setView(dialogView);
+        try {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_booking_details, null);
+            builder.setView(dialogView);
 
-        TextView tvBookingId = dialogView.findViewById(R.id.tvBookingId);
-        TextView tvDestination = dialogView.findViewById(R.id.tvDestination);
-        TextView tvDeparture = dialogView.findViewById(R.id.tvDeparture);
-        TextView tvPassengers = dialogView.findViewById(R.id.tvPassengers);
-        TextView tvFare = dialogView.findViewById(R.id.tvFare);
-        Button btnCancel = dialogView.findViewById(R.id.btnCancel);
-        Button btnComplete = dialogView.findViewById(R.id.btnComplete);
+            TextView tvBookingId = dialogView.findViewById(R.id.tvBookingId);
+            TextView tvDestination = dialogView.findViewById(R.id.tvDestination);
+            TextView tvDeparture = dialogView.findViewById(R.id.tvDeparture);
+            TextView tvPassengers = dialogView.findViewById(R.id.tvPassengers);
+            TextView tvFare = dialogView.findViewById(R.id.tvFare);
+            Button btnCancel = dialogView.findViewById(R.id.btnCancel);
+            Button btnComplete = dialogView.findViewById(R.id.btnComplete);
 
-        tvBookingId.setText("Booking ID: " + doc.getString("bookingId"));
-        tvDestination.setText("Destination: " + doc.getString("destinationId"));
-        tvDeparture.setText("Departure: " + doc.getString("departure"));
-        tvPassengers.setText("Passengers: Regular " + doc.getLong("regularCount") +
-                ", Student " + doc.getLong("studentCount") +
-                ", Senior " + doc.getLong("seniorCount"));
-        tvFare.setText("Total Fare: ₱" + doc.getLong("totalFare"));
+            // Safely get values with null checks
+            String bookingId = doc.getString("bookingId");
+            String destinationId = doc.getString("destinationId");
 
-        AlertDialog dialog = builder.create();
+            // 🔧 FIXED: Handle departure as either String or Timestamp
+            Object departureObj = doc.get("departure");
+            String departureText = "N/A";
+            if (departureObj instanceof String) {
+                departureText = (String) departureObj;
+            } else if (departureObj instanceof com.google.firebase.Timestamp) {
+                com.google.firebase.Timestamp ts = (com.google.firebase.Timestamp) departureObj;
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat(
+                        "yyyy-MM-dd HH:mm", java.util.Locale.getDefault());
+                departureText = sdf.format(ts.toDate());
+            }
 
-        btnComplete.setOnClickListener(v -> {
-            db.collection("bookings").document(doc.getId())
-                    .update("status", "Completed")
-                    .addOnSuccessListener(aVoid -> {
-                        Toast.makeText(this, "Booking marked as Completed.", Toast.LENGTH_SHORT).show();
-                        dialog.dismiss();
-                        isProcessing = false;
-                    });
-        });
+            Long regularCount = doc.getLong("regularCount");
+            Long studentCount = doc.getLong("studentCount");
+            Long seniorCount = doc.getLong("seniorCount");
+            Long totalFare = doc.getLong("totalFare");
 
-        btnCancel.setOnClickListener(v -> showCancelReasonDialog(doc, dialog));
+            tvBookingId.setText("Booking ID: " + (bookingId != null ? bookingId : "N/A"));
+            tvDestination.setText("Destination: " + (destinationId != null ? destinationId : "N/A"));
+            tvDeparture.setText("Departure: " + departureText);
+            tvPassengers.setText("Passengers: Regular " + (regularCount != null ? regularCount : 0) +
+                    ", Student " + (studentCount != null ? studentCount : 0) +
+                    ", Senior " + (seniorCount != null ? seniorCount : 0));
+            tvFare.setText("Total Fare: ₱" + (totalFare != null ? totalFare : 0));
 
-        dialog.show();
+            AlertDialog dialog = builder.create();
+
+            btnComplete.setOnClickListener(v -> {
+                db.collection("bookings").document(doc.getId())
+                        .update("status", "Completed")
+                        .addOnSuccessListener(aVoid -> {
+                            Toast.makeText(this, "Booking marked as Completed.", Toast.LENGTH_SHORT).show();
+                            dialog.dismiss();
+                            isProcessing = false;
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.e(TAG, "Failed to complete booking", e);
+                            Toast.makeText(this, "Failed to complete booking.", Toast.LENGTH_SHORT).show();
+                            isProcessing = false;
+                        });
+            });
+
+            btnCancel.setOnClickListener(v -> showCancelReasonDialog(doc, dialog));
+
+            dialog.setOnDismissListener(dialogInterface -> {
+                // Reset processing flag when dialog is dismissed
+                isProcessing = false;
+            });
+
+            dialog.show();
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error showing booking dialog", e);
+            Toast.makeText(this, "Error displaying booking: " + e.getMessage(),
+                    Toast.LENGTH_SHORT).show();
+            isProcessing = false;
+        }
     }
 
     private void showCancelReasonDialog(DocumentSnapshot doc, AlertDialog parentDialog) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        View reasonView = LayoutInflater.from(this).inflate(R.layout.dialog_cancel_reason, null);
-        builder.setView(reasonView);
+        try {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            View reasonView = LayoutInflater.from(this).inflate(R.layout.dialog_cancel_reason, null);
+            builder.setView(reasonView);
 
-        EditText etReason = reasonView.findViewById(R.id.etReason);
-        Button btnBack = reasonView.findViewById(R.id.btnBack);
-        Button btnProceed = reasonView.findViewById(R.id.btnProceed);
+            EditText etReason = reasonView.findViewById(R.id.etReason);
+            Button btnBack = reasonView.findViewById(R.id.btnBack);
+            Button btnProceed = reasonView.findViewById(R.id.btnProceed);
 
-        AlertDialog dialog = builder.create();
+            AlertDialog dialog = builder.create();
 
-        btnBack.setOnClickListener(v -> dialog.dismiss());
+            btnBack.setOnClickListener(v -> dialog.dismiss());
 
-        btnProceed.setOnClickListener(v -> {
-            String reason = etReason.getText().toString().trim();
-            if (reason.isEmpty()) {
-                Toast.makeText(this, "Please provide a reason.", Toast.LENGTH_SHORT).show();
-                return;
-            }
+            btnProceed.setOnClickListener(v -> {
+                String reason = etReason.getText().toString().trim();
+                if (reason.isEmpty()) {
+                    Toast.makeText(this, "Please provide a reason.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-            db.collection("bookings").document(doc.getId())
-                    .update("status", "Cancelled", "reason", reason)
-                    .addOnSuccessListener(aVoid -> {
-                        Toast.makeText(this, "Booking cancelled.", Toast.LENGTH_SHORT).show();
-                        dialog.dismiss();
-                        parentDialog.dismiss();
-                        isProcessing = false;
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(this, "Failed to cancel booking.", Toast.LENGTH_SHORT).show();
-                    });
-        });
+                db.collection("bookings").document(doc.getId())
+                        .update("status", "Cancelled", "reason", reason)
+                        .addOnSuccessListener(aVoid -> {
+                            Toast.makeText(this, "Booking cancelled.", Toast.LENGTH_SHORT).show();
+                            dialog.dismiss();
+                            parentDialog.dismiss();
+                            isProcessing = false;
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.e(TAG, "Failed to cancel booking", e);
+                            Toast.makeText(this, "Failed to cancel booking.", Toast.LENGTH_SHORT).show();
+                        });
+            });
 
-        dialog.show();
+            dialog.show();
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error showing cancel dialog", e);
+            Toast.makeText(this, "Error displaying cancel dialog: " + e.getMessage(),
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (cameraExecutor != null) {
+            cameraExecutor.shutdown();
+        }
+        if (cameraProvider != null) {
+            cameraProvider.unbindAll();
+        }
     }
 }
