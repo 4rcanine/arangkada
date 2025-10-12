@@ -1,6 +1,5 @@
 package com.example.arangkada.activities;
 
-import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.text.InputType;
@@ -16,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.DatePicker;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -23,6 +23,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.arangkada.R;
 import com.example.arangkada.models.Booking;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -175,7 +176,7 @@ public class ManageReservationsActivity extends AppCompatActivity {
                         String tripId = booking.getTripId();
                         if (tripId == null) continue;
 
-                        // Check trip’s destination
+                        // Check trip's destination
                         DocumentSnapshot tripDoc = value.getDocuments().stream()
                                 .filter(d -> d.getId().equals(tripId))
                                 .findFirst().orElse(null);
@@ -351,24 +352,34 @@ public class ManageReservationsActivity extends AppCompatActivity {
 
         private void showCancelReasonDialog(String bookingId, String tripId, int seats) {
             AlertDialog.Builder builder = new AlertDialog.Builder(ManageReservationsActivity.this);
-            builder.setTitle("Reason for Cancellation");
+            View dialogView = LayoutInflater.from(ManageReservationsActivity.this)
+                    .inflate(R.layout.dialog_cancel_reason, null);
+            builder.setView(dialogView);
 
-            final EditText input = new EditText(ManageReservationsActivity.this);
-            input.setHint("Enter reason...");
-            input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
-            builder.setView(input);
+            TextInputEditText etReason = dialogView.findViewById(R.id.etReason);
+            Button btnBack = dialogView.findViewById(R.id.btnBack);
+            Button btnProceed = dialogView.findViewById(R.id.btnProceed);
 
-            builder.setPositiveButton("Submit", (dialog, which) -> {
-                String reason = input.getText().toString().trim();
+            AlertDialog dialog = builder.create();
+
+            // Make dialog background transparent to show rounded corners
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+            }
+
+            btnBack.setOnClickListener(v -> dialog.dismiss());
+
+            btnProceed.setOnClickListener(v -> {
+                String reason = etReason.getText().toString().trim();
                 if (reason.isEmpty()) {
                     Toast.makeText(ManageReservationsActivity.this, "Please provide a reason.", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 updateBookingStatus(bookingId, "Cancelled", seats, tripId, reason);
+                dialog.dismiss();
             });
 
-            builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
-            builder.show();
+            dialog.show();
         }
 
         @Override

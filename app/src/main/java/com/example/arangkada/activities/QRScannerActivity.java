@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import com.google.android.material.textfield.TextInputEditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -229,28 +230,28 @@ public class QRScannerActivity extends AppCompatActivity {
             View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_booking_details, null);
             builder.setView(dialogView);
 
-            TextView tvBookingId = dialogView.findViewById(R.id.tvBookingId);
-            TextView tvDestination = dialogView.findViewById(R.id.tvDestination);
-            TextView tvDeparture = dialogView.findViewById(R.id.tvDeparture);
-            TextView tvPassengers = dialogView.findViewById(R.id.tvPassengers);
-            TextView tvFare = dialogView.findViewById(R.id.tvFare);
+            TextView txtUser = dialogView.findViewById(R.id.txtUser);
+            TextView tvStatus = dialogView.findViewById(R.id.tv_status);
+            TextView tvRoute = dialogView.findViewById(R.id.tv_route);
+            TextView tvDeparture = dialogView.findViewById(R.id.tv_departure);
+            TextView tvPassengers = dialogView.findViewById(R.id.tv_passengers);
+            TextView tvTotalFare = dialogView.findViewById(R.id.tv_total_fare);
             Button btnCancel = dialogView.findViewById(R.id.btnCancel);
             Button btnComplete = dialogView.findViewById(R.id.btnComplete);
 
-            // Safely get values with null checks
-            String bookingId = doc.getString("bookingId");
+            String userId = doc.getString("userId");
             String destinationId = doc.getString("destinationId");
+            String status = doc.getString("status");
 
-            // 🔧 FIXED: Handle departure as either String or Timestamp
+            tvStatus.setText(status != null ? status : "Pending");
+
+            // Departure formatting
             Object departureObj = doc.get("departure");
-            String departureText = "N/A";
-            if (departureObj instanceof String) {
-                departureText = (String) departureObj;
-            } else if (departureObj instanceof com.google.firebase.Timestamp) {
+            String formattedDeparture = "N/A";
+            if (departureObj instanceof com.google.firebase.Timestamp) {
                 com.google.firebase.Timestamp ts = (com.google.firebase.Timestamp) departureObj;
-                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat(
-                        "yyyy-MM-dd HH:mm", java.util.Locale.getDefault());
-                departureText = sdf.format(ts.toDate());
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("MMMM dd, yyyy h:mm a", java.util.Locale.getDefault());
+                formattedDeparture = sdf.format(ts.toDate());
             }
 
             Long regularCount = doc.getLong("regularCount");
@@ -258,15 +259,42 @@ public class QRScannerActivity extends AppCompatActivity {
             Long seniorCount = doc.getLong("seniorCount");
             Long totalFare = doc.getLong("totalFare");
 
-            tvBookingId.setText("Booking ID: " + (bookingId != null ? bookingId : "N/A"));
-            tvDestination.setText("Destination: " + (destinationId != null ? destinationId : "N/A"));
-            tvDeparture.setText("Departure: " + departureText);
-            tvPassengers.setText("Passengers: Regular " + (regularCount != null ? regularCount : 0) +
-                    ", Student " + (studentCount != null ? studentCount : 0) +
-                    ", Senior " + (seniorCount != null ? seniorCount : 0));
-            tvFare.setText("Total Fare: ₱" + (totalFare != null ? totalFare : 0));
+            tvPassengers.setText("Regular: " + (regularCount != null ? regularCount : 0) +
+                    ", Student: " + (studentCount != null ? studentCount : 0) +
+                    ", Senior: " + (seniorCount != null ? seniorCount : 0));
+            tvTotalFare.setText("₱" + (totalFare != null ? totalFare : 0));
+            tvDeparture.setText(formattedDeparture);
 
             AlertDialog dialog = builder.create();
+
+            // FIX: Make dialog background transparent to show rounded corners
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+            }
+
+            // Fetch user name
+            if (userId != null) {
+                db.collection("accounts").document(userId)
+                        .get()
+                        .addOnSuccessListener(userDoc -> {
+                            String userName = userDoc.getString("name");
+                            txtUser.setText(userName != null ? userName : "Unknown User");
+                        });
+            } else {
+                txtUser.setText("Unknown User");
+            }
+
+            // Fetch destination name
+            if (destinationId != null) {
+                db.collection("destinations").document(destinationId)
+                        .get()
+                        .addOnSuccessListener(destDoc -> {
+                            String destName = destDoc.getString("name");
+                            tvRoute.setText(destName != null ? destName : "Unknown Destination");
+                        });
+            } else {
+                tvRoute.setText("Unknown Destination");
+            }
 
             btnComplete.setOnClickListener(v -> {
                 db.collection("bookings").document(doc.getId())
@@ -277,7 +305,6 @@ public class QRScannerActivity extends AppCompatActivity {
                             isProcessing = false;
                         })
                         .addOnFailureListener(e -> {
-                            Log.e(TAG, "Failed to complete booking", e);
                             Toast.makeText(this, "Failed to complete booking.", Toast.LENGTH_SHORT).show();
                             isProcessing = false;
                         });
@@ -285,20 +312,16 @@ public class QRScannerActivity extends AppCompatActivity {
 
             btnCancel.setOnClickListener(v -> showCancelReasonDialog(doc, dialog));
 
-            dialog.setOnDismissListener(dialogInterface -> {
-                // Reset processing flag when dialog is dismissed
-                isProcessing = false;
-            });
-
+            dialog.setOnDismissListener(d -> isProcessing = false);
             dialog.show();
 
         } catch (Exception e) {
             Log.e(TAG, "Error showing booking dialog", e);
-            Toast.makeText(this, "Error displaying booking: " + e.getMessage(),
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Error displaying booking: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             isProcessing = false;
         }
     }
+
 
     private void showCancelReasonDialog(DocumentSnapshot doc, AlertDialog parentDialog) {
         try {
@@ -311,6 +334,11 @@ public class QRScannerActivity extends AppCompatActivity {
             Button btnProceed = reasonView.findViewById(R.id.btnProceed);
 
             AlertDialog dialog = builder.create();
+
+            // FIX: Make dialog background transparent
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+            }
 
             btnBack.setOnClickListener(v -> dialog.dismiss());
 
