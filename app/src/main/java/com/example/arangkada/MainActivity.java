@@ -6,47 +6,46 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.cardview.widget.CardView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.arangkada.activities.BookRideActivity;
 import com.example.arangkada.activities.CancellationActivity;
-import com.example.arangkada.activities.InfoActivity;
-import com.example.arangkada.activities.BookingActivity;
-import com.example.arangkada.activities.ProfileActivity;
-import com.example.arangkada.activities.BaseActivity;
 import com.example.arangkada.activities.MyTripsActivity;
 import com.example.arangkada.activities.NotificationsActivity;
+import com.example.arangkada.activities.ProfileActivity;
+import com.example.arangkada.activities.BaseActivity;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Locale;
 
 public class MainActivity extends BaseActivity {
 
-    private TextView welcomeTextView;
     private TextView userNameTextView;
-    private CardView bookRideCard;
-    private CardView myTripsCard;
-    private CardView notificationsCard;
-    private CardView profileCard;
-    private LinearLayout quickBookLayout;
-    private Button cervantesToBaguioButton;
-    private Button baguioToCervantesButton;
-    private Button logoutButton;
+    private CardView bookRideCard, myTripsCard, notificationsCard, profileCard;
     private ImageView notificationBadge;
+    private TextView tvNextTripTitle, tvNextTripRoute, tvNextTripDate, tvTotalFare, tvTripStatus;
+    private Button btnViewQR; // 🔹 Added View QR button
+
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Wire BaseActivity's drawer/navigation into this activity
         setupNavigation();
         onNavigationSetup();
 
@@ -55,137 +54,194 @@ public class MainActivity extends BaseActivity {
 
         initializeViews();
         setupClickListeners();
+        setupSwipeRefresh();
         setupUserInfo();
+        fetchUpcomingOrRecentTrip();
     }
 
     private void initializeViews() {
-        welcomeTextView = findViewById(R.id.tv_welcome);
         userNameTextView = findViewById(R.id.tv_user_name);
         bookRideCard = findViewById(R.id.card_book_ride);
         myTripsCard = findViewById(R.id.card_my_trips);
         notificationsCard = findViewById(R.id.card_notifications);
         profileCard = findViewById(R.id.card_profile);
-        quickBookLayout = findViewById(R.id.layout_quick_book);
-        cervantesToBaguioButton = findViewById(R.id.btn_cervantes_to_baguio);
-        baguioToCervantesButton = findViewById(R.id.btn_baguio_to_cervantes);
-        logoutButton = findViewById(R.id.btn_logout);
         notificationBadge = findViewById(R.id.iv_notification_badge);
+
+        tvNextTripTitle = findViewById(R.id.tv_next_trip_title);
+        tvNextTripRoute = findViewById(R.id.tv_next_trip_route);
+        tvNextTripDate = findViewById(R.id.tv_next_trip_date);
+        tvTotalFare = findViewById(R.id.tv_total_fare);
+        tvTripStatus = findViewById(R.id.tv_trip_status);
+        btnViewQR = findViewById(R.id.btn_view_qr); // 🔹 initialize new button
+
+        swipeRefreshLayout = findViewById(R.id.swipe_refresh);
     }
 
     private void setupClickListeners() {
-        bookRideCard.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openBookingPage();
-            }
+        bookRideCard.setOnClickListener(v -> startActivity(new Intent(this, BookRideActivity.class)));
+        myTripsCard.setOnClickListener(v -> startActivity(new Intent(this, CancellationActivity.class)));
+        notificationsCard.setOnClickListener(v -> {
+            notificationBadge.setVisibility(View.GONE);
+            startActivity(new Intent(this, NotificationsActivity.class));
         });
+        profileCard.setOnClickListener(v -> startActivity(new Intent(this, ProfileActivity.class)));
+    }
 
-        myTripsCard.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openMyTrips();
-            }
-        });
-
-        notificationsCard.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openNotifications();
-            }
-        });
-
-        profileCard.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openProfile();
-            }
-        });
-
-        cervantesToBaguioButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, BookingActivity.class);
-                intent.putExtra("from_location", "Cervantes");
-                intent.putExtra("to_location", "Baguio");
-                startActivity(intent);
-            }
-        });
-
-        baguioToCervantesButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, BookingActivity.class);
-                intent.putExtra("from_location", "Baguio");
-                intent.putExtra("to_location", "Cervantes");
-                startActivity(intent);
-            }
+    private void setupSwipeRefresh() {
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            setupUserInfo();
+            fetchUpcomingOrRecentTrip();
+            swipeRefreshLayout.postDelayed(() -> swipeRefreshLayout.setRefreshing(false), 1000);
         });
     }
 
     private void setupUserInfo() {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
-            String userId = currentUser.getUid();
+            db.collection("accounts").document(currentUser.getUid())
+                    .get()
+                    .addOnSuccessListener(document -> {
+                        if (document.exists())
+                            userNameTextView.setText(document.getString("name"));
+                        else userNameTextView.setText("Unknown User");
+                    })
+                    .addOnFailureListener(e -> userNameTextView.setText("Error loading user"));
+        } else userNameTextView.setText("Guest");
+    }
 
-            DocumentReference docRef = db.collection("accounts").document(userId);
-            docRef.get().addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    if (document.exists()) {
-                        String name = document.getString("name");
-                        userNameTextView.setText(name);
+    private void fetchUpcomingOrRecentTrip() {
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) return;
+
+        String userId = currentUser.getUid();
+        CollectionReference bookingsRef = db.collection("bookings");
+
+        // 1️⃣ Try to find Pending or Confirmed (upcoming)
+        bookingsRef
+                .whereEqualTo("userId", userId)
+                .whereIn("status", Arrays.asList("Pending", "Confirmed"))
+                .orderBy("departure", Query.Direction.ASCENDING)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(task -> {
+                    if (!task.isEmpty()) {
+                        showTrip(task.getDocuments().get(0), true);
                     } else {
-                        userNameTextView.setText("Unknown User");
+                        // 2️⃣ Otherwise show recent Completed or Cancelled
+                        fetchRecentTrip(userId);
                     }
-                } else {
-                    userNameTextView.setText("Error loading user");
-                }
-            });
+                })
+                .addOnFailureListener(e -> showNoTripFound());
+    }
+
+    private void fetchRecentTrip(String userId) {
+        db.collection("bookings")
+                .whereEqualTo("userId", userId)
+                .whereIn("status", Arrays.asList("Completed", "Cancelled"))
+                .orderBy("departure", Query.Direction.DESCENDING)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(task -> {
+                    if (!task.isEmpty()) showTrip(task.getDocuments().get(0), false);
+                    else showNoTripFound();
+                })
+                .addOnFailureListener(e -> showNoTripFound());
+    }
+
+    private void showTrip(DocumentSnapshot bookingDoc, boolean isUpcoming) {
+        String tripId = bookingDoc.getString("tripId");
+        String status = bookingDoc.getString("status");
+        Timestamp departureTime = bookingDoc.getTimestamp("departure");
+        Double totalFare = bookingDoc.getDouble("totalFare");
+
+        if (tripId == null || departureTime == null) {
+            showNoTripFound();
+            return;
+        }
+
+        db.collection("trips").document(tripId)
+                .get()
+                .addOnSuccessListener(tripDoc -> {
+                    if (tripDoc.exists()) {
+                        String destinationId = tripDoc.getString("destinationId");
+                        if (destinationId != null) {
+                            db.collection("destinations").document(destinationId)
+                                    .get()
+                                    .addOnSuccessListener(destDoc -> {
+                                        String destinationName = destDoc.exists()
+                                                ? destDoc.getString("name")
+                                                : "Unknown destination";
+                                        updateTripUI(destinationName, departureTime, totalFare, status, isUpcoming);
+                                    })
+                                    .addOnFailureListener(e -> updateTripUI("Error loading destination", departureTime, totalFare, status, isUpcoming));
+                        } else updateTripUI("Unknown destination", departureTime, totalFare, status, isUpcoming);
+                    } else updateTripUI("Trip not found", departureTime, totalFare, status, isUpcoming);
+                })
+                .addOnFailureListener(e -> updateTripUI("Error loading trip", departureTime, totalFare, status, isUpcoming));
+    }
+
+    private void updateTripUI(String destinationName, Timestamp departureTime, Double totalFare, String status, boolean isUpcoming) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM dd, yyyy • hh:mm a", Locale.getDefault());
+        String formattedDate = dateFormat.format(departureTime.toDate());
+
+        tvNextTripTitle.setText(isUpcoming ? "Upcoming Trip" : "Recent Trip");
+        tvNextTripRoute.setText(destinationName);
+        tvNextTripDate.setText(formattedDate);
+
+        if (totalFare != null) {
+            tvTotalFare.setVisibility(View.VISIBLE);
+            tvTotalFare.setText(String.format(Locale.getDefault(), "Total Fare: ₱%.2f", totalFare));
+        } else tvTotalFare.setVisibility(View.GONE);
+
+        if (status != null) {
+            tvTripStatus.setVisibility(View.VISIBLE);
+            tvTripStatus.setText(status);
+
+            switch (status) {
+                case "Pending":
+                    tvTripStatus.setBackgroundResource(R.drawable.bg_status_pending);
+                    btnViewQR.setVisibility(View.GONE);
+                    break;
+                case "Confirmed":
+                    tvTripStatus.setBackgroundResource(R.drawable.bg_status_confirmed);
+                    btnViewQR.setVisibility(View.VISIBLE);
+                    btnViewQR.setOnClickListener(v ->
+                            startActivity(new Intent(this, CancellationActivity.class)));
+                    break;
+                case "Completed":
+                    tvTripStatus.setBackgroundResource(R.drawable.bg_status_completed);
+                    btnViewQR.setVisibility(View.GONE);
+                    break;
+                case "Cancelled":
+                    tvTripStatus.setBackgroundResource(R.drawable.bg_status_cancelled);
+                    btnViewQR.setVisibility(View.GONE);
+                    break;
+                default:
+                    btnViewQR.setVisibility(View.GONE);
+                    tvTripStatus.setBackgroundResource(R.drawable.bg_status_pending);
+            }
         } else {
-            userNameTextView.setText("Guest");
+            tvTripStatus.setVisibility(View.GONE);
+            btnViewQR.setVisibility(View.GONE);
         }
     }
 
-    private void openBookingPage() {
-        Intent intent = new Intent(MainActivity.this, BookRideActivity.class);
-        startActivity(intent);
+    private void showNoTripFound() {
+        tvNextTripTitle.setText("No trips found");
+        tvNextTripRoute.setText("Book your first trip now!");
+        tvNextTripDate.setText("");
+        tvTotalFare.setVisibility(View.GONE);
+        tvTripStatus.setVisibility(View.GONE);
+        btnViewQR.setVisibility(View.GONE);
     }
 
-    private void openMyTrips() {
-        Intent intent = new Intent(MainActivity.this, CancellationActivity.class);
-        startActivity(intent);
-    }
-
-    private void openNotifications() {
-        // Clear badge when user checks notifications
-        notificationBadge.setVisibility(View.GONE);
-
-        // Open the notifications activity
-        Intent intent = new Intent(this, NotificationsActivity.class);
-        startActivity(intent);
-    }
-
-    private void openProfile() {
-        Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
-        startActivity(intent);
-    }
-
-    private void quickBookRide(String from, String to) {
-        Toast.makeText(this, "Quick booking: " + from + " → " + to + "\nSearching available rides...", Toast.LENGTH_LONG).show();
+    @Override
+    protected void onNavigationSetup() {
+        showMenuButton();
     }
 
     @Override
     public void onBackPressed() {
         Toast.makeText(this, "Press back again to exit", Toast.LENGTH_SHORT).show();
-    }
-
-    // -----------------------------------------------------------------------------------------
-    // Implement required abstract hook from BaseActivity
-    // -----------------------------------------------------------------------------------------
-    @Override
-    protected void onNavigationSetup() {
-        // Show menu (hamburger) button
-        showMenuButton();
-        // ❌ No toolbar title here → Dashboard stays clean
     }
 }
