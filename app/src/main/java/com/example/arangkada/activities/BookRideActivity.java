@@ -192,6 +192,38 @@ public class BookRideActivity extends AppCompatActivity {
                         tripNames.add(formattedDate);
                     }
 
+                    // 🔹 Handle empty trips
+                    if (tripNames.isEmpty()) {
+                        tripNames.add("No available schedule");
+                        ArrayAdapter<String> emptyAdapter = new ArrayAdapter<>(
+                                this,
+                                android.R.layout.simple_spinner_item,
+                                tripNames
+                        );
+                        emptyAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                        spinnerTrips.setAdapter(emptyAdapter);
+                        spinnerTrips.setEnabled(false);
+                        layoutTripDetails.setVisibility(View.GONE);
+
+                        // 🔹 Disable booking inputs when no available schedule
+                        etRegularCount.setEnabled(false);
+                        etStudentCount.setEnabled(false);
+                        etSeniorCount.setEnabled(false);
+                        btnBookNow.setEnabled(false);
+                        etRegularCount.setText("0");
+                        etStudentCount.setText("0");
+                        etSeniorCount.setText("0");
+                        tvTotalFare.setText("Total Fare: ₱0");
+                        return;
+                    } else {
+                        spinnerTrips.setEnabled(true);
+                        // Re-enable inputs if trips exist
+                        etRegularCount.setEnabled(true);
+                        etStudentCount.setEnabled(true);
+                        etSeniorCount.setEnabled(true);
+                        btnBookNow.setEnabled(true);
+                    }
+
                     ArrayAdapter<String> adapter = new ArrayAdapter<>(
                             this,
                             android.R.layout.simple_spinner_item,
