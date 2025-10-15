@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -14,60 +15,136 @@
         android:padding="24dp"
         android:gravity="center_vertical">
 
-        <!-- Left: Title & Subtitle -->
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
+    <!-- Left: Title & Subtitle -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Booking History"
-                android:textColor="@color/white"
-                android:textSize="28sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="View most recent booking history"
-                android:textColor="@color/white"
-                android:textSize="16sp"
-                android:alpha="0.9" />
-        </LinearLayout>
-
-        <!-- Right: Clear History Button -->
-        <Button
-            android:id="@+id/btnClearHistory"
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Clear"
-            android:backgroundTint="@color/secondary_color"
+            android:text="Booking History"
             android:textColor="@color/white"
-            android:visibility="gone" />
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="View most recent booking history"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:alpha="0.9" />
     </LinearLayout>
 
-    <!-- Empty message -->
-    <TextView
-        android:id="@+id/tvEmpty"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="No booking history."
-        android:textSize="16sp"
-        android:gravity="center"
-        android:padding="16dp"
-        android:visibility="gone"
-        android:textColor="@color/text_primary" />
+    <!-- Right: Select Button -->
+    <Button
+        android:id="@+id/btnSelect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select"
+        android:backgroundTint="@color/secondary_color"
+        android:textColor="@color/white"
+        android:visibility="gone" />
+</LinearLayout>
 
     <!-- RecyclerView -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerTrips"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:padding="16dp"
-        android:clipToPadding="false"/>
+<androidx.recyclerview.widget.RecyclerView
+android:id="@+id/recyclerTrips"
+android:layout_width="match_parent"
+android:layout_height="0dp"
+android:layout_weight="1"
+android:padding="16dp"
+android:clipToPadding="false"/>
+
+    <!-- Empty message -->
+<TextView
+android:id="@+id/tvEmpty"
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+android:text="No booking history."
+android:textSize="16sp"
+android:gravity="center"
+android:padding="16dp"
+android:visibility="gone"
+android:textColor="@color/text_primary" />
+
+    <!-- Bottom Action Bar (slides up from bottom when Select is active) -->
+<LinearLayout
+android:id="@+id/bottomActionBar"
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+android:orientation="horizontal"
+android:padding="12dp"
+android:gravity="center_vertical"
+android:background="@color/background_card"
+android:elevation="8dp"
+android:visibility="gone">
+
+<Button
+    android:id="@+id/btnArchiveAction"
+    android:layout_width="0dp"
+    android:layout_weight="1"
+    android:layout_height="wrap_content"
+    android:text="Archive All"
+    android:backgroundTint="@color/secondary_color"
+    android:textColor="@color/white"
+    android:layout_marginEnd="6dp"/>
+
+<Button
+    android:id="@+id/btnDeleteAction"
+    android:layout_width="0dp"
+    android:layout_weight="1"
+    android:layout_height="wrap_content"
+    android:text="Delete All"
+    android:backgroundTint="@android:color/holo_red_dark"
+    android:textColor="@color/white"
+    android:layout_marginEnd="6dp"/>
+
+<Button
+    android:id="@+id/btnCancelAction"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Cancel"
+    android:backgroundTint="@android:color/darker_gray"
+    android:textColor="@color/white"/>
 </LinearLayout>
+
+    <!-- Bottom pagination footer -->
+<LinearLayout
+android:layout_width="match_parent"
+android:layout_height="56dp"
+android:orientation="horizontal"
+android:paddingLeft="24dp"
+android:paddingRight="24dp"
+android:gravity="center_vertical"
+android:background="@color/background_card">
+
+<Button
+    android:id="@+id/btnPrevPage"
+    android:layout_width="48dp"
+    android:layout_height="40dp"
+    android:text="&lt;"
+    android:visibility="gone"/>
+
+<TextView
+    android:id="@+id/tvPageIndicator"
+    android:layout_width="0dp"
+    android:layout_weight="1"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:text="1 / 1"
+    android:textStyle="bold"/>
+
+<Button
+    android:id="@+id/btnNextPage"
+    android:layout_width="48dp"
+    android:layout_height="40dp"
+    android:text="&gt;"
+    android:visibility="gone"/>
+</LinearLayout>
+
+    </LinearLayout>

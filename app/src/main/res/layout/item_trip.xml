@@ -13,13 +13,41 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Header: User Name + Status -->
+        <!-- Header: Checkbox + Star + User Name + Status -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="#2E8B87"
             android:padding="12dp"
             android:orientation="vertical">
+
+            <!-- Top Row: Checkbox (left) + Star (right corner) -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp">
+
+                <!-- Checkbox (Gmail style - left side) -->
+                <CheckBox
+                    android:id="@+id/checkbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:buttonTint="@android:color/white"
+                    android:visibility="gone" />
+
+                <!-- Star Icon (right corner) -->
+                <ImageView
+                    android:id="@+id/starIcon"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_alignParentEnd="true"
+                    android:src="@drawable/ic_star_outline"
+                    android:padding="4dp"
+                    android:contentDescription="Favorite"
+                    card_view:tint="@color/white" />
+            </RelativeLayout>
 
             <!-- Row: Username + Status -->
             <LinearLayout
@@ -166,7 +194,6 @@
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
-
             <TextView
                 android:id="@+id/tv_total_fare"
                 android:layout_width="wrap_content"
@@ -176,7 +203,6 @@
                 android:textSize="14sp"
                 android:textStyle="bold" />
         </LinearLayout>
-
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>

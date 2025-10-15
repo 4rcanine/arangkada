@@ -44,7 +44,6 @@ public class UserHistoryActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         tvEmpty = findViewById(R.id.tvEmpty);
-        findViewById(R.id.btnClearHistory).setVisibility(View.GONE); // hide clear button
 
         db = FirebaseFirestore.getInstance();
 
