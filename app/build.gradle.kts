@@ -84,6 +84,7 @@ dependencies {
     // Optional: ZXing (if you still need it for older QR use)
     implementation("com.google.zxing:core:3.5.1")
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+    implementation(libs.androidx.activity)
 
     // Testing
     testImplementation(libs.junit)

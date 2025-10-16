@@ -10,29 +10,30 @@
     <!-- Main content area -->
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@color/background_primary">
 
-        <!-- Universal Navigation Bar -->
+        <!-- Modern Navigation Bar with Gradient -->
         <LinearLayout
             android:id="@+id/navigation_container"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:background="@color/primary_color"
+            android:layout_height="64dp"
+            android:background="@drawable/auth_gradient_background"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:elevation="4dp">
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:elevation="8dp">
 
             <!-- Back Button -->
             <ImageView
                 android:id="@+id/btn_back"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
                 android:src="@drawable/ic_arrow_back"
                 android:tint="@color/white"
                 android:background="?android:attr/selectableItemBackgroundBorderless"
-                android:padding="4dp"
+                android:padding="6dp"
                 android:clickable="true"
                 android:focusable="true"
                 android:visibility="gone" />
@@ -45,20 +46,21 @@
                 android:layout_weight="1"
                 android:text="Dashboard"
                 android:textColor="@color/white"
-                android:textSize="20sp"
+                android:textSize="22sp"
                 android:textStyle="bold"
+                android:letterSpacing="0.02"
                 android:layout_marginStart="16dp"
                 android:gravity="start|center_vertical" />
 
-            <!-- Menu Button (3 lines) -->
+            <!-- Menu Button -->
             <ImageView
                 android:id="@+id/btn_menu"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
                 android:src="@drawable/ic_menu"
                 android:tint="@color/white"
                 android:background="?android:attr/selectableItemBackgroundBorderless"
-                android:padding="4dp"
+                android:padding="6dp"
                 android:clickable="true"
                 android:focusable="true" />
 
@@ -69,419 +71,294 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@id/navigation_container">
-        <!-- Dashboard Content -->
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@id/navigation_container"
-            android:background="@color/background_primary"
-            android:fillViewport="true">
 
-            <LinearLayout
+            <ScrollView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:layout_height="match_parent"
+                android:background="@color/background_primary"
+                android:fillViewport="true"
+                android:scrollbars="none">
 
-                <!-- Header Section -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/auth_gradient_background"
-                    android:orientation="vertical"
-                    android:padding="30dp">
+                    android:orientation="vertical">
 
+                    <!-- Modern Header Section with Floating Card Design -->
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <!-- Gradient Background -->
+                        <View
+                            android:id="@+id/header_background"
+                            android:layout_width="match_parent"
+                            android:layout_height="160dp"
+                            android:background="@drawable/auth_gradient_background" />
+
+                        <!-- Floating Welcome Card -->
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="24dp"
+                            android:layout_marginEnd="24dp"
+                            android:layout_marginTop="20dp"
+                            app:cardCornerRadius="24dp"
+                            app:cardElevation="16dp"
+                            app:cardMaxElevation="20dp"
+                            android:backgroundTint="#F5F5F5">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:padding="24dp"
+                                android:gravity="center_vertical">
+
+                                <!-- Welcome Text -->
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:id="@+id/tv_welcome"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Welcome back,"
+                                        android:textColor="@color/text_secondary"
+                                        android:textSize="14sp"
+                                        android:letterSpacing="0.03" />
+
+                                    <TextView
+                                        android:id="@+id/tv_user_name"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Loading..."
+                                        android:textColor="@color/text_primary"
+                                        android:textSize="26sp"
+                                        android:textStyle="bold"
+                                        android:letterSpacing="-0.01"
+                                        android:layout_marginTop="4dp" />
+
+                                </LinearLayout>
+
+                                <!-- Notification Icon in Circle -->
+                                <RelativeLayout
+                                    android:layout_width="56dp"
+                                    android:layout_height="56dp">
+
+                                    <View
+                                        android:layout_width="56dp"
+                                        android:layout_height="56dp"
+                                        android:background="@drawable/notification_badge"
+                                        android:backgroundTint="@color/primary_color"
+                                        android:alpha="0.1" />
+
+                                    <ImageView
+                                        android:id="@+id/iv_notifications"
+                                        android:layout_width="28dp"
+                                        android:layout_height="28dp"
+                                        android:layout_centerInParent="true"
+                                        android:src="@drawable/ic_notifications"
+                                        android:tint="@color/primary_color"
+                                        android:background="?android:attr/selectableItemBackgroundBorderless"
+                                        android:padding="2dp" />
+
+                                    <ImageView
+                                        android:id="@+id/iv_notification_badge"
+                                        android:layout_width="10dp"
+                                        android:layout_height="10dp"
+                                        android:layout_alignTop="@id/iv_notifications"
+                                        android:layout_alignEnd="@id/iv_notifications"
+                                        android:layout_marginTop="2dp"
+                                        android:layout_marginEnd="2dp"
+                                        android:background="@drawable/notification_badge"
+                                        android:backgroundTint="#FF4444"
+                                        android:visibility="gone" />
+
+                                </RelativeLayout>
+
+                            </LinearLayout>
+
+                        </androidx.cardview.widget.CardView>
+
+                    </RelativeLayout>
+
+                    <!-- Your Trips Section - Modern Card -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal">
+                        android:orientation="vertical"
+                        android:paddingStart="24dp"
+                        android:paddingEnd="24dp"
+                        android:paddingTop="28dp"
+                        android:paddingBottom="12dp">
 
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:id="@+id/tv_welcome"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Welcome back,"
-                                android:textColor="@color/white"
-                                android:textSize="16sp" />
-
-                            <TextView
-                                android:id="@+id/tv_user_name"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Loading..."
-                                android:textColor="@color/white"
-                                android:textSize="24sp"
-                                android:textStyle="bold" />
-
-                        </LinearLayout>
-
-                        <RelativeLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content">
-
-                            <ImageView
-                                android:id="@+id/iv_notifications"
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:src="@drawable/ic_notifications"
-                                android:background="?android:attr/selectableItemBackgroundBorderless"
-                                android:padding="4dp" />
-
-                            <ImageView
-                                android:id="@+id/iv_notification_badge"
-                                android:layout_width="12dp"
-                                android:layout_height="12dp"
-                                android:layout_alignTop="@id/iv_notifications"
-                                android:layout_alignEnd="@id/iv_notifications"
-                                android:background="@drawable/notification_badge"
-                                android:visibility="gone" />
-
-                        </RelativeLayout>
-
-                    </LinearLayout>
-
-                </LinearLayout>
-
-                <!-- Your Trips Section -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
-
-                    <TextView
-                        android:id="@+id/tv_trip_section_title"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Your Trips"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/text_primary"
-                        android:layout_marginBottom="16dp" />
-
-                    <androidx.cardview.widget.CardView
-                        android:id="@+id/card_trip_info"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="6dp"
-                        android:backgroundTint="@color/background_card"
-                        android:layout_marginBottom="12dp">
-
+                        <!-- Section Header -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="20dp">
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="16dp">
 
+                            <View
+                                android:layout_width="4dp"
+                                android:layout_height="24dp"
+                                android:background="@color/primary_color"
+                                android:layout_marginEnd="12dp" />
 
-                            <!-- Trip Title -->
                             <TextView
-                                android:id="@+id/tv_next_trip_title"
-                                android:layout_width="wrap_content"
+                                android:id="@+id/tv_trip_section_title"
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
                                 android:layout_height="wrap_content"
-                                android:text="Your next trip"
-                                android:textSize="14sp"
-                                android:textColor="@color/text_secondary"
-                                android:layout_marginBottom="4dp" />
-
-                            <!-- Route -->
-                            <TextView
-                                android:id="@+id/tv_next_trip_route"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Loading trip..."
-                                android:textSize="18sp"
+                                android:text="Your Trips"
+                                android:textSize="22sp"
                                 android:textStyle="bold"
                                 android:textColor="@color/text_primary"
-                                android:layout_marginBottom="4dp" />
-
-                            <!-- Date -->
-                            <TextView
-                                android:id="@+id/tv_next_trip_date"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text=""
-                                android:textSize="13sp"
-                                android:textColor="@color/text_secondary"
-                                android:layout_marginBottom="6dp" />
-
-                            <!-- Total Fare -->
-                            <TextView
-                                android:id="@+id/tv_total_fare"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text=""
-                                android:textSize="13sp"
-                                android:textColor="@color/text_secondary" />
-
-                            <!-- Status Chip -->
-                            <TextView
-                                android:id="@+id/tv_trip_status"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="10dp"
-                                android:paddingHorizontal="14dp"
-                                android:paddingVertical="6dp"
-                                android:text="Confirmed"
-                                android:textColor="@android:color/white"
-                                android:textStyle="bold"
-                                android:textSize="12sp"
-                                android:background="@drawable/bg_status_confirmed"
-                                android:layout_gravity="start"
-                                android:visibility="gone"
-                                android:elevation="3dp"
-                                android:clipToOutline="true" />
-
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/btn_view_qr"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="12dp"
-                                android:layout_marginStart="10dp"
-                                android:layout_marginEnd="10dp"
-                                android:paddingVertical="12dp"
-                                android:text="View QR"
-                                android:textAllCaps="false"
-                                android:textStyle="bold"
-                                android:textSize="15sp"
-                                android:visibility="gone"
-                                app:icon="@drawable/ic_qr"
-                                app:iconGravity="textStart"
-                                app:iconPadding="10dp"
-                                app:cornerRadius="12dp"
-                                app:elevation="4dp"
-                                app:backgroundTint="@color/teal_700"
-                                android:textColor="@android:color/white"/>
-
-
-
+                                android:letterSpacing="-0.01" />
 
                         </LinearLayout>
-                    </androidx.cardview.widget.CardView>
-                </LinearLayout>
 
-                <!-- Main Features Grid -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Main Features"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/text_primary"
-                        android:layout_marginBottom="16dp" />
-
-                    <!-- First Row -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:weightSum="2"
-                        android:layout_marginBottom="16dp">
-
+                        <!-- Trip Info Card - Enhanced Design -->
                         <androidx.cardview.widget.CardView
-                            android:id="@+id/card_book_ride"
-                            android:layout_width="0dp"
-                            android:layout_height="120dp"
-                            android:layout_weight="1"
-                            android:layout_marginEnd="8dp"
-                            app:cardCornerRadius="12dp"
-                            app:cardElevation="4dp"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:foreground="?android:attr/selectableItemBackground">
+                            android:id="@+id/card_trip_info"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            app:cardCornerRadius="20dp"
+                            app:cardElevation="12dp"
+                            app:cardMaxElevation="16dp"
+                            android:backgroundTint="#F5F5F5">
 
                             <LinearLayout
                                 android:layout_width="match_parent"
-                                android:layout_height="match_parent"
+                                android:layout_height="wrap_content"
                                 android:orientation="vertical"
-                                android:gravity="center"
-                                android:padding="16dp"
-                                android:background="@color/background_card">
+                                android:padding="24dp">
 
-                                <ImageView
-                                    android:layout_width="40dp"
-                                    android:layout_height="40dp"
-                                    android:src="@drawable/ic_route"
-                                    android:layout_marginBottom="8dp" />
+                                <!-- Trip Header with Status -->
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical"
+                                    android:layout_marginBottom="16dp">
 
+                                    <TextView
+                                        android:id="@+id/tv_next_trip_title"
+                                        android:layout_width="0dp"
+                                        android:layout_weight="1"
+                                        android:layout_height="wrap_content"
+                                        android:text="Upcoming Trip"
+                                        android:textSize="13sp"
+                                        android:textColor="@color/text_secondary"
+                                        android:textStyle="bold"
+                                        android:textAllCaps="true"
+                                        android:letterSpacing="0.08" />
+
+                                    <!-- Status Chip -->
+                                    <TextView
+                                        android:id="@+id/tv_trip_status"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:paddingHorizontal="16dp"
+                                        android:paddingVertical="8dp"
+                                        android:text="Confirmed"
+                                        android:textColor="@android:color/white"
+                                        android:textStyle="bold"
+                                        android:textSize="11sp"
+                                        android:background="@drawable/bg_status_confirmed"
+                                        android:visibility="gone"
+                                        android:elevation="2dp" />
+
+                                </LinearLayout>
+
+                                <!-- Destination with Icon -->
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical"
+                                    android:layout_marginBottom="12dp">
+
+                                    <ImageView
+                                        android:layout_width="24dp"
+                                        android:layout_height="24dp"
+                                        android:src="@drawable/ic_route"
+                                        android:tint="@color/primary_color"
+                                        android:layout_marginEnd="12dp" />
+
+                                    <TextView
+                                        android:id="@+id/tv_next_trip_route"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Loading trip..."
+                                        android:textSize="20sp"
+                                        android:textStyle="bold"
+                                        android:textColor="@color/text_primary"
+                                        android:letterSpacing="-0.01" />
+
+                                </LinearLayout>
+
+                                <!-- Date & Time -->
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical"
+                                    android:layout_marginBottom="8dp">
+
+                                    <ImageView
+                                        android:layout_width="20dp"
+                                        android:layout_height="20dp"
+                                        android:src="@drawable/ic_history"
+                                        android:tint="@color/text_secondary"
+                                        android:layout_marginEnd="10dp" />
+
+                                    <TextView
+                                        android:id="@+id/tv_next_trip_date"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text=""
+                                        android:textSize="14sp"
+                                        android:textColor="@color/text_secondary" />
+
+                                </LinearLayout>
+
+                                <!-- Total Fare -->
                                 <TextView
+                                    android:id="@+id/tv_total_fare"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Book Ride"
-                                    android:textSize="16sp"
-                                    android:textStyle="bold"
-                                    android:textColor="@color/primary_color"
-                                    android:gravity="center" />
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Find and book"
-                                    android:textSize="12sp"
+                                    android:text=""
+                                    android:textSize="14sp"
                                     android:textColor="@color/text_secondary"
-                                    android:gravity="center" />
+                                    android:layout_marginTop="4dp"
+                                    android:visibility="gone" />
 
-                            </LinearLayout>
-
-                        </androidx.cardview.widget.CardView>
-
-                        <androidx.cardview.widget.CardView
-                            android:id="@+id/card_my_trips"
-                            android:layout_width="0dp"
-                            android:layout_height="120dp"
-                            android:layout_weight="1"
-                            android:layout_marginStart="8dp"
-                            app:cardCornerRadius="12dp"
-                            app:cardElevation="4dp"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:foreground="?android:attr/selectableItemBackground">
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:orientation="vertical"
-                                android:gravity="center"
-                                android:padding="16dp"
-                                android:background="@color/background_card">
-
-                                <ImageView
-                                    android:layout_width="40dp"
-                                    android:layout_height="40dp"
-                                    android:src="@drawable/ic_history"
-                                    android:layout_marginBottom="8dp" />
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="My Trips"
-                                    android:textSize="16sp"
+                                <!-- View QR Button - Modern Style -->
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btn_view_qr"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="56dp"
+                                    android:text="View QR Code"
+                                    android:textAllCaps="false"
                                     android:textStyle="bold"
-                                    android:textColor="@color/primary_color"
-                                    android:gravity="center" />
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="View bookings"
-                                    android:textSize="12sp"
-                                    android:textColor="@color/text_secondary"
-                                    android:gravity="center" />
-
-                            </LinearLayout>
-
-                        </androidx.cardview.widget.CardView>
-
-                    </LinearLayout>
-
-                    <!-- Second Row -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:weightSum="2">
-
-                        <androidx.cardview.widget.CardView
-                            android:id="@+id/card_notifications"
-                            android:layout_width="0dp"
-                            android:layout_height="120dp"
-                            android:layout_weight="1"
-                            android:layout_marginEnd="8dp"
-                            app:cardCornerRadius="12dp"
-                            app:cardElevation="4dp"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:foreground="?android:attr/selectableItemBackground">
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:orientation="vertical"
-                                android:gravity="center"
-                                android:padding="16dp"
-                                android:background="@color/background_card">
-
-                                <ImageView
-                                    android:layout_width="40dp"
-                                    android:layout_height="40dp"
-                                    android:src="@drawable/ic_notifications"
-                                    android:layout_marginBottom="8dp" />
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Notifications"
                                     android:textSize="16sp"
-                                    android:textStyle="bold"
-                                    android:textColor="@color/primary_color"
-                                    android:gravity="center" />
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Updates"
-                                    android:textSize="12sp"
-                                    android:textColor="@color/text_secondary"
-                                    android:gravity="center" />
-
-                            </LinearLayout>
-
-                        </androidx.cardview.widget.CardView>
-
-                        <androidx.cardview.widget.CardView
-                            android:id="@+id/card_profile"
-                            android:layout_width="0dp"
-                            android:layout_height="120dp"
-                            android:layout_weight="1"
-                            android:layout_marginStart="8dp"
-                            app:cardCornerRadius="12dp"
-                            app:cardElevation="4dp"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:foreground="?android:attr/selectableItemBackground">
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:orientation="vertical"
-                                android:gravity="center"
-                                android:padding="16dp"
-                                android:background="@color/background_card">
-
-                                <ImageView
-                                    android:layout_width="40dp"
-                                    android:layout_height="40dp"
-                                    android:src="@drawable/ic_profile"
-                                    android:layout_marginBottom="8dp" />
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Profile"
-                                    android:textSize="16sp"
-                                    android:textStyle="bold"
-                                    android:textColor="@color/primary_color"
-                                    android:gravity="center" />
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Account"
-                                    android:textSize="12sp"
-                                    android:textColor="@color/text_secondary"
-                                    android:gravity="center" />
+                                    android:visibility="gone"
+                                    app:icon="@drawable/ic_qr"
+                                    app:iconGravity="textStart"
+                                    app:iconPadding="12dp"
+                                    app:iconSize="24dp"
+                                    app:cornerRadius="16dp"
+                                    app:elevation="6dp"
+                                    app:backgroundTint="@color/teal_700"
+                                    android:textColor="@android:color/white"
+                                    android:letterSpacing="0.02"
+                                    android:stateListAnimator="@null" />
 
                             </LinearLayout>
 
@@ -489,34 +366,335 @@
 
                     </LinearLayout>
 
-                </LinearLayout>
-
-                <!-- Recent Activity Section -->
-
-
-                <!-- Logout Button -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
-
-                    <Button
-                        android:id="@+id/btn_logout"
+                    <!-- Main Features Grid - Enhanced Cards -->
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="48dp"
-                        android:text="Logout"
-                        android:textSize="16sp"
-                        android:textColor="@color/white"
-                        android:background="@drawable/button_logout"
-                        android:elevation="0dp"
-                        android:visibility="gone" />
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingStart="24dp"
+                        android:paddingEnd="24dp"
+                        android:paddingTop="16dp"
+                        android:paddingBottom="24dp">
+
+                        <!-- Section Header -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="16dp">
+
+                            <View
+                                android:layout_width="4dp"
+                                android:layout_height="24dp"
+                                android:background="@color/primary_color"
+                                android:layout_marginEnd="12dp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Quick Actions"
+                                android:textSize="22sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/text_primary"
+                                android:letterSpacing="-0.01" />
+
+                        </LinearLayout>
+
+                        <!-- First Row - Modern Cards -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:weightSum="2"
+                            android:layout_marginBottom="16dp">
+
+                            <!-- Book Ride Card -->
+                            <androidx.cardview.widget.CardView
+                                android:id="@+id/card_book_ride"
+                                android:layout_width="0dp"
+                                android:layout_height="140dp"
+                                android:layout_weight="1"
+                                android:layout_marginEnd="8dp"
+                                app:cardCornerRadius="20dp"
+                                app:cardElevation="10dp"
+                                app:cardMaxElevation="14dp"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:foreground="?android:attr/selectableItemBackground"
+                                android:backgroundTint="#F5F5F5">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:orientation="vertical"
+                                    android:gravity="center"
+                                    android:padding="20dp">
+
+                                    <!-- Icon in Circle Background -->
+                                    <RelativeLayout
+                                        android:layout_width="56dp"
+                                        android:layout_height="56dp"
+                                        android:layout_marginBottom="12dp">
+
+                                        <View
+                                            android:layout_width="56dp"
+                                            android:layout_height="56dp"
+                                            android:background="@drawable/notification_badge"
+                                            android:backgroundTint="@color/primary_color"
+                                            android:alpha="0.15" />
+
+                                        <ImageView
+                                            android:layout_width="28dp"
+                                            android:layout_height="28dp"
+                                            android:layout_centerInParent="true"
+                                            android:src="@drawable/ic_route"
+                                            android:tint="@color/primary_color" />
+
+                                    </RelativeLayout>
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Book Ride"
+                                        android:textSize="17sp"
+                                        android:textStyle="bold"
+                                        android:textColor="@color/text_primary"
+                                        android:gravity="center"
+                                        android:layout_marginBottom="4dp" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Find and book"
+                                        android:textSize="12sp"
+                                        android:textColor="@color/text_secondary"
+                                        android:gravity="center" />
+
+                                </LinearLayout>
+
+                            </androidx.cardview.widget.CardView>
+
+                            <!-- My Trips Card -->
+                            <androidx.cardview.widget.CardView
+                                android:id="@+id/card_my_trips"
+                                android:layout_width="0dp"
+                                android:layout_height="140dp"
+                                android:layout_weight="1"
+                                android:layout_marginStart="8dp"
+                                app:cardCornerRadius="20dp"
+                                app:cardElevation="10dp"
+                                app:cardMaxElevation="14dp"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:foreground="?android:attr/selectableItemBackground"
+                                android:backgroundTint="#F5F5F5">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:orientation="vertical"
+                                    android:gravity="center"
+                                    android:padding="20dp">
+
+                                    <!-- Icon in Circle Background -->
+                                    <RelativeLayout
+                                        android:layout_width="56dp"
+                                        android:layout_height="56dp"
+                                        android:layout_marginBottom="12dp">
+
+                                        <View
+                                            android:layout_width="56dp"
+                                            android:layout_height="56dp"
+                                            android:background="@drawable/notification_badge"
+                                            android:backgroundTint="@color/primary_color"
+                                            android:alpha="0.15" />
+
+                                        <ImageView
+                                            android:layout_width="28dp"
+                                            android:layout_height="28dp"
+                                            android:layout_centerInParent="true"
+                                            android:src="@drawable/ic_history"
+                                            android:tint="@color/primary_color" />
+
+                                    </RelativeLayout>
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="My Trips"
+                                        android:textSize="17sp"
+                                        android:textStyle="bold"
+                                        android:textColor="@color/text_primary"
+                                        android:gravity="center"
+                                        android:layout_marginBottom="4dp" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="View bookings"
+                                        android:textSize="12sp"
+                                        android:textColor="@color/text_secondary"
+                                        android:gravity="center" />
+
+                                </LinearLayout>
+
+                            </androidx.cardview.widget.CardView>
+
+                        </LinearLayout>
+
+                        <!-- Second Row -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:weightSum="2">
+
+                            <!-- Notifications Card -->
+                            <androidx.cardview.widget.CardView
+                                android:id="@+id/card_notifications"
+                                android:layout_width="0dp"
+                                android:layout_height="140dp"
+                                android:layout_weight="1"
+                                android:layout_marginEnd="8dp"
+                                app:cardCornerRadius="20dp"
+                                app:cardElevation="10dp"
+                                app:cardMaxElevation="14dp"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:foreground="?android:attr/selectableItemBackground"
+                                android:backgroundTint="#F5F5F5">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:orientation="vertical"
+                                    android:gravity="center"
+                                    android:padding="20dp">
+
+                                    <!-- Icon in Circle Background -->
+                                    <RelativeLayout
+                                        android:layout_width="56dp"
+                                        android:layout_height="56dp"
+                                        android:layout_marginBottom="12dp">
+
+                                        <View
+                                            android:layout_width="56dp"
+                                            android:layout_height="56dp"
+                                            android:background="@drawable/notification_badge"
+                                            android:backgroundTint="@color/primary_color"
+                                            android:alpha="0.15" />
+
+                                        <ImageView
+                                            android:layout_width="28dp"
+                                            android:layout_height="28dp"
+                                            android:layout_centerInParent="true"
+                                            android:src="@drawable/ic_notifications"
+                                            android:tint="@color/primary_color" />
+
+                                    </RelativeLayout>
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Notifications"
+                                        android:textSize="17sp"
+                                        android:textStyle="bold"
+                                        android:textColor="@color/text_primary"
+                                        android:gravity="center"
+                                        android:layout_marginBottom="4dp" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Updates"
+                                        android:textSize="12sp"
+                                        android:textColor="@color/text_secondary"
+                                        android:gravity="center" />
+
+                                </LinearLayout>
+
+                            </androidx.cardview.widget.CardView>
+
+                            <!-- Profile Card -->
+                            <androidx.cardview.widget.CardView
+                                android:id="@+id/card_profile"
+                                android:layout_width="0dp"
+                                android:layout_height="140dp"
+                                android:layout_weight="1"
+                                android:layout_marginStart="8dp"
+                                app:cardCornerRadius="20dp"
+                                app:cardElevation="10dp"
+                                app:cardMaxElevation="14dp"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:foreground="?android:attr/selectableItemBackground"
+                                android:backgroundTint="#F5F5F5">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:orientation="vertical"
+                                    android:gravity="center"
+                                    android:padding="20dp">
+
+                                    <!-- Icon in Circle Background -->
+                                    <RelativeLayout
+                                        android:layout_width="56dp"
+                                        android:layout_height="56dp"
+                                        android:layout_marginBottom="12dp">
+
+                                        <View
+                                            android:layout_width="56dp"
+                                            android:layout_height="56dp"
+                                            android:background="@drawable/notification_badge"
+                                            android:backgroundTint="@color/primary_color"
+                                            android:alpha="0.15" />
+
+                                        <ImageView
+                                            android:layout_width="28dp"
+                                            android:layout_height="28dp"
+                                            android:layout_centerInParent="true"
+                                            android:src="@drawable/ic_profile"
+                                            android:tint="@color/primary_color" />
+
+                                    </RelativeLayout>
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Profile"
+                                        android:textSize="17sp"
+                                        android:textStyle="bold"
+                                        android:textColor="@color/text_primary"
+                                        android:gravity="center"
+                                        android:layout_marginBottom="4dp" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Account"
+                                        android:textSize="12sp"
+                                        android:textColor="@color/text_secondary"
+                                        android:gravity="center" />
+
+                                </LinearLayout>
+
+                            </androidx.cardview.widget.CardView>
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <!-- Spacer for better scrolling -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="32dp" />
 
                 </LinearLayout>
 
-            </LinearLayout>
+            </ScrollView>
 
-        </ScrollView>
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     </RelativeLayout>

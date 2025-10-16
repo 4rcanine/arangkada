@@ -3,8 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.arangkada">
 
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
 
-    <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-permission android:name="android.permission.CAMERA" />
 
     <application
@@ -17,6 +19,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Arangkada.NoActionBar"
         tools:targetApi="31">
+        <activity
+            android:name=".activities.AdminProfileActivity"
+            android:exported="false" />
         <activity
             android:name=".activities.QRScannerActivity"
             android:exported="false" />
@@ -70,7 +75,7 @@
             android:name=".MainActivity"
             android:exported="false"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Arangkada" /> <!-- Future activities  -->
+            android:theme="@style/Theme.Arangkada" /> <!-- Future activities -->
         <activity
             android:name=".activities.AuthActivity"
             android:exported="false"
