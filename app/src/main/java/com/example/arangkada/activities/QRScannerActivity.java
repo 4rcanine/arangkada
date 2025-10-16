@@ -69,7 +69,7 @@ public class QRScannerActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
         cameraExecutor = Executors.newSingleThreadExecutor();
 
-        // Request camera permission
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_GRANTED) {
             Log.d(TAG, "Camera permission already granted");
@@ -105,28 +105,28 @@ public class QRScannerActivity extends AppCompatActivity {
             return;
         }
 
-        // Unbind all use cases before rebinding
+
         cameraProvider.unbindAll();
 
-        // Select back camera
+
         CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
 
-        // Build the preview use case
+
         Preview preview = new Preview.Builder()
                 .build();
 
-        // Connect the preview to the PreviewView
+
         preview.setSurfaceProvider(previewView.getSurfaceProvider());
         Log.d(TAG, "Preview surface provider set");
 
-        // Build barcode scanner options
+
         BarcodeScannerOptions options = new BarcodeScannerOptions.Builder()
                 .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
                 .build();
 
         BarcodeScanner scanner = BarcodeScanning.getClient(options);
 
-        // Build image analysis use case
+
         ImageAnalysis imageAnalysis = new ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build();
@@ -136,7 +136,7 @@ public class QRScannerActivity extends AppCompatActivity {
         });
 
         try {
-            // Bind use cases to camera
+
             Camera camera = cameraProvider.bindToLifecycle(
                     this,
                     cameraSelector,
@@ -245,7 +245,7 @@ public class QRScannerActivity extends AppCompatActivity {
 
             tvStatus.setText(status != null ? status : "Pending");
 
-            // Departure formatting
+
             Object departureObj = doc.get("departure");
             String formattedDeparture = "N/A";
             if (departureObj instanceof com.google.firebase.Timestamp) {
@@ -267,12 +267,12 @@ public class QRScannerActivity extends AppCompatActivity {
 
             AlertDialog dialog = builder.create();
 
-            // FIX: Make dialog background transparent to show rounded corners
+
             if (dialog.getWindow() != null) {
                 dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
             }
 
-            // Fetch user name
+
             if (userId != null) {
                 db.collection("accounts").document(userId)
                         .get()
@@ -284,7 +284,7 @@ public class QRScannerActivity extends AppCompatActivity {
                 txtUser.setText("Unknown User");
             }
 
-            // Fetch destination name
+
             if (destinationId != null) {
                 db.collection("destinations").document(destinationId)
                         .get()
@@ -335,7 +335,7 @@ public class QRScannerActivity extends AppCompatActivity {
 
             AlertDialog dialog = builder.create();
 
-            // FIX: Make dialog background transparent
+
             if (dialog.getWindow() != null) {
                 dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
             }

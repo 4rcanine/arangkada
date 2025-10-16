@@ -75,7 +75,7 @@ public class ManageReservationsActivity extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
 
-        // Load last saved page number
+
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         currentPage = prefs.getInt(KEY_CURRENT_PAGE, 1);
 
@@ -104,7 +104,7 @@ public class ManageReservationsActivity extends AppCompatActivity {
         });
     }
 
-    // Save current page to SharedPreferences
+
     private void saveCurrentPage() {
         SharedPreferences.Editor editor = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit();
         editor.putInt(KEY_CURRENT_PAGE, currentPage);
@@ -178,7 +178,7 @@ public class ManageReservationsActivity extends AppCompatActivity {
         picker.show();
     }
 
-    // loadAllBookings - keep filters & page
+
     private void loadAllBookings() {
         loadAllBookings(true);
     }
@@ -212,9 +212,9 @@ public class ManageReservationsActivity extends AppCompatActivity {
                                             booking.setDestinationId(tripDoc.getString("destinationId"));
                                         }
                                         allBookings.add(booking);
-                                        // Apply filters only once after all bookings loaded
+
                                         if (allBookings.size() == tempList.size()) {
-                                            if (resetPage) currentPage = 1; // reset only if requested
+                                            if (resetPage) currentPage = 1;
                                             applyFilters(false);
                                         }
                                     });
@@ -258,11 +258,11 @@ public class ManageReservationsActivity extends AppCompatActivity {
 
         totalPages = Math.max(1, (int) Math.ceil((double) filteredBookings.size() / ITEMS_PER_PAGE));
 
-        // Ensure currentPage is valid
+
         if (currentPage > totalPages) currentPage = totalPages;
         if (currentPage < 1) currentPage = 1;
 
-        saveCurrentPage(); // persist after filtering
+        saveCurrentPage();
         updatePagination();
     }
 

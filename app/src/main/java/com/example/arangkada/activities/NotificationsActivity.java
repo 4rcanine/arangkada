@@ -12,13 +12,13 @@ public class NotificationsActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notifications);
 
-        setupNavigation();   // initialize drawer
-        showBackButton();    // show back arrow instead of hamburger
+        setupNavigation();
+        showBackButton();
         setToolbarTitle("Notifications");
     }
 
     @Override
     protected void onNavigationSetup() {
-        // no extra nav setup for now
+
     }
 }

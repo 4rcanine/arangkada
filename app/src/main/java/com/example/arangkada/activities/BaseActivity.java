@@ -81,7 +81,7 @@ public abstract class BaseActivity extends AppCompatActivity implements Navigati
         }
     }
 
-    // 🔹 Helper to set toolbar text (optional: child activities can call this)
+    // helper
     protected void setToolbarTitle(String title) {
         TextView toolbarTitle = findViewById(R.id.toolbar_title);
         if (toolbarTitle != null) {
@@ -152,6 +152,6 @@ public abstract class BaseActivity extends AppCompatActivity implements Navigati
         }
     }
 
-    // 🔹 Abstract hook for child activities
+
     protected abstract void onNavigationSetup();
 }

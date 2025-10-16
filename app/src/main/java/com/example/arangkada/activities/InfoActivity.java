@@ -44,7 +44,7 @@ public class InfoActivity extends AppCompatActivity {
             }
         });
 
-        // Optional: Allow clicking on the logo or app name to proceed
+
         logoImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -65,10 +65,10 @@ public class InfoActivity extends AppCompatActivity {
         Intent intent = new Intent(InfoActivity.this, AuthActivity.class);
         startActivity(intent);
 
-        // Optional: Add transition animation
+
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
 
-        // Optional: Finish this activity so user can't go back with back button
+
         finish();
     }
 

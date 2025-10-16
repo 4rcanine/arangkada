@@ -18,7 +18,7 @@ public class TermsAndConditionsActivity extends BaseActivity {
 
         setupNavigation();
 
-        // Inflate our custom content into BaseActivity’s content_frame
+
         ViewGroup contentFrame = findViewById(R.id.content_frame);
         View inflated = LayoutInflater.from(this).inflate(R.layout.activity_terms_conditions, contentFrame, false);
         contentFrame.removeAllViews();

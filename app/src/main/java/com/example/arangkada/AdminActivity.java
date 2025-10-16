@@ -59,7 +59,7 @@ public class AdminActivity extends BaseActivity {
             loadAdminName(user.getUid());
         }
 
-        // Set card UI (icons + titles)
+        // Set card UI
         setAdminCard(cardReservations, R.drawable.ic_reservations, "Manage Reservations");
         setAdminCard(cardSchedule, R.drawable.ic_schedule, "Manage Van Schedules");
         setAdminCard(cardTerminals, R.drawable.ic_terminal, "Manage Terminals");

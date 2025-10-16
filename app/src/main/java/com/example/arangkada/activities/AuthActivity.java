@@ -109,7 +109,7 @@ public class AuthActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
-        // Switch between modes
+
         switchModeTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -124,7 +124,7 @@ public class AuthActivity extends AppCompatActivity {
             }
         });
 
-        // Login button
+        // Login
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -132,7 +132,7 @@ public class AuthActivity extends AppCompatActivity {
             }
         });
 
-        // Signup button
+        // Signup
         signupButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -140,7 +140,7 @@ public class AuthActivity extends AppCompatActivity {
             }
         });
 
-        // Admin Signup button
+        // ignore pls
         adminSignupButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -237,7 +237,7 @@ public class AuthActivity extends AppCompatActivity {
                     if (task.isSuccessful()) {
                         FirebaseUser user = mAuth.getCurrentUser();
                         if (user != null) {
-                            checkUserType(user.getUid()); // 🔹 check Firestore user type
+                            checkUserType(user.getUid());
                         }
                     } else {
                         Toast.makeText(AuthActivity.this, "Login failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
@@ -300,7 +300,7 @@ public class AuthActivity extends AppCompatActivity {
             return;
         }
 
-        // Create Firebase Authentication user
+        // uhh firebase auth
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
@@ -312,7 +312,6 @@ public class AuthActivity extends AppCompatActivity {
 
                         final String uid = user.getUid();
 
-                        // Prepare user data to save in Firestore
                         Map<String, Object> userData = new HashMap<>();
                         userData.put("userId", uid);
                         userData.put("name", fullName);
@@ -321,7 +320,7 @@ public class AuthActivity extends AppCompatActivity {
                         userData.put("userType", isAdmin ? "admin" : "user");
                         userData.put("isAdmin", isAdmin);
 
-                        // Choose collection based on user type
+
                         String collection = isAdmin ? "admins" : "accounts";
 
                         db.collection(collection)

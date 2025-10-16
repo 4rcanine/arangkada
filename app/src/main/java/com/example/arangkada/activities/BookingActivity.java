@@ -71,12 +71,12 @@ public class BookingActivity extends AppCompatActivity {
         confirmBookingButton = findViewById(R.id.btn_confirm_booking);
         cancelButton = findViewById(R.id.btn_cancel);
 
-        // Passenger input fields
+        // Passenger input
         regularCountEditText = findViewById(R.id.et_regular_count);
         studentCountEditText = findViewById(R.id.et_student_count);
         seniorCountEditText = findViewById(R.id.et_senior_count);
 
-        // Payment method radio buttons
+        // Payment method
         paymentMethodGroup = findViewById(R.id.rg_payment_method);
         rbCash = findViewById(R.id.rb_cash);
         rbGCash = findViewById(R.id.rb_gcash);

@@ -90,7 +90,7 @@ public class NewTerminalActivity extends AppCompatActivity {
             return;
         }
 
-        // Combine Terminal and Destination
+
         String routeName = terminal + " - " + destination;
 
         // Prepare data
@@ -102,7 +102,7 @@ public class NewTerminalActivity extends AppCompatActivity {
         route.put("seniorFare", seniorFare);
         route.put("travelTime", travelTime);
 
-        // Save to Firestore (Auto-ID)
+
         db.collection("destinations")
                 .add(route)
                 .addOnSuccessListener(documentReference ->

@@ -50,7 +50,7 @@
                 android:gravity="start|center_vertical" />
 
 
-            <!-- Menu Button (3 lines) -->
+
             <ImageView
                 android:id="@+id/btn_menu"
                 android:layout_width="32dp"
@@ -64,7 +64,7 @@
 
         </LinearLayout>
 
-        <!-- Content Frame - This will be replaced by child activities -->
+
         <FrameLayout
             android:id="@+id/content_frame"
             android:layout_width="match_parent"

@@ -85,7 +85,7 @@ public class CurrentTerminalActivity extends AppCompatActivity {
                         String name = doc.getString("name");
                         String location = doc.getString("location");
 
-                        // Safely handle null values
+
                         Long regularFareLong = doc.getLong("regularFare");
                         int regularFare = (regularFareLong != null) ? regularFareLong.intValue() : 0;
 
@@ -127,7 +127,7 @@ public class CurrentTerminalActivity extends AppCompatActivity {
         EditText etSeniorFare = view.findViewById(R.id.etSeniorFare);
         EditText etTravelTime = view.findViewById(R.id.etTravelTime);
 
-        // Prefill values
+
         etName.setText(terminal.getName());
         etLocation.setText(terminal.getLocation());
         etRegularFare.setText(String.valueOf(terminal.getRegularFare()));
@@ -158,7 +158,7 @@ public class CurrentTerminalActivity extends AppCompatActivity {
         builder.show();
     }
 
-    // ---------------- MODEL CLASS ----------------
+
     public static class Terminal {
         private String id;
         private String name;
@@ -168,7 +168,7 @@ public class CurrentTerminalActivity extends AppCompatActivity {
         private int seniorFare;
         private int travelTime;
 
-        public Terminal() {} // Required for Firestore
+        public Terminal() {}
 
         public Terminal(String id, String name, String location, int regularFare, int studentFare, int seniorFare, int travelTime) {
             this.id = id;
@@ -189,7 +189,7 @@ public class CurrentTerminalActivity extends AppCompatActivity {
         public int getTravelTime() { return travelTime; }
     }
 
-    // ---------------- ADAPTER CLASS ----------------
+
     public static class TerminalAdapter extends RecyclerView.Adapter<TerminalAdapter.TerminalViewHolder> {
 
         private List<Terminal> terminalList;

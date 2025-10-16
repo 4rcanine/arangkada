@@ -39,7 +39,7 @@ public class ProfileActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
 
         initializeViews();
-        loadUserData(); // <-- Load from Firestore
+        loadUserData();
         setupClickListeners();
     }
 

@@ -33,7 +33,7 @@ public class CurrentVanScheduleActivity extends AppCompatActivity {
     private Button btnCreateVanSchedule;
     private FirebaseFirestore db;
 
-    // Mixed list: header strings + HashMap trip objects
+
     private final List<Object> items = new ArrayList<>();
     private final TripAdapter adapter = new TripAdapter();
 
@@ -66,10 +66,7 @@ public class CurrentVanScheduleActivity extends AppCompatActivity {
         loadTrips();
     }
 
-    /**
-     * Load trips for the current day, split into upcoming and completed,
-     * and populate "items" with headers + trip HashMaps.
-     */
+
     private void loadTrips() {
         showLoading(true);
 
@@ -129,7 +126,7 @@ public class CurrentVanScheduleActivity extends AppCompatActivity {
                     upcomingTrips.sort((a, b) -> ((Timestamp) a.get("departure")).compareTo((Timestamp) b.get("departure")));
                     completedToday.sort((a, b) -> ((Timestamp) b.get("departure")).compareTo((Timestamp) a.get("departure")));
 
-                    // Add headers & trips
+
                     if (!tripsToday.isEmpty()) {
                         items.add("Trips Today");
                         items.addAll(tripsToday);
@@ -155,7 +152,7 @@ public class CurrentVanScheduleActivity extends AppCompatActivity {
 
     private void showLoading(boolean show) {
         progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
-        // stop swipe refresh if active
+
         if (!show && swipeRefreshLayout != null && swipeRefreshLayout.isRefreshing()) {
             swipeRefreshLayout.setRefreshing(false);
         }
@@ -201,7 +198,7 @@ public class CurrentVanScheduleActivity extends AppCompatActivity {
             return items.size();
         }
 
-        // Header ViewHolder
+
         class HeaderVH extends RecyclerView.ViewHolder {
             TextView tvHeader;
             HeaderVH(@NonNull View itemView) {
@@ -210,7 +207,7 @@ public class CurrentVanScheduleActivity extends AppCompatActivity {
             }
         }
 
-        // Trip ViewHolder
+
         class TripVH extends RecyclerView.ViewHolder {
             TextView tvVanId, tvDestination, tvDeparture, tvSeats, tvStatus;
             Button btnEdit, btnDelete, btnAddWalkIn;
@@ -268,7 +265,7 @@ public class CurrentVanScheduleActivity extends AppCompatActivity {
             holder.tvStatus.setText("N/A");
         }
 
-        // Load destination name
+
         if (destinationId != null) {
             db.collection("destinations").document(destinationId).get()
                     .addOnSuccessListener(destDoc -> {
@@ -284,7 +281,7 @@ public class CurrentVanScheduleActivity extends AppCompatActivity {
             holder.tvDestination.setText("Unknown");
         }
 
-        // Delete action
+
         holder.btnDelete.setOnClickListener(v -> {
             new AlertDialog.Builder(CurrentVanScheduleActivity.this)
                     .setTitle("Delete Trip")
@@ -316,7 +313,7 @@ public class CurrentVanScheduleActivity extends AppCompatActivity {
                     .show();
         });
 
-        // Show/Hide buttons based on trip status
+
         if (isUpcoming) {
             holder.btnEdit.setVisibility(View.VISIBLE);
             holder.btnAddWalkIn.setVisibility(View.VISIBLE);
@@ -326,11 +323,11 @@ public class CurrentVanScheduleActivity extends AppCompatActivity {
         }
         holder.btnAddWalkIn.setVisibility(View.VISIBLE);
 
-        // Edit Trip dialog (same as before)
-// Edit Trip dialog
-        // --- PUT THIS IN PLACE OF YOUR CURRENT holder.btnEdit.setOnClickListener(...) ---
+
+
+
         holder.btnEdit.setOnClickListener(v -> {
-            // inflate dialog view
+
             View dialogView = LayoutInflater.from(CurrentVanScheduleActivity.this)
                     .inflate(R.layout.dialog_edit_trip, null);
 
@@ -339,11 +336,11 @@ public class CurrentVanScheduleActivity extends AppCompatActivity {
             TextView tvDeparture = dialogView.findViewById(R.id.etDeparture); // clickable textview in your XML
             EditText etSeats = dialogView.findViewById(R.id.etSeats);
 
-            // Prefill fields
+
             etVanId.setText(vanId != null ? vanId : "");
             etSeats.setText(String.valueOf(availableSeats));
 
-            // Calendar to hold chosen departure
+
             final Calendar calDep = Calendar.getInstance();
             if (departure != null) {
                 calDep.setTime(departure.toDate());
@@ -352,7 +349,7 @@ public class CurrentVanScheduleActivity extends AppCompatActivity {
                 tvDeparture.setText("");
             }
 
-            // clicking departure opens DatePicker -> TimePicker
+
             tvDeparture.setOnClickListener(v2 -> {
                 Calendar pickCal = (Calendar) calDep.clone();
                 new DatePickerDialog(CurrentVanScheduleActivity.this,
@@ -408,14 +405,14 @@ public class CurrentVanScheduleActivity extends AppCompatActivity {
                         if (!destNames.isEmpty()) spDestination.setSelection(Math.max(0, selIndex));
                     })
                     .addOnFailureListener(e -> {
-                        // ignore, spinner will be empty
+                        // ignore
                     });
 
-            // Build dialog and override positive button later so we can validate
+
             AlertDialog dialog = new AlertDialog.Builder(CurrentVanScheduleActivity.this)
                     .setTitle("Edit Trip")
                     .setView(dialogView)
-                    .setPositiveButton("Save", null) // we'll override to prevent auto-dismiss
+                    .setPositiveButton("Save", null)
                     .setNegativeButton("Cancel", (d, which) -> d.dismiss())
                     .create();
 
@@ -441,31 +438,31 @@ public class CurrentVanScheduleActivity extends AppCompatActivity {
                         return;
                     }
 
-                    // create firetore Timestamp from calDep
+
                     Timestamp newDepartureTs = new Timestamp(calDep.getTime()); // com.google.firebase.Timestamp
                     String newDestinationId = destIds.get(destPos);
 
-                    // --- THIS IS THE FIX: declare the map BEFORE calling put() ---
+
                     Map<String, Object> updateData = new HashMap<>();
                     updateData.put("vanId", newVanId);
                     updateData.put("destinationId", newDestinationId);
                     updateData.put("departure", newDepartureTs);
                     updateData.put("availableSeats", newSeats);
 
-                    // disable button & show loading state if you want (optional)
+
                     saveBtn.setEnabled(false);
                     showLoading(true);
 
                     db.collection("trips").document(tripId)
                             .update(updateData)
                             .addOnSuccessListener(unused -> {
-                                // update local trip map to reflect changes without reloading everything
+
                                 trip.put("vanId", newVanId);
                                 trip.put("destinationId", newDestinationId);
                                 trip.put("departure", newDepartureTs);
                                 trip.put("availableSeats", newSeats);
 
-                                // find position and notify adapter
+
                                 int pos = items.indexOf(trip);
                                 if (pos >= 0) adapter.notifyItemChanged(pos);
                                 else adapter.notifyDataSetChanged(); // fallback

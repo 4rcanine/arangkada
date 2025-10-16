@@ -34,7 +34,7 @@ public class TripsAdapter extends RecyclerView.Adapter<TripsAdapter.TripViewHold
     public void onBindViewHolder(@NonNull TripViewHolder holder, int position) {
         Trip trip = tripList.get(position);
 
-        // Show van plate number instead of bookingId
+
         holder.plateNumber.setText("Plate: " + trip.getPlateNumber());
         holder.status.setText(trip.getStatus());
         holder.passengers.setText(trip.getPassengerType() + ": " + trip.getSeats());

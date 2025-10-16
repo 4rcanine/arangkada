@@ -84,7 +84,7 @@ public class BookRideActivity extends AppCompatActivity {
 
         btnBookNow.setOnClickListener(v -> saveBooking());
 
-        // 🔹 Cancel button returns to dashboard
+        // Cancel
         btnCancel.setOnClickListener(v -> {
             Intent intent = new Intent(BookRideActivity.this, MainActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -192,7 +192,6 @@ public class BookRideActivity extends AppCompatActivity {
                         tripNames.add(formattedDate);
                     }
 
-                    // 🔹 Handle empty trips
                     if (tripNames.isEmpty()) {
                         tripNames.add("No available schedule");
                         ArrayAdapter<String> emptyAdapter = new ArrayAdapter<>(
@@ -205,7 +204,7 @@ public class BookRideActivity extends AppCompatActivity {
                         spinnerTrips.setEnabled(false);
                         layoutTripDetails.setVisibility(View.GONE);
 
-                        // 🔹 Disable booking inputs when no available schedule
+                        // no available = disable
                         etRegularCount.setEnabled(false);
                         etStudentCount.setEnabled(false);
                         etSeniorCount.setEnabled(false);
@@ -217,7 +216,6 @@ public class BookRideActivity extends AppCompatActivity {
                         return;
                     } else {
                         spinnerTrips.setEnabled(true);
-                        // Re-enable inputs if trips exist
                         etRegularCount.setEnabled(true);
                         etStudentCount.setEnabled(true);
                         etSeniorCount.setEnabled(true);

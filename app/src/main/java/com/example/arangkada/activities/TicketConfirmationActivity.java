@@ -91,12 +91,12 @@ public class TicketConfirmationActivity extends AppCompatActivity {
         paymentMethod = intent.getStringExtra("payment_method");
         fare = intent.getStringExtra("fare");
 
-        // Generate booking ID if not provided
+
         if (bookingId == null) {
             bookingId = "AR" + (System.currentTimeMillis() % 10000);
         }
 
-        // Set default fare if not provided
+
         if (fare == null) {
             fare = "₱45.00";
         }
@@ -133,7 +133,7 @@ public class TicketConfirmationActivity extends AppCompatActivity {
         cashPaymentInstructions.setVisibility(View.GONE);
         gcashPaymentInstructions.setVisibility(View.VISIBLE);
 
-        // Update status for GCash
+
         tvStatus.setText("READY FOR GCASH PAYMENT");
     }
 
@@ -213,7 +213,7 @@ public class TicketConfirmationActivity extends AppCompatActivity {
 
         Toast.makeText(this, confirmationMessage, Toast.LENGTH_LONG).show();
 
-        // Navigate back to dashboard
+
         Intent intent = new Intent(TicketConfirmationActivity.this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);

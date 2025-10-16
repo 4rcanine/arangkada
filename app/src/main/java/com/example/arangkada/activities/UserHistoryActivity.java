@@ -30,7 +30,7 @@ public class UserHistoryActivity extends AppCompatActivity {
     private FirebaseFirestore db;
 
     private TextView tvEmpty;
-    private String userId; // user ID passed from UserManagementActivity
+    private String userId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +47,7 @@ public class UserHistoryActivity extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
 
-        // get userId passed from UserManagementActivity
+
         userId = getIntent().getStringExtra("userId");
         if (userId == null || userId.isEmpty()) {
             Toast.makeText(this, "Error: No user selected.", Toast.LENGTH_SHORT).show();

@@ -111,7 +111,7 @@
             android:padding="12dp" />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    <!-- PAGINATION BAR (FIXED AT BOTTOM) -->
+    <!-- PAGINATION BAR FIXEDDD -->
     <LinearLayout
         android:id="@+id/paginationBar"
         android:layout_alignParentBottom="true"

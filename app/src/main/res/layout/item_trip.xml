@@ -28,7 +28,7 @@
                 android:orientation="horizontal"
                 android:gravity="center_vertical">
 
-                <!-- Username (Dynamic via Adapter) -->
+                <!-- Username (Dynamic recycle recylce) -->
                 <TextView
                     android:id="@+id/txtUser"
                     android:layout_width="0dp"

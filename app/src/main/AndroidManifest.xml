@@ -70,7 +70,7 @@
             android:name=".MainActivity"
             android:exported="false"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Arangkada" /> <!-- Future activities (add these when you create them) -->
+            android:theme="@style/Theme.Arangkada" /> <!-- Future activities  -->
         <activity
             android:name=".activities.AuthActivity"
             android:exported="false"

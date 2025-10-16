@@ -95,7 +95,7 @@
                     android:alignmentMode="alignMargins"
                     android:useDefaultMargins="true">
 
-                    <!-- Important: include must specify layout_height when using layout_columnWeight -->
+
                     <include
                         android:id="@+id/card_reservations"
                         layout="@layout/item_admin_card"
@@ -144,7 +144,7 @@
                         android:layout_columnWeight="1"
                         android:layout_margin="6dp" />
 
-                    <!-- If you have an odd card count and want spacing, add a placeholder view -->
+
                     <include
                         android:id="@+id/card_settings"
                         layout="@layout/item_admin_card"
