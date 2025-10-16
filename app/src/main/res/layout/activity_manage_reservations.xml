@@ -1,10 +1,11 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:background="#FFFFFF">
 
     <!-- HEADER -->
     <LinearLayout
+        android:id="@+id/header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/dashboard_header_background"
@@ -27,46 +28,79 @@
             android:textColor="@color/white"
             android:textSize="16sp"
             android:alpha="0.9" />
-
     </LinearLayout>
 
-    <!-- FILTER BAR -->
+    <!-- FILTER SECTION -->
     <LinearLayout
-        android:id="@+id/filterBar"
+        android:id="@+id/filterSection"
+        android:layout_below="@id/header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="8dp"
-        android:gravity="center_vertical"
+        android:orientation="vertical"
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="4dp"
         android:background="#EEEEEE">
 
-        <Spinner
-            android:id="@+id/spinnerStatus"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:entries="@array/status_filter_options" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-        <Spinner
-            android:id="@+id/spinnerRoute"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="6dp" />
+            <Spinner
+                android:id="@+id/spinnerStatus"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:spinnerMode="dropdown"
+                android:textSize="12sp"/>
 
-        <Button
-            android:id="@+id/btnDateFilter"
-            android:layout_width="wrap_content"
+            <Spinner
+                android:id="@+id/spinnerDestination"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                android:spinnerMode="dropdown"
+                android:textSize="12sp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Date"
-            android:layout_marginStart="6dp"
-            android:backgroundTint="@color/primary_pink"
-            android:textColor="@color/white"/>
+            android:orientation="horizontal"
+            android:layout_marginTop="4dp">
+
+            <EditText
+                android:id="@+id/etDateFrom"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:hint="From"
+                android:textSize="12sp"
+                android:paddingHorizontal="6dp"
+                android:focusable="false"
+                android:inputType="none"/>
+
+            <EditText
+                android:id="@+id/etDateTo"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                android:hint="To"
+                android:textSize="12sp"
+                android:paddingHorizontal="6dp"
+                android:focusable="false"
+                android:inputType="none"/>
+        </LinearLayout>
     </LinearLayout>
 
-    <!-- LIST -->
+    <!-- MAIN CONTENT SCROLLABLE SECTION -->
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefresh"
+        android:layout_below="@id/filterSection"
+        android:layout_above="@id/paginationBar"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -75,6 +109,47 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:padding="12dp" />
-
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-</LinearLayout>
+
+    <!-- PAGINATION BAR (FIXED AT BOTTOM) -->
+    <LinearLayout
+        android:id="@+id/paginationBar"
+        android:layout_alignParentBottom="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="12dp"
+        android:background="@color/white"
+        android:elevation="8dp">
+
+        <Button
+            android:id="@+id/btnPrev"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:text="&lt;"
+            android:textSize="18sp"
+            android:background="@drawable/rounded_button_bg"
+            android:textColor="@color/white"
+            android:layout_marginEnd="16dp" />
+
+        <TextView
+            android:id="@+id/tvPageIndicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1 / 1"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnNext"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:text="&gt;"
+            android:textSize="18sp"
+            android:background="@drawable/rounded_button_bg"
+            android:textColor="@color/white"
+            android:layout_marginStart="16dp" />
+    </LinearLayout>
+</RelativeLayout>

@@ -1,19 +1,12 @@
 package com.example.arangkada.activities;
 
 import android.app.DatePickerDialog;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.text.InputType;
-import android.widget.EditText;
-import android.widget.Button;
-import android.widget.Spinner;
-import android.widget.ArrayAdapter;
-import android.widget.TextView;
-import android.widget.Toast;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.DatePicker;
-
+import android.widget.*;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,35 +15,43 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.arangkada.R;
-import com.example.arangkada.models.Booking;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.*;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 public class ManageReservationsActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private SwipeRefreshLayout swipeRefresh;
     private ManageReservationsAdapter adapter;
-    private List<Booking> bookingList = new ArrayList<>();
+
+    private List<Booking> allBookings = new ArrayList<>();
+    private List<Booking> filteredBookings = new ArrayList<>();
+    private List<Booking> currentPageList = new ArrayList<>();
+
     private FirebaseFirestore db;
 
-    private Spinner spinnerStatus, spinnerRoute;
-    private Button btnDateFilter;
+    private Spinner spinnerStatus, spinnerDestination;
+    private EditText etDateFrom, etDateTo;
+    private TextView tvPageIndicator;
+    private Button btnPrev, btnNext;
 
+    private static final int ITEMS_PER_PAGE = 10;
+    private int currentPage = 1;
+    private int totalPages = 1;
+
+    private static final String PREFS_NAME = "ManageReservationsPrefs";
+    private static final String KEY_CURRENT_PAGE = "current_page";
+
+    private Date dateFrom = null;
+    private Date dateTo = null;
     private String selectedStatus = "All";
-    private String selectedRoute = "All";
-    private String selectedDate = null;
+    private String selectedDestinationId = "All";
 
-    private List<String> routeList = new ArrayList<>();
+    private final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,179 +62,232 @@ public class ManageReservationsActivity extends AppCompatActivity {
         swipeRefresh = findViewById(R.id.swipeRefresh);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        adapter = new ManageReservationsAdapter(bookingList);
+        adapter = new ManageReservationsAdapter(currentPageList);
         recyclerView.setAdapter(adapter);
 
         spinnerStatus = findViewById(R.id.spinnerStatus);
-        spinnerRoute = findViewById(R.id.spinnerRoute);
-        btnDateFilter = findViewById(R.id.btnDateFilter);
+        spinnerDestination = findViewById(R.id.spinnerDestination);
+        etDateFrom = findViewById(R.id.etDateFrom);
+        etDateTo = findViewById(R.id.etDateTo);
+        btnPrev = findViewById(R.id.btnPrev);
+        btnNext = findViewById(R.id.btnNext);
+        tvPageIndicator = findViewById(R.id.tvPageIndicator);
 
         db = FirebaseFirestore.getInstance();
 
-        setupFilters();
+        // Load last saved page number
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        currentPage = prefs.getInt(KEY_CURRENT_PAGE, 1);
 
-        swipeRefresh.setOnRefreshListener(this::loadBookings);
-        loadBookings();
+        setupFilters();
+        loadAllBookings();
+
+        swipeRefresh.setOnRefreshListener(() -> loadAllBookings(false));
+
+        etDateFrom.setOnClickListener(v -> showDatePickerDialog(true));
+        etDateTo.setOnClickListener(v -> showDatePickerDialog(false));
+
+        btnPrev.setOnClickListener(v -> {
+            if (currentPage > 1) {
+                currentPage--;
+                saveCurrentPage();
+                updatePagination();
+            }
+        });
+
+        btnNext.setOnClickListener(v -> {
+            if (currentPage < totalPages) {
+                currentPage++;
+                saveCurrentPage();
+                updatePagination();
+            }
+        });
+    }
+
+    // Save current page to SharedPreferences
+    private void saveCurrentPage() {
+        SharedPreferences.Editor editor = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit();
+        editor.putInt(KEY_CURRENT_PAGE, currentPage);
+        editor.apply();
     }
 
     private void setupFilters() {
-        // Status filter
-        ArrayAdapter<CharSequence> statusAdapter = ArrayAdapter.createFromResource(
-                this, R.array.status_filter_options, android.R.layout.simple_spinner_item);
-        statusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Status Spinner
+        ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_dropdown_item,
+                Arrays.asList("All", "Pending", "Confirmed"));
         spinnerStatus.setAdapter(statusAdapter);
-
-        spinnerStatus.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
-                selectedStatus = parent.getItemAtPosition(position).toString();
-                loadBookings();
+        spinnerStatus.setSelection(statusAdapter.getPosition(selectedStatus));
+        spinnerStatus.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+                selectedStatus = parent.getItemAtPosition(pos).toString();
+                applyFilters(false);
             }
-
-            @Override
-            public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+            @Override public void onNothingSelected(AdapterView<?> parent) {}
         });
 
-        // Load all routes into route spinner
-        routeList.clear();
-        routeList.add("All");
-        db.collection("destinations").get().addOnSuccessListener(query -> {
-            for (DocumentSnapshot doc : query) {
-                String name = doc.getString("name");
-                if (name != null) routeList.add(name);
+        // Destination Spinner
+        List<String> destinationNames = new ArrayList<>();
+        List<String> destinationIds = new ArrayList<>();
+        destinationNames.add("All");
+        destinationIds.add("All");
+
+        db.collection("destinations").get().addOnSuccessListener(querySnapshot -> {
+            for (DocumentSnapshot doc : querySnapshot) {
+                destinationNames.add(doc.getString("name"));
+                destinationIds.add(doc.getId());
             }
 
-            ArrayAdapter<String> routeAdapter = new ArrayAdapter<>(
-                    this, android.R.layout.simple_spinner_item, routeList);
-            routeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            spinnerRoute.setAdapter(routeAdapter);
+            ArrayAdapter<String> destAdapter = new ArrayAdapter<>(this,
+                    android.R.layout.simple_spinner_dropdown_item,
+                    destinationNames);
+            spinnerDestination.setAdapter(destAdapter);
 
-            spinnerRoute.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
-                    selectedRoute = parent.getItemAtPosition(position).toString();
-                    loadBookings();
+            int selectedIndex = destinationIds.indexOf(selectedDestinationId);
+            if (selectedIndex >= 0) spinnerDestination.setSelection(selectedIndex);
+
+            spinnerDestination.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+                    selectedDestinationId = destinationIds.get(pos);
+                    applyFilters(false);
                 }
-
-                @Override
-                public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+                @Override public void onNothingSelected(AdapterView<?> parent) {}
             });
         });
-
-        // Date filter button
-        btnDateFilter.setOnClickListener(v -> showDatePicker());
     }
 
-    private void showDatePicker() {
-        final Calendar calendar = Calendar.getInstance();
-        DatePickerDialog datePickerDialog = new DatePickerDialog(this,
-                (DatePicker view, int year, int monthOfYear, int dayOfMonth) -> {
-                    calendar.set(year, monthOfYear, dayOfMonth);
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-                    selectedDate = sdf.format(calendar.getTime());
-                    btnDateFilter.setText(selectedDate);
-                    loadBookings();
+    private void showDatePickerDialog(boolean isFrom) {
+        Calendar calendar = Calendar.getInstance();
+        DatePickerDialog picker = new DatePickerDialog(
+                this,
+                (view, year, month, dayOfMonth) -> {
+                    calendar.set(year, month, dayOfMonth);
+                    if (isFrom) {
+                        dateFrom = calendar.getTime();
+                        etDateFrom.setText(dateFormatter.format(dateFrom));
+                    } else {
+                        dateTo = calendar.getTime();
+                        etDateTo.setText(dateFormatter.format(dateTo));
+                    }
+                    applyFilters(false);
                 },
                 calendar.get(Calendar.YEAR),
                 calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH));
-        datePickerDialog.show();
+                calendar.get(Calendar.DAY_OF_MONTH)
+        );
+        picker.show();
     }
 
-    private void loadBookings() {
+    // loadAllBookings - keep filters & page
+    private void loadAllBookings() {
+        loadAllBookings(true);
+    }
+
+    private void loadAllBookings(boolean resetPage) {
         swipeRefresh.setRefreshing(true);
-        Query query = db.collection("bookings");
+        db.collection("bookings")
+                .whereIn("status", Arrays.asList("Pending", "Confirmed"))
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .get()
+                .addOnSuccessListener(value -> {
+                    swipeRefresh.setRefreshing(false);
+                    allBookings.clear();
 
-        // Apply filters dynamically
-        if (!"All".equals(selectedStatus)) {
-            query = query.whereEqualTo("status", selectedStatus);
+                    if (value != null && !value.isEmpty()) {
+                        List<Booking> tempList = new ArrayList<>();
+                        for (DocumentSnapshot doc : value.getDocuments()) {
+                            Booking booking = doc.toObject(Booking.class);
+                            if (booking != null) {
+                                booking.setBookingId(doc.getId());
+                                tempList.add(booking);
+                            }
+                        }
+
+                        // Fetch destinations for each booking
+                        if (tempList.isEmpty()) return;
+                        for (Booking booking : tempList) {
+                            db.collection("trips").document(booking.getTripId()).get()
+                                    .addOnSuccessListener(tripDoc -> {
+                                        if (tripDoc.exists()) {
+                                            booking.setDestinationId(tripDoc.getString("destinationId"));
+                                        }
+                                        allBookings.add(booking);
+                                        // Apply filters only once after all bookings loaded
+                                        if (allBookings.size() == tempList.size()) {
+                                            if (resetPage) currentPage = 1; // reset only if requested
+                                            applyFilters(false);
+                                        }
+                                    });
+                        }
+                    } else {
+                        applyFilters(false);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    swipeRefresh.setRefreshing(false);
+                    Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void applyFilters(boolean resetPage) {
+        filteredBookings.clear();
+
+        for (Booking b : allBookings) {
+            boolean match = true;
+
+            if (!selectedStatus.equals("All") && !b.getStatus().equalsIgnoreCase(selectedStatus))
+                match = false;
+
+            if (!selectedDestinationId.equals("All")) {
+                if (b.getDestinationId() == null || !b.getDestinationId().equals(selectedDestinationId))
+                    match = false;
+            }
+
+            if (dateFrom != null && b.getDeparture() != null && b.getDeparture().toDate().before(dateFrom))
+                match = false;
+            if (dateTo != null && b.getDeparture() != null && b.getDeparture().toDate().after(dateTo))
+                match = false;
+
+            if (match) filteredBookings.add(b);
         }
 
-        query = query.orderBy("departure", Query.Direction.ASCENDING);
-
-        query.addSnapshotListener((value, error) -> {
-            if (error != null) {
-                Toast.makeText(this, "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-                swipeRefresh.setRefreshing(false);
-                return;
-            }
-
-            bookingList.clear();
-            if (value != null) {
-                for (DocumentSnapshot doc : value.getDocuments()) {
-                    Booking booking = doc.toObject(Booking.class);
-                    if (booking == null) continue;
-
-                    // Filter by date
-                    if (selectedDate != null && booking.getDeparture() != null) {
-                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-                        String bookingDate = sdf.format(booking.getDeparture().toDate());
-                        if (!bookingDate.equals(selectedDate)) continue;
-                    }
-
-                    // Filter by route
-                    if (!"All".equals(selectedRoute)) {
-                        String tripId = booking.getTripId();
-                        if (tripId == null) continue;
-
-                        // Check trip's destination
-                        DocumentSnapshot tripDoc = value.getDocuments().stream()
-                                .filter(d -> d.getId().equals(tripId))
-                                .findFirst().orElse(null);
-                    }
-
-                    booking.setBookingId(doc.getId());
-                    bookingList.add(booking);
-                }
-            }
-
-            adapter.notifyDataSetChanged();
-            swipeRefresh.setRefreshing(false);
+        filteredBookings.sort((a, b) -> {
+            if (a.getCreatedAt() == null || b.getCreatedAt() == null) return 0;
+            return b.getCreatedAt().compareTo(a.getCreatedAt());
         });
+
+        totalPages = Math.max(1, (int) Math.ceil((double) filteredBookings.size() / ITEMS_PER_PAGE));
+
+        // Ensure currentPage is valid
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
+
+        saveCurrentPage(); // persist after filtering
+        updatePagination();
     }
 
-    // =====================
-    // Update booking status
-    // =====================
-    private void updateBookingStatus(String bookingId, String status, int seats, String tripId, String reason) {
-        if ("Cancelled".equals(status)) {
-            db.collection("trips")
-                    .document(tripId)
-                    .update("availableSeats", FieldValue.increment(seats))
-                    .addOnSuccessListener(unused -> {
-                        db.collection("bookings")
-                                .document(bookingId)
-                                .update("status", status, "reason", reason)
-                                .addOnSuccessListener(unused2 ->
-                                        Toast.makeText(this, "Booking Cancelled & seats restored", Toast.LENGTH_SHORT).show()
-                                )
-                                .addOnFailureListener(e ->
-                                        Toast.makeText(this, "Error updating booking: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                                );
-                    })
-                    .addOnFailureListener(e ->
-                            Toast.makeText(this, "Error restoring seats: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                    );
-        } else {
-            db.collection("bookings")
-                    .document(bookingId)
-                    .update("status", status)
-                    .addOnSuccessListener(unused ->
-                            Toast.makeText(this, "Booking " + status, Toast.LENGTH_SHORT).show()
-                    )
-                    .addOnFailureListener(e ->
-                            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                    );
-        }
+    private void updatePagination() {
+        int start = (currentPage - 1) * ITEMS_PER_PAGE;
+        int end = Math.min(start + ITEMS_PER_PAGE, filteredBookings.size());
+
+        currentPageList.clear();
+        if (!filteredBookings.isEmpty())
+            currentPageList.addAll(filteredBookings.subList(start, end));
+
+        adapter.notifyDataSetChanged();
+        tvPageIndicator.setText(currentPage + " / " + totalPages);
+
+        btnPrev.setEnabled(currentPage > 1);
+        btnNext.setEnabled(currentPage < totalPages);
     }
 
-    // =====================
-    // Adapter class
-    // =====================
+    // ======================================================
+    // Adapter
+    // ======================================================
     private class ManageReservationsAdapter extends RecyclerView.Adapter<ManageReservationsAdapter.BookingViewHolder> {
 
-        private List<Booking> bookings;
-        private FirebaseFirestore db;
+        private final List<Booking> bookings;
+        private final FirebaseFirestore db;
         private final SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.getDefault());
 
         public ManageReservationsAdapter(List<Booking> bookings) {
@@ -252,146 +306,49 @@ public class ManageReservationsActivity extends AppCompatActivity {
         public void onBindViewHolder(@NonNull BookingViewHolder holder, int position) {
             Booking booking = bookings.get(position);
 
-            // Fetch user name
-            db.collection("accounts")
-                    .document(booking.getUserId())
-                    .get()
-                    .addOnSuccessListener(doc -> {
-                        if (doc.exists()) {
-                            holder.txtUser.setText(doc.getString("name"));
-                        } else {
-                            holder.txtUser.setText("Unknown User");
-                        }
-                    });
+            db.collection("accounts").document(booking.getUserId()).get()
+                    .addOnSuccessListener(doc -> holder.txtUser.setText(doc.exists() ? doc.getString("name") : "Unknown User"));
 
-            // Fetch trip → destination → van
-            db.collection("trips")
-                    .document(booking.getTripId())
-                    .get()
+            db.collection("trips").document(booking.getTripId()).get()
                     .addOnSuccessListener(tripDoc -> {
                         if (tripDoc.exists()) {
                             String destinationId = tripDoc.getString("destinationId");
                             String vanId = tripDoc.getString("vanId");
-
                             holder.tvVan.setText(vanId != null ? vanId : "Unknown");
-
                             if (destinationId != null) {
-                                db.collection("destinations")
-                                        .document(destinationId)
-                                        .get()
-                                        .addOnSuccessListener(destDoc -> {
-                                            if (destDoc.exists()) {
-                                                holder.tvRoute.setText(destDoc.getString("name"));
-                                            } else {
-                                                holder.tvRoute.setText("Unknown");
-                                            }
-                                        });
+                                db.collection("destinations").document(destinationId).get()
+                                        .addOnSuccessListener(destDoc ->
+                                                holder.tvRoute.setText(destDoc.exists() ? destDoc.getString("name") : "Unknown"));
                             }
                         }
                     });
 
-            // Fetch seats and passenger types
-            db.collection("bookings")
-                    .document(booking.getBookingId())
-                    .get()
-                    .addOnSuccessListener(seatDoc -> {
-                        if (seatDoc.exists()) {
-                            long seats = seatDoc.getLong("seats") != null ? seatDoc.getLong("seats") : 0;
-                            long regularCount = seatDoc.getLong("regularCount") != null ? seatDoc.getLong("regularCount") : 0;
-                            long studentCount = seatDoc.getLong("studentCount") != null ? seatDoc.getLong("studentCount") : 0;
-                            long seniorCount = seatDoc.getLong("seniorCount") != null ? seatDoc.getLong("seniorCount") : 0;
-
-                            StringBuilder breakdown = new StringBuilder();
-                            if (regularCount > 0) breakdown.append("Regular-").append(regularCount);
-                            if (studentCount > 0) {
-                                if (breakdown.length() > 0) breakdown.append(", ");
-                                breakdown.append("Student-").append(studentCount);
-                            }
-                            if (seniorCount > 0) {
-                                if (breakdown.length() > 0) breakdown.append(", ");
-                                breakdown.append("Senior-").append(seniorCount);
-                            }
-
-                            if (breakdown.length() > 0) {
-                                holder.tvPassengers.setText(seats + " (" + breakdown.toString() + ")");
-                            } else {
-                                holder.tvPassengers.setText(String.valueOf(seats));
-                            }
-
-                            holder.btnConfirm.setOnClickListener(v ->
-                                    updateBookingStatus(booking.getBookingId(), "Confirmed", (int) seats, booking.getTripId(), null)
-                            );
-
-                            holder.btnCancel.setOnClickListener(v -> showCancelReasonDialog(booking.getBookingId(), booking.getTripId(), (int) seats));
-                        } else {
-                            holder.tvPassengers.setText("N/A");
-                        }
-                    });
-
-            String dateStr = booking.getDeparture() != null ? sdf.format(booking.getDeparture().toDate()) : "N/A";
-            holder.tvDeparture.setText(dateStr);
-            holder.tvTotalFare.setText("₱" + booking.getTotalFare());
-
+            holder.tvDeparture.setText(booking.getDeparture() != null ? sdf.format(booking.getDeparture().toDate()) : "N/A");
+            holder.tvTotalFare.setText("₱" + String.format("%.2f", booking.getTotalFare()));
+            holder.tvPassengers.setText(String.valueOf(booking.getSeats()));
             holder.tvStatus.setText(booking.getStatus());
+
             switch (booking.getStatus()) {
                 case "Confirmed":
                     holder.tvStatus.setBackgroundResource(R.drawable.bg_status_confirmed);
-                    break;
-                case "Completed":
-                    holder.tvStatus.setBackgroundResource(R.drawable.bg_status_completed);
-                    break;
-                case "Cancelled":
-                    holder.tvStatus.setBackgroundResource(R.drawable.bg_status_cancelled);
                     break;
                 case "Pending":
                 default:
                     holder.tvStatus.setBackgroundResource(R.drawable.bg_status_pending);
                     break;
             }
-        }
 
-        private void showCancelReasonDialog(String bookingId, String tripId, int seats) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(ManageReservationsActivity.this);
-            View dialogView = LayoutInflater.from(ManageReservationsActivity.this)
-                    .inflate(R.layout.dialog_cancel_reason, null);
-            builder.setView(dialogView);
-
-            TextInputEditText etReason = dialogView.findViewById(R.id.etReason);
-            Button btnBack = dialogView.findViewById(R.id.btnBack);
-            Button btnProceed = dialogView.findViewById(R.id.btnProceed);
-
-            AlertDialog dialog = builder.create();
-
-            // Make dialog background transparent to show rounded corners
-            if (dialog.getWindow() != null) {
-                dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-            }
-
-            btnBack.setOnClickListener(v -> dialog.dismiss());
-
-            btnProceed.setOnClickListener(v -> {
-                String reason = etReason.getText().toString().trim();
-                if (reason.isEmpty()) {
-                    Toast.makeText(ManageReservationsActivity.this, "Please provide a reason.", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                updateBookingStatus(bookingId, "Cancelled", seats, tripId, reason);
-                dialog.dismiss();
-            });
-
-            dialog.show();
+            holder.btnConfirm.setOnClickListener(v -> updateBookingStatus(booking.getBookingId(), "Confirmed", booking.getSeats(), booking.getTripId(), null));
+            holder.btnCancel.setOnClickListener(v -> showCancelReasonDialog(booking.getBookingId(), booking.getTripId(), booking.getSeats()));
         }
 
         @Override
-        public int getItemCount() {
-            return bookings.size();
-        }
+        public int getItemCount() { return bookings.size(); }
 
         class BookingViewHolder extends RecyclerView.ViewHolder {
             TextView txtUser, tvRoute, tvVan, tvDeparture, tvPassengers, tvTotalFare, tvStatus;
             Button btnConfirm, btnCancel;
-
-            public BookingViewHolder(@NonNull View itemView) {
+            BookingViewHolder(@NonNull View itemView) {
                 super(itemView);
                 txtUser = itemView.findViewById(R.id.txtUser);
                 tvRoute = itemView.findViewById(R.id.tv_route);
@@ -404,5 +361,99 @@ public class ManageReservationsActivity extends AppCompatActivity {
                 btnCancel = itemView.findViewById(R.id.btnCancel);
             }
         }
+    }
+
+    private void updateBookingStatus(String bookingId, String status, int seats, String tripId, String reason) {
+        if ("Cancelled".equals(status)) {
+            db.collection("trips").document(tripId)
+                    .update("availableSeats", FieldValue.increment(seats))
+                    .addOnSuccessListener(unused -> db.collection("bookings")
+                            .document(bookingId)
+                            .update("status", status, "reason", reason)
+                            .addOnSuccessListener(unused2 -> {
+                                Toast.makeText(this, "Booking Cancelled & seats restored", Toast.LENGTH_SHORT).show();
+                                loadAllBookings(false); // preserve page & filters
+                            })
+                            .addOnFailureListener(e -> Toast.makeText(this, "Error updating booking: " + e.getMessage(), Toast.LENGTH_SHORT).show()))
+                    .addOnFailureListener(e -> Toast.makeText(this, "Error restoring seats: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+        } else {
+            db.collection("bookings").document(bookingId)
+                    .update("status", status)
+                    .addOnSuccessListener(unused -> {
+                        Toast.makeText(this, "Booking " + status, Toast.LENGTH_SHORT).show();
+                        loadAllBookings(false); // preserve page & filters
+                    })
+                    .addOnFailureListener(e -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+        }
+    }
+
+    private void showCancelReasonDialog(String bookingId, String tripId, int seats) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_cancel_reason, null);
+        builder.setView(dialogView);
+
+        TextInputEditText etReason = dialogView.findViewById(R.id.etReason);
+        Button btnBack = dialogView.findViewById(R.id.btnBack);
+        Button btnProceed = dialogView.findViewById(R.id.btnProceed);
+
+        AlertDialog dialog = builder.create();
+        if (dialog.getWindow() != null)
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+
+        btnBack.setOnClickListener(v -> dialog.dismiss());
+        btnProceed.setOnClickListener(v -> {
+            String reason = etReason.getText().toString().trim();
+            if (reason.isEmpty()) {
+                Toast.makeText(this, "Please provide a reason.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            updateBookingStatus(bookingId, "Cancelled", seats, tripId, reason);
+            dialog.dismiss();
+        });
+        dialog.show();
+    }
+
+    // Booking Model (unchanged)
+    public static class Booking {
+        private String bookingId;
+        private Timestamp createdAt;
+        private Timestamp departure;
+        private String destinationId;
+        private int regularCount;
+        private int seniorCount;
+        private int studentCount;
+        private int seats;
+        private String status;
+        private double totalFare;
+        private String tripId;
+        private String userId;
+
+        public Booking() {}
+
+        public String getBookingId() { return bookingId; }
+        public Timestamp getCreatedAt() { return createdAt; }
+        public Timestamp getDeparture() { return departure; }
+        public String getDestinationId() { return destinationId; }
+        public int getRegularCount() { return regularCount; }
+        public int getSeniorCount() { return seniorCount; }
+        public int getStudentCount() { return studentCount; }
+        public int getSeats() { return seats; }
+        public String getStatus() { return status; }
+        public double getTotalFare() { return totalFare; }
+        public String getTripId() { return tripId; }
+        public String getUserId() { return userId; }
+
+        public void setBookingId(String bookingId) { this.bookingId = bookingId; }
+        public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+        public void setDeparture(Timestamp departure) { this.departure = departure; }
+        public void setDestinationId(String destinationId) { this.destinationId = destinationId; }
+        public void setRegularCount(int regularCount) { this.regularCount = regularCount; }
+        public void setSeniorCount(int seniorCount) { this.seniorCount = seniorCount; }
+        public void setStudentCount(int studentCount) { this.studentCount = studentCount; }
+        public void setSeats(int seats) { this.seats = seats; }
+        public void setStatus(String status) { this.status = status; }
+        public void setTotalFare(double totalFare) { this.totalFare = totalFare; }
+        public void setTripId(String tripId) { this.tripId = tripId; }
+        public void setUserId(String userId) { this.userId = userId; }
     }
 }
