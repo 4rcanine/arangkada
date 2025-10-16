@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#F5F5F5">
+
+    <!-- Header -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -15,7 +16,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="View Cancelled Trips"
+            android:text="Bookings History"
             android:textColor="@color/white"
             android:textSize="26sp"
             android:textStyle="bold"
@@ -24,30 +25,135 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="View all the cancelled trips and reason"
+            android:text="View all the Completed and Cancelled Trips of users"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:alpha="0.9" />
     </LinearLayout>
 
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="4dp">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <Spinner
+                android:id="@+id/spinnerStatus"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:spinnerMode="dropdown"
+                android:textSize="12sp"/>
+
+            <Spinner
+                android:id="@+id/spinnerDestination"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                android:spinnerMode="dropdown"
+                android:textSize="12sp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="4dp">
+
+            <EditText
+                android:id="@+id/etDateFrom"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:hint="From"
+                android:textSize="12sp"
+                android:paddingHorizontal="6dp"
+                android:focusable="false"
+                android:inputType="none"/>
+
+            <EditText
+                android:id="@+id/etDateTo"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                android:hint="To"
+                android:textSize="12sp"
+                android:paddingHorizontal="6dp"
+                android:focusable="false"
+                android:inputType="none"/>
+        </LinearLayout>
+    </LinearLayout>
+
+
+    <!-- Empty message -->
     <TextView
         android:id="@+id/tvEmpty"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="No Cancelled Bookings"
+        android:text="No Cancelled or Completed Bookings"
         android:textSize="16sp"
         android:textStyle="bold"
         android:gravity="center"
         android:visibility="gone"
         android:padding="16dp"
         android:textColor="#888" />
-
+    <!-- RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerCancellations"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="8dp"/>
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="8dp" />
+
+    <!-- Pagination bar -->
+    <LinearLayout
+        android:id="@+id/paginationBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="12dp"
+        android:background="@color/white"
+        android:elevation="8dp">
+
+        <Button
+            android:id="@+id/btnPrev"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:text="&lt;"
+            android:textSize="18sp"
+            android:background="@drawable/rounded_button_bg"
+            android:textColor="@color/white"
+            android:layout_marginEnd="16dp" />
+
+        <TextView
+            android:id="@+id/tvPageIndicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1 / 1"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnNext"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:text="&gt;"
+            android:textSize="18sp"
+            android:background="@drawable/rounded_button_bg"
+            android:textColor="@color/white"
+            android:layout_marginStart="16dp" />
+    </LinearLayout>
 
 </LinearLayout>

@@ -5,10 +5,12 @@ import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -26,20 +28,27 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 public class MyTripsActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private TripAdapter adapter;
-    private List<Booking> bookingList = new ArrayList<>();
+    private List<Booking> allBookings = new ArrayList<>();
+    private List<Booking> currentPageList = new ArrayList<>();
+
     private FirebaseFirestore db;
     private FirebaseUser user;
 
-    private TextView tvEmpty;
+    private TextView tvEmpty, tvPageIndicator;
+    private Button btnPrev, btnNext;
     private View btnClearHistory;
+
+    private static final int ITEMS_PER_PAGE = 10;
+    private int currentPage = 1;
+    private int totalPages = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,11 +58,16 @@ public class MyTripsActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerTrips);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        adapter = new TripAdapter(bookingList);
+        adapter = new TripAdapter(currentPageList);
         recyclerView.setAdapter(adapter);
 
         tvEmpty = findViewById(R.id.tvEmpty);
         btnClearHistory = findViewById(R.id.btnClearHistory);
+
+        // Pagination controls
+        btnPrev = findViewById(R.id.btnPrev);
+        btnNext = findViewById(R.id.btnNext);
+        tvPageIndicator = findViewById(R.id.tvPageIndicator);
 
         db = FirebaseFirestore.getInstance();
         user = FirebaseAuth.getInstance().getCurrentUser();
@@ -63,45 +77,77 @@ public class MyTripsActivity extends AppCompatActivity {
         }
 
         btnClearHistory.setOnClickListener(v -> showClearConfirmation());
+
+        btnPrev.setOnClickListener(v -> {
+            if (currentPage > 1) {
+                currentPage--;
+                updatePagination();
+            }
+        });
+
+        btnNext.setOnClickListener(v -> {
+            if (currentPage < totalPages) {
+                currentPage++;
+                updatePagination();
+            }
+        });
     }
 
     private void loadUserBookings() {
         db.collection("bookings")
                 .whereEqualTo("userId", user.getUid())
                 .whereIn("status", Arrays.asList("Cancelled", "Completed"))
-                .orderBy("createdAt", Query.Direction.DESCENDING)
                 .addSnapshotListener((@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) -> {
                     if (error != null) {
                         Toast.makeText(MyTripsActivity.this, "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
                         return;
                     }
 
-                    bookingList.clear();
+                    allBookings.clear();
                     if (value != null && !value.isEmpty()) {
                         for (DocumentSnapshot doc : value.getDocuments()) {
                             Booking booking = doc.toObject(Booking.class);
                             if (booking != null) {
                                 booking.setBookingId(doc.getId());
-                                bookingList.add(booking);
+                                allBookings.add(booking);
                             }
                         }
 
-                        // Auto-delete if more than 10
-                        if (bookingList.size() > 10) {
-                            Booking oldest = bookingList.get(bookingList.size() - 1);
-                            db.collection("bookings").document(oldest.getBookingId()).delete();
-                            bookingList.remove(bookingList.size() - 1);
-                        }
+                        // 🔹 Sort by latest departure first (DESC)
+                        Collections.sort(allBookings, new Comparator<Booking>() {
+                            @Override
+                            public int compare(Booking b1, Booking b2) {
+                                if (b1.getDeparture() == null || b2.getDeparture() == null) return 0;
+                                return b2.getDeparture().compareTo(b1.getDeparture());
+                            }
+                        });
+
+                        totalPages = Math.max(1, (int) Math.ceil((double) allBookings.size() / ITEMS_PER_PAGE));
+                        currentPage = 1;
+                        updatePagination();
 
                         tvEmpty.setVisibility(View.GONE);
                         btnClearHistory.setVisibility(View.VISIBLE);
                     } else {
                         tvEmpty.setVisibility(View.VISIBLE);
                         btnClearHistory.setVisibility(View.GONE);
+                        currentPageList.clear();
+                        adapter.notifyDataSetChanged();
                     }
-
-                    adapter.notifyDataSetChanged();
                 });
+    }
+
+    private void updatePagination() {
+        int start = (currentPage - 1) * ITEMS_PER_PAGE;
+        int end = Math.min(start + ITEMS_PER_PAGE, allBookings.size());
+
+        currentPageList.clear();
+        currentPageList.addAll(allBookings.subList(start, end));
+        adapter.notifyDataSetChanged();
+
+        tvPageIndicator.setText(currentPage + " / " + totalPages);
+        btnPrev.setEnabled(currentPage > 1);
+        btnNext.setEnabled(currentPage < totalPages);
     }
 
     private void showClearConfirmation() {
@@ -133,7 +179,7 @@ public class MyTripsActivity extends AppCompatActivity {
         private String userId;
         private String tripId;
         private String status;
-        private String reason; // 🔹 Added field for cancellation reason
+        private String reason;
         private double totalFare;
         private Timestamp departure;
         private Timestamp createdAt;
@@ -146,7 +192,7 @@ public class MyTripsActivity extends AppCompatActivity {
         public String getUserId() { return userId; }
         public String getTripId() { return tripId; }
         public String getStatus() { return status; }
-        public String getReason() { return reason; } // 🔹 Getter
+        public String getReason() { return reason; }
         public double getTotalFare() { return totalFare; }
         public Timestamp getDeparture() { return departure; }
         public Timestamp getCreatedAt() { return createdAt; }
@@ -172,7 +218,6 @@ public class MyTripsActivity extends AppCompatActivity {
         public void onBindViewHolder(@NonNull TripViewHolder holder, int position) {
             Booking booking = bookings.get(position);
 
-            // Status + background
             String status = booking.getStatus();
             holder.tvStatus.setText(status);
             if ("Completed".equalsIgnoreCase(status)) {
@@ -183,7 +228,6 @@ public class MyTripsActivity extends AppCompatActivity {
                 holder.tvStatus.setBackgroundResource(0);
             }
 
-            // Username
             db.collection("accounts").document(booking.getUserId()).get()
                     .addOnSuccessListener(userDoc -> {
                         if (userDoc.exists()) {
@@ -193,7 +237,6 @@ public class MyTripsActivity extends AppCompatActivity {
                         }
                     });
 
-            // Trip details
             db.collection("trips").document(booking.getTripId()).get()
                     .addOnSuccessListener(tripDoc -> {
                         if (tripDoc.exists()) {
@@ -214,13 +257,11 @@ public class MyTripsActivity extends AppCompatActivity {
                         }
                     });
 
-            // Departure
             String departureStr = booking.getDeparture() != null
                     ? DateFormat.format("MMM dd, yyyy hh:mm a", booking.getDeparture().toDate()).toString()
                     : "N/A";
             holder.tvDeparture.setText(departureStr);
 
-            // Created At
             if (booking.getCreatedAt() != null) {
                 String createdStr = DateFormat.format("MMM dd, yyyy hh:mm a", booking.getCreatedAt().toDate()).toString();
                 holder.tvCreatedAt.setText(createdStr);
@@ -228,7 +269,6 @@ public class MyTripsActivity extends AppCompatActivity {
                 holder.tvCreatedAt.setText("N/A");
             }
 
-            // Passengers
             db.collection("bookings").document(booking.getBookingId()).get()
                     .addOnSuccessListener(seatDoc -> {
                         if (seatDoc.exists()) {
@@ -254,7 +294,6 @@ public class MyTripsActivity extends AppCompatActivity {
                                 holder.tvPassengers.setText(String.valueOf(seats));
                             }
 
-                            // 🔹 Show Reason for Cancellation if exists
                             if ("Cancelled".equalsIgnoreCase(booking.getStatus())) {
                                 String reason = seatDoc.getString("reason");
                                 if (reason != null && !reason.trim().isEmpty()) {
@@ -273,7 +312,6 @@ public class MyTripsActivity extends AppCompatActivity {
                         }
                     });
 
-            // Fare
             holder.tvTotalFare.setText("₱" + String.format("%.2f", booking.getTotalFare()));
         }
 
@@ -296,7 +334,7 @@ public class MyTripsActivity extends AppCompatActivity {
                 tvDeparture = itemView.findViewById(R.id.tv_departure);
                 tvPassengers = itemView.findViewById(R.id.tv_passengers);
                 tvTotalFare = itemView.findViewById(R.id.tv_total_fare);
-                tvReason = itemView.findViewById(R.id.tv_reason); // 🔹 Added new TextView
+                tvReason = itemView.findViewById(R.id.tv_reason);
             }
         }
     }

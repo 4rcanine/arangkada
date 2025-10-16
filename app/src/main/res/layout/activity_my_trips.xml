@@ -69,5 +69,47 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:padding="16dp"
-        android:clipToPadding="false"/>
+        android:clipToPadding="false" />
+
+    <!-- Pagination bar -->
+    <LinearLayout
+        android:id="@+id/paginationBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="12dp"
+        android:background="@color/white"
+        android:elevation="8dp">
+
+        <Button
+            android:id="@+id/btnPrev"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:text="&lt;"
+            android:textSize="18sp"
+            android:background="@drawable/rounded_button_bg"
+            android:textColor="@color/white"
+            android:layout_marginEnd="16dp" />
+
+        <TextView
+            android:id="@+id/tvPageIndicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1 / 1"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnNext"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:text="&gt;"
+            android:textSize="18sp"
+            android:background="@drawable/rounded_button_bg"
+            android:textColor="@color/white"
+            android:layout_marginStart="16dp" />
+    </LinearLayout>
+
 </LinearLayout>

@@ -64,7 +64,7 @@ public class AdminActivity extends BaseActivity {
         setAdminCard(cardSchedule, R.drawable.ic_schedule, "Manage Van Schedules");
         setAdminCard(cardTerminals, R.drawable.ic_terminal, "Manage Terminals");
         setAdminCard(cardUsers, R.drawable.ic_users, "Manage Users");
-        setAdminCard(cardCancelled, R.drawable.ic_cancelled, "Cancelled Trips");
+        setAdminCard(cardCancelled, R.drawable.ic_cancelled, "Bookings History");
         setAdminCard(cardQR, R.drawable.ic_qr, "QR Scanner");
         setAdminCard(cardSettings, R.drawable.ic_settings, "Settings");
     }
