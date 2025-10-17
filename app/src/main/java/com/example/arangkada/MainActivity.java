@@ -80,8 +80,7 @@ public class MainActivity extends BaseActivity {
         bookRideCard.setOnClickListener(v -> startActivity(new Intent(this, BookRideActivity.class)));
         myTripsCard.setOnClickListener(v -> startActivity(new Intent(this, CancellationActivity.class)));
         notificationsCard.setOnClickListener(v -> {
-            notificationBadge.setVisibility(View.GONE);
-            startActivity(new Intent(this, NotificationsActivity.class));
+            Toast.makeText(this, "This feature is coming soon!", Toast.LENGTH_SHORT).show();
         });
         profileCard.setOnClickListener(v -> startActivity(new Intent(this, ProfileActivity.class)));
     }
