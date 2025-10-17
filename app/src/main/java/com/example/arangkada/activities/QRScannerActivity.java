@@ -236,15 +236,28 @@ public class QRScannerActivity extends AppCompatActivity {
             TextView tvDeparture = dialogView.findViewById(R.id.tv_departure);
             TextView tvPassengers = dialogView.findViewById(R.id.tv_passengers);
             TextView tvTotalFare = dialogView.findViewById(R.id.tv_total_fare);
+            TextView tvPaymentMethod = dialogView.findViewById(R.id.tv_payment_method);
+            TextView tvPaymentWarning = dialogView.findViewById(R.id.tv_payment_warning);
             Button btnCancel = dialogView.findViewById(R.id.btnCancel);
             Button btnComplete = dialogView.findViewById(R.id.btnComplete);
 
             String userId = doc.getString("userId");
             String destinationId = doc.getString("destinationId");
             String status = doc.getString("status");
+            String paymentMethod = doc.getString("paymentMethod");
 
             tvStatus.setText(status != null ? status : "Pending");
 
+            // Display payment method
+            if (paymentMethod == null) paymentMethod = "Cash";
+            tvPaymentMethod.setText("Payment: " + paymentMethod);
+
+            // Show warning if payment method is Cash
+            if (paymentMethod.equals("Cash")) {
+                tvPaymentWarning.setVisibility(View.VISIBLE);
+            } else {
+                tvPaymentWarning.setVisibility(View.GONE);
+            }
 
             Object departureObj = doc.get("departure");
             String formattedDeparture = "N/A";
