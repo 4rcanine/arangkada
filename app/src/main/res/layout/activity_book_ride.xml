@@ -160,6 +160,62 @@
                 </LinearLayout>
             </LinearLayout>
 
+            <!-- Payment Choice Section (for Cash & Gcash) -->
+            <LinearLayout
+                android:id="@+id/layoutPaymentChoice"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Choose Payment Method"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="16dp" />
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="4dp"
+                    android:layout_marginBottom="16dp">
+
+                    <RadioGroup
+                        android:id="@+id/radioGroupPayment"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp"
+                        android:background="@color/background_card">
+
+                        <RadioButton
+                            android:id="@+id/radioCash"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Pay with Cash"
+                            android:textSize="16sp"
+                            android:textColor="@color/text_primary"
+                            android:padding="12dp"
+                            android:checked="true" />
+
+                        <RadioButton
+                            android:id="@+id/radioGcash"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Pay with Gcash"
+                            android:textSize="16sp"
+                            android:textColor="@color/text_primary"
+                            android:padding="12dp" />
+
+                    </RadioGroup>
+                </androidx.cardview.widget.CardView>
+            </LinearLayout>
+
             <!-- Payment Proof Section -->
             <LinearLayout
                 android:id="@+id/layoutPaymentProof"
@@ -448,6 +504,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
+                android:gravity="center"
                 android:padding="20dp"
                 android:weightSum="2">
 
@@ -472,7 +529,7 @@
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@color/white"
-                    android:background="@drawable/button_primary" />
+                    android:backgroundTint="@color/primary_dark" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

@@ -36,11 +36,13 @@ public class BookRideActivity extends AppCompatActivity {
     private Spinner spinnerDestinations, spinnerTrips;
     private EditText etRegularCount, etStudentCount, etSeniorCount;
     private TextView tvTotalFare, tvTripDeparture, tvTripVan, tvTripSeats, tvTripTravelTime;
-    private LinearLayout layoutTripDetails, layoutPaymentProof, layoutQRCode, layoutMobileNumber;
+    private LinearLayout layoutTripDetails, layoutPaymentProof, layoutQRCode, layoutMobileNumber, layoutPaymentChoice;
     private Button btnBookNow, btnCancel, btnUploadProof;
     private ProgressBar progressBar;
     private ImageView imgQRCode, imgPaymentProof;
     private TextView tvPaymentMethod, tvMobileNumber;
+    private RadioGroup radioGroupPayment;
+    private RadioButton radioCash, radioGcash;
 
     private FirebaseFirestore db;
 
@@ -64,6 +66,7 @@ public class BookRideActivity extends AppCompatActivity {
     private String currentPaymentNumber = null;
     private Uri selectedProofUri = null;
     private String uploadedProofUrl = null;
+    private String userSelectedPayment = "Cash"; // User's choice for Cash & Gcash
 
     // ImageKit Configuration
     private static final String IMAGEKIT_PUBLIC_KEY = "public_aM1dq8aVaA7PBiP8Pdfo6mYpUsM=";
@@ -96,6 +99,10 @@ public class BookRideActivity extends AppCompatActivity {
         layoutPaymentProof = findViewById(R.id.layoutPaymentProof);
         layoutQRCode = findViewById(R.id.layoutQRCode);
         layoutMobileNumber = findViewById(R.id.layoutMobileNumber);
+        layoutPaymentChoice = findViewById(R.id.layoutPaymentChoice);
+        radioGroupPayment = findViewById(R.id.radioGroupPayment);
+        radioCash = findViewById(R.id.radioCash);
+        radioGcash = findViewById(R.id.radioGcash);
         imgQRCode = findViewById(R.id.imgQRCode);
         tvMobileNumber = findViewById(R.id.tvMobileNumber);
         btnUploadProof = findViewById(R.id.btnUploadProof);
@@ -119,6 +126,22 @@ public class BookRideActivity extends AppCompatActivity {
         etRegularCount.addTextChangedListener(fareWatcher);
         etStudentCount.addTextChangedListener(fareWatcher);
         etSeniorCount.addTextChangedListener(fareWatcher);
+
+        // Radio button listener for Cash & Gcash option
+        radioGroupPayment.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.radioCash) {
+                userSelectedPayment = "Cash";
+                layoutPaymentProof.setVisibility(View.GONE);
+                uploadedProofUrl = null;
+                selectedProofUri = null;
+                imgPaymentProof.setVisibility(View.GONE);
+            } else if (checkedId == R.id.radioGcash) {
+                userSelectedPayment = "Gcash";
+                layoutPaymentProof.setVisibility(View.VISIBLE);
+                // Show QR and mobile number
+                updatePaymentProofUI();
+            }
+        });
 
         btnBookNow.setOnClickListener(v -> handleBooking());
         btnUploadProof.setOnClickListener(v -> pickPaymentProof());
@@ -369,69 +392,71 @@ public class BookRideActivity extends AppCompatActivity {
         selectedProofUri = null;
         imgPaymentProof.setVisibility(View.GONE);
 
-        if (currentPaymentMethod.equals("Gcash") || currentPaymentMethod.equals("Cash & Gcash")) {
-            layoutPaymentProof.setVisibility(View.VISIBLE);
-
-            // Show QR Code if available
-            if (currentQRCodeUrl != null && !currentQRCodeUrl.isEmpty()) {
-                layoutQRCode.setVisibility(View.VISIBLE);
-                imgQRCode.setVisibility(View.VISIBLE);
-                loadImageWithGlide(currentQRCodeUrl, imgQRCode);
-                imgQRCode.setOnClickListener(v -> showFullScreenImage(currentQRCodeUrl));
-            } else {
-                layoutQRCode.setVisibility(View.GONE);
-                imgQRCode.setVisibility(View.GONE);
-            }
-
-            // Show Mobile Number if available
-            if (currentPaymentNumber != null && !currentPaymentNumber.isEmpty()) {
-                layoutMobileNumber.setVisibility(View.VISIBLE);
-                tvMobileNumber.setText(currentPaymentNumber);
-            } else {
-                layoutMobileNumber.setVisibility(View.GONE);
-            }
-
-            // If neither QR nor number is available, hide payment details
-            if ((currentQRCodeUrl == null || currentQRCodeUrl.isEmpty()) &&
-                    (currentPaymentNumber == null || currentPaymentNumber.isEmpty())) {
-                layoutPaymentProof.setVisibility(View.GONE);
-            }
-
-        } else {
+        if (currentPaymentMethod.equals("Cash & Gcash")) {
+            // Show payment choice radio buttons
+            layoutPaymentChoice.setVisibility(View.VISIBLE);
+            radioCash.setChecked(true);
+            userSelectedPayment = "Cash";
             layoutPaymentProof.setVisibility(View.GONE);
+        } else if (currentPaymentMethod.equals("Gcash")) {
+            layoutPaymentChoice.setVisibility(View.GONE);
+            layoutPaymentProof.setVisibility(View.VISIBLE);
+            updatePaymentProofUI();
+        } else {
+            layoutPaymentChoice.setVisibility(View.GONE);
+            layoutPaymentProof.setVisibility(View.GONE);
+        }
+    }
+
+    private void updatePaymentProofUI() {
+        // Show QR Code if available
+        if (currentQRCodeUrl != null && !currentQRCodeUrl.isEmpty()) {
+            layoutQRCode.setVisibility(View.VISIBLE);
+            imgQRCode.setVisibility(View.VISIBLE);
+            loadImageWithGlide(currentQRCodeUrl, imgQRCode);
+            imgQRCode.setOnClickListener(v -> showFullScreenImage(currentQRCodeUrl));
+        } else {
             layoutQRCode.setVisibility(View.GONE);
+            imgQRCode.setVisibility(View.GONE);
+        }
+
+        // Show Mobile Number if available
+        if (currentPaymentNumber != null && !currentPaymentNumber.isEmpty()) {
+            layoutMobileNumber.setVisibility(View.VISIBLE);
+            tvMobileNumber.setText(currentPaymentNumber);
+        } else {
             layoutMobileNumber.setVisibility(View.GONE);
+        }
+
+        // If neither QR nor number is available, hide payment details
+        if ((currentQRCodeUrl == null || currentQRCodeUrl.isEmpty()) &&
+                (currentPaymentNumber == null || currentPaymentNumber.isEmpty())) {
+            layoutPaymentProof.setVisibility(View.GONE);
         }
     }
 
     private void handleBooking() {
-        if (currentPaymentMethod.equals("Gcash")) {
+        if (currentPaymentMethod.equals("Cash & Gcash")) {
+            // User chose between Cash or Gcash
+            if (userSelectedPayment.equals("Gcash")) {
+                // Must upload proof
+                if (uploadedProofUrl == null) {
+                    Toast.makeText(this, "Please upload payment proof before booking", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            }
+            saveBooking(userSelectedPayment);
+        } else if (currentPaymentMethod.equals("Gcash")) {
             // Gcash: Must upload proof
             if (uploadedProofUrl == null) {
                 Toast.makeText(this, "Please upload payment proof before booking", Toast.LENGTH_SHORT).show();
                 return;
             }
             saveBooking("Gcash");
-        } else if (currentPaymentMethod.equals("Cash & Gcash")) {
-            // Cash & Gcash: Optional proof, ask if no proof uploaded
-            if (uploadedProofUrl == null) {
-                showCashPaymentDialog();
-            } else {
-                saveBooking("Gcash");
-            }
         } else {
             // Cash: Direct booking
             saveBooking("Cash");
         }
-    }
-
-    private void showCashPaymentDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle("Payment Confirmation")
-                .setMessage("No payment proof uploaded. Do you want to pay in cash?")
-                .setPositiveButton("Yes, Pay Cash", (dialog, which) -> saveBooking("Cash"))
-                .setNegativeButton("Cancel", null)
-                .show();
     }
 
     private String formatDeparture(Object departureObj) {
