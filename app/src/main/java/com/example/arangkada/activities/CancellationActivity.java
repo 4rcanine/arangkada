@@ -69,7 +69,11 @@ public class CancellationActivity extends AppCompatActivity {
     }
 
     private void loadBookings() {
+        // Get the current user's ID from Firebase Auth
+        String currentUserId = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser().getUid();
+
         db.collection("bookings")
+                .whereEqualTo("userId", currentUserId)  // Filter by current user
                 .whereIn("status", List.of("Pending", "Confirmed"))
                 .addSnapshotListener((@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) -> {
                     if (error != null) {
