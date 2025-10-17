@@ -117,7 +117,7 @@
                                     android:layout_height="wrap_content"
                                     android:text="Loading..."
                                     android:textColor="@color/text_primary"
-                                    android:textSize="26sp"
+                                    android:textSize="18sp"
                                     android:textStyle="bold"
                                     android:letterSpacing="-0.01"
                                     android:layout_marginTop="4dp" />
