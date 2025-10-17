@@ -65,6 +65,7 @@
                 android:id="@+id/tv_route"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="Loading..."
                 android:textSize="14sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="8dp" />
@@ -81,6 +82,7 @@
                 android:id="@+id/tv_van"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="Loading..."
                 android:textSize="14sp"
                 android:layout_marginBottom="8dp" />
 
@@ -96,6 +98,7 @@
                 android:id="@+id/tv_departure"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="Loading..."
                 android:textSize="14sp"
                 android:layout_marginBottom="8dp" />
 
@@ -111,8 +114,32 @@
                 android:id="@+id/tv_passengers"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="0"
                 android:textSize="14sp"
                 android:layout_marginBottom="8dp" />
+
+            <!-- Payment Method -->
+            <TextView
+                android:id="@+id/tv_payment_method"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Payment: Cash"
+                android:textColor="#D2691E"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <!-- View Payment Proof Button (Only for Gcash) -->
+            <Button
+                android:id="@+id/btnViewProof"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:text="View Payment Proof"
+                android:textSize="13sp"
+                android:textColor="@android:color/white"
+                android:backgroundTint="#FFA500"
+                android:layout_marginBottom="8dp"
+                android:visibility="gone" />
 
         </LinearLayout>
 
@@ -149,7 +176,8 @@
                 android:layout_height="wrap_content"
                 android:text="Confirm"
                 android:textColor="@android:color/white"
-                android:backgroundTint="#2E8B87" />
+                android:backgroundTint="#2E8B87"
+                android:minWidth="80dp" />
 
             <Button
                 android:id="@+id/btnCancel"
@@ -158,7 +186,8 @@
                 android:text="Cancel"
                 android:textColor="@android:color/white"
                 android:layout_marginStart="8dp"
-                android:backgroundTint="#B22222" />
+                android:backgroundTint="#B22222"
+                android:minWidth="80dp" />
         </LinearLayout>
 
     </LinearLayout>

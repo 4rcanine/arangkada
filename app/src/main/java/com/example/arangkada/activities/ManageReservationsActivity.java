@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.bumptech.glide.Glide;
 import com.example.arangkada.R;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.Timestamp;
@@ -281,6 +282,44 @@ public class ManageReservationsActivity extends AppCompatActivity {
         btnNext.setEnabled(currentPage < totalPages);
     }
 
+    private void showFullScreenImage(String imageUrl) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_fullscreen_image, null);
+
+        ImageView imgFullScreen = dialogView.findViewById(R.id.imgFullScreen);
+        ImageView btnClose = dialogView.findViewById(R.id.btnClose);
+
+        // Load image
+        Glide.with(this)
+                .load(imageUrl)
+                .placeholder(R.drawable.ic_launcher_background)
+                .error(R.drawable.ic_launcher_background)
+                .into(imgFullScreen);
+
+        builder.setView(dialogView);
+        AlertDialog dialog = builder.create();
+
+        // Make dialog fullscreen
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setLayout(
+                    android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                    android.view.ViewGroup.LayoutParams.MATCH_PARENT
+            );
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+            // Hide status bar and navigation bar for true fullscreen
+            dialog.getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_FULLSCREEN |
+                            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            );
+        }
+
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+        imgFullScreen.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
+    }
+
     // ======================================================
     // Adapter
     // ======================================================
@@ -328,6 +367,20 @@ public class ManageReservationsActivity extends AppCompatActivity {
             holder.tvPassengers.setText(String.valueOf(booking.getSeats()));
             holder.tvStatus.setText(booking.getStatus());
 
+            // Display payment method
+            String paymentMethod = booking.getPaymentMethod() != null ? booking.getPaymentMethod() : "Cash";
+            holder.tvPaymentMethod.setText("Payment: " + paymentMethod);
+
+            // Handle payment proof button visibility
+            if ("Gcash".equals(paymentMethod) && booking.getPaymentProofUrl() != null) {
+                holder.btnViewProof.setVisibility(View.VISIBLE);
+                holder.btnViewProof.setOnClickListener(v ->
+                        showFullScreenImage(booking.getPaymentProofUrl())
+                );
+            } else {
+                holder.btnViewProof.setVisibility(View.GONE);
+            }
+
             switch (booking.getStatus()) {
                 case "Confirmed":
                     holder.tvStatus.setBackgroundResource(R.drawable.bg_status_confirmed);
@@ -346,8 +399,8 @@ public class ManageReservationsActivity extends AppCompatActivity {
         public int getItemCount() { return bookings.size(); }
 
         class BookingViewHolder extends RecyclerView.ViewHolder {
-            TextView txtUser, tvRoute, tvVan, tvDeparture, tvPassengers, tvTotalFare, tvStatus;
-            Button btnConfirm, btnCancel;
+            TextView txtUser, tvRoute, tvVan, tvDeparture, tvPassengers, tvTotalFare, tvStatus, tvPaymentMethod;
+            Button btnConfirm, btnCancel, btnViewProof;
             BookingViewHolder(@NonNull View itemView) {
                 super(itemView);
                 txtUser = itemView.findViewById(R.id.txtUser);
@@ -357,8 +410,10 @@ public class ManageReservationsActivity extends AppCompatActivity {
                 tvPassengers = itemView.findViewById(R.id.tv_passengers);
                 tvTotalFare = itemView.findViewById(R.id.tv_total_fare);
                 tvStatus = itemView.findViewById(R.id.tv_status);
+                tvPaymentMethod = itemView.findViewById(R.id.tv_payment_method);
                 btnConfirm = itemView.findViewById(R.id.btnConfirm);
                 btnCancel = itemView.findViewById(R.id.btnCancel);
+                btnViewProof = itemView.findViewById(R.id.btnViewProof);
             }
         }
     }
@@ -413,7 +468,7 @@ public class ManageReservationsActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    // Booking Model (unchanged)
+    // Booking Model
     public static class Booking {
         private String bookingId;
         private Timestamp createdAt;
@@ -427,6 +482,8 @@ public class ManageReservationsActivity extends AppCompatActivity {
         private double totalFare;
         private String tripId;
         private String userId;
+        private String paymentMethod;
+        private String paymentProofUrl;
 
         public Booking() {}
 
@@ -442,6 +499,8 @@ public class ManageReservationsActivity extends AppCompatActivity {
         public double getTotalFare() { return totalFare; }
         public String getTripId() { return tripId; }
         public String getUserId() { return userId; }
+        public String getPaymentMethod() { return paymentMethod; }
+        public String getPaymentProofUrl() { return paymentProofUrl; }
 
         public void setBookingId(String bookingId) { this.bookingId = bookingId; }
         public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
@@ -455,5 +514,7 @@ public class ManageReservationsActivity extends AppCompatActivity {
         public void setTotalFare(double totalFare) { this.totalFare = totalFare; }
         public void setTripId(String tripId) { this.tripId = tripId; }
         public void setUserId(String userId) { this.userId = userId; }
+        public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+        public void setPaymentProofUrl(String paymentProofUrl) { this.paymentProofUrl = paymentProofUrl; }
     }
 }

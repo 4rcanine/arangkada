@@ -1,30 +1,48 @@
 package com.example.arangkada.activities;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.*;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.arangkada.MainActivity;
 import com.example.arangkada.R;
+import com.bumptech.glide.Glide;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.*;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import okhttp3.*;
 
 public class BookRideActivity extends AppCompatActivity {
+
+    private static final int PICK_PAYMENT_PROOF = 201;
+    private static final String TAG = "BookRideActivity";
 
     private Spinner spinnerDestinations, spinnerTrips;
     private EditText etRegularCount, etStudentCount, etSeniorCount;
     private TextView tvTotalFare, tvTripDeparture, tvTripVan, tvTripSeats, tvTripTravelTime;
-    private LinearLayout layoutTripDetails;
-    private Button btnBookNow, btnCancel;
+    private LinearLayout layoutTripDetails, layoutPaymentProof, layoutQRCode, layoutMobileNumber, layoutPaymentChoice;
+    private Button btnBookNow, btnCancel, btnUploadProof;
     private ProgressBar progressBar;
+    private ImageView imgQRCode, imgPaymentProof;
+    private TextView tvPaymentMethod, tvMobileNumber;
+    private RadioGroup radioGroupPayment;
+    private RadioButton radioCash, radioGcash;
 
     private FirebaseFirestore db;
 
@@ -41,6 +59,19 @@ public class BookRideActivity extends AppCompatActivity {
     private int studentFare = 0;
     private int seniorFare = 0;
     private int travelTimeMinutes = 0;
+
+    // Payment handling
+    private String currentPaymentMethod = "Cash";
+    private String currentQRCodeUrl = null;
+    private String currentPaymentNumber = null;
+    private Uri selectedProofUri = null;
+    private String uploadedProofUrl = null;
+    private String userSelectedPayment = "Cash"; // User's choice for Cash & Gcash
+
+    // ImageKit Configuration
+    private static final String IMAGEKIT_PUBLIC_KEY = "public_aM1dq8aVaA7PBiP8Pdfo6mYpUsM=";
+    private static final String IMAGEKIT_PRIVATE_KEY = "private_xix6Ergz3zAHuAwotsM7a+4WsdU=";
+    private static final String IMAGEKIT_UPLOAD_URL = "https://upload.imagekit.io/api/v1/files/upload";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +94,20 @@ public class BookRideActivity extends AppCompatActivity {
         tvTripTravelTime = findViewById(R.id.tvTripTravelTime);
         layoutTripDetails = findViewById(R.id.layoutTripDetails);
 
+        // Payment views
+        tvPaymentMethod = findViewById(R.id.tvPaymentMethod);
+        layoutPaymentProof = findViewById(R.id.layoutPaymentProof);
+        layoutQRCode = findViewById(R.id.layoutQRCode);
+        layoutMobileNumber = findViewById(R.id.layoutMobileNumber);
+        layoutPaymentChoice = findViewById(R.id.layoutPaymentChoice);
+        radioGroupPayment = findViewById(R.id.radioGroupPayment);
+        radioCash = findViewById(R.id.radioCash);
+        radioGcash = findViewById(R.id.radioGcash);
+        imgQRCode = findViewById(R.id.imgQRCode);
+        tvMobileNumber = findViewById(R.id.tvMobileNumber);
+        btnUploadProof = findViewById(R.id.btnUploadProof);
+        imgPaymentProof = findViewById(R.id.imgPaymentProof);
+
         btnBookNow = findViewById(R.id.btnBookNow);
         btnCancel = findViewById(R.id.btn_cancel);
         progressBar = findViewById(R.id.progressBar);
@@ -82,7 +127,24 @@ public class BookRideActivity extends AppCompatActivity {
         etStudentCount.addTextChangedListener(fareWatcher);
         etSeniorCount.addTextChangedListener(fareWatcher);
 
-        btnBookNow.setOnClickListener(v -> saveBooking());
+        // Radio button listener for Cash & Gcash option
+        radioGroupPayment.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.radioCash) {
+                userSelectedPayment = "Cash";
+                layoutPaymentProof.setVisibility(View.GONE);
+                uploadedProofUrl = null;
+                selectedProofUri = null;
+                imgPaymentProof.setVisibility(View.GONE);
+            } else if (checkedId == R.id.radioGcash) {
+                userSelectedPayment = "Gcash";
+                layoutPaymentProof.setVisibility(View.VISIBLE);
+                // Show QR and mobile number
+                updatePaymentProofUI();
+            }
+        });
+
+        btnBookNow.setOnClickListener(v -> handleBooking());
+        btnUploadProof.setOnClickListener(v -> pickPaymentProof());
 
         // Cancel
         btnCancel.setOnClickListener(v -> {
@@ -91,6 +153,22 @@ public class BookRideActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         });
+    }
+
+    private void pickPaymentProof() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(intent, PICK_PAYMENT_PROOF);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_PAYMENT_PROOF && resultCode == RESULT_OK && data != null) {
+            selectedProofUri = data.getData();
+            imgPaymentProof.setImageURI(selectedProofUri);
+            imgPaymentProof.setVisibility(View.VISIBLE);
+            uploadProofToImageKit(selectedProofUri);
+        }
     }
 
     private void loadDestinations() {
@@ -166,7 +244,6 @@ public class BookRideActivity extends AppCompatActivity {
                     tripList.clear();
                     List<String> tripNames = new ArrayList<>();
 
-                    // 🔹 Get current time in Manila
                     Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Manila"));
                     Date now = calendar.getTime();
 
@@ -175,8 +252,6 @@ public class BookRideActivity extends AppCompatActivity {
                         if (departure == null) continue;
 
                         Date depDate = departure.toDate();
-
-                        // 🔹 Filter only future trips
                         if (depDate.before(now)) continue;
 
                         tripList.add(doc);
@@ -204,7 +279,6 @@ public class BookRideActivity extends AppCompatActivity {
                         spinnerTrips.setEnabled(false);
                         layoutTripDetails.setVisibility(View.GONE);
 
-                        // no available = disable
                         etRegularCount.setEnabled(false);
                         etStudentCount.setEnabled(false);
                         etSeniorCount.setEnabled(false);
@@ -257,10 +331,22 @@ public class BookRideActivity extends AppCompatActivity {
         Long availableSeatsObj = tripDoc.getLong("availableSeats");
         long availableSeats = (availableSeatsObj != null) ? availableSeatsObj : 0L;
 
+        // Get payment method, QR code, and mobile number
+        currentPaymentMethod = tripDoc.getString("paymentMethod");
+        currentQRCodeUrl = tripDoc.getString("qrCodeUrl");
+        currentPaymentNumber = tripDoc.getString("paymentNumber");
+
+        if (currentPaymentMethod == null) currentPaymentMethod = "Cash";
+
         tvTripDeparture.setText("Departure: " + departure);
         tvTripVan.setText("Van: " + (vanPlate != null ? vanPlate : "-"));
         tvTripSeats.setText("Available Seats: " + availableSeats);
         tvTripTravelTime.setText("Travel Time: " + formatTravelTime(travelTimeMinutes));
+        tvPaymentMethod.setText("Payment Method: " + currentPaymentMethod);
+
+        // Handle payment UI
+        updatePaymentUI();
+
         layoutTripDetails.setVisibility(View.VISIBLE);
 
         boolean isSoldOut = (availableSeats == 0);
@@ -300,6 +386,79 @@ public class BookRideActivity extends AppCompatActivity {
                 });
     }
 
+    private void updatePaymentUI() {
+        // Reset payment proof
+        uploadedProofUrl = null;
+        selectedProofUri = null;
+        imgPaymentProof.setVisibility(View.GONE);
+
+        if (currentPaymentMethod.equals("Cash & Gcash")) {
+            // Show payment choice radio buttons
+            layoutPaymentChoice.setVisibility(View.VISIBLE);
+            radioCash.setChecked(true);
+            userSelectedPayment = "Cash";
+            layoutPaymentProof.setVisibility(View.GONE);
+        } else if (currentPaymentMethod.equals("Gcash")) {
+            layoutPaymentChoice.setVisibility(View.GONE);
+            layoutPaymentProof.setVisibility(View.VISIBLE);
+            updatePaymentProofUI();
+        } else {
+            layoutPaymentChoice.setVisibility(View.GONE);
+            layoutPaymentProof.setVisibility(View.GONE);
+        }
+    }
+
+    private void updatePaymentProofUI() {
+        // Show QR Code if available
+        if (currentQRCodeUrl != null && !currentQRCodeUrl.isEmpty()) {
+            layoutQRCode.setVisibility(View.VISIBLE);
+            imgQRCode.setVisibility(View.VISIBLE);
+            loadImageWithGlide(currentQRCodeUrl, imgQRCode);
+            imgQRCode.setOnClickListener(v -> showFullScreenImage(currentQRCodeUrl));
+        } else {
+            layoutQRCode.setVisibility(View.GONE);
+            imgQRCode.setVisibility(View.GONE);
+        }
+
+        // Show Mobile Number if available
+        if (currentPaymentNumber != null && !currentPaymentNumber.isEmpty()) {
+            layoutMobileNumber.setVisibility(View.VISIBLE);
+            tvMobileNumber.setText(currentPaymentNumber);
+        } else {
+            layoutMobileNumber.setVisibility(View.GONE);
+        }
+
+        // If neither QR nor number is available, hide payment details
+        if ((currentQRCodeUrl == null || currentQRCodeUrl.isEmpty()) &&
+                (currentPaymentNumber == null || currentPaymentNumber.isEmpty())) {
+            layoutPaymentProof.setVisibility(View.GONE);
+        }
+    }
+
+    private void handleBooking() {
+        if (currentPaymentMethod.equals("Cash & Gcash")) {
+            // User chose between Cash or Gcash
+            if (userSelectedPayment.equals("Gcash")) {
+                // Must upload proof
+                if (uploadedProofUrl == null) {
+                    Toast.makeText(this, "Please upload payment proof before booking", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            }
+            saveBooking(userSelectedPayment);
+        } else if (currentPaymentMethod.equals("Gcash")) {
+            // Gcash: Must upload proof
+            if (uploadedProofUrl == null) {
+                Toast.makeText(this, "Please upload payment proof before booking", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            saveBooking("Gcash");
+        } else {
+            // Cash: Direct booking
+            saveBooking("Cash");
+        }
+    }
+
     private String formatDeparture(Object departureObj) {
         if (departureObj instanceof Timestamp) {
             return dateFormat.format(((Timestamp) departureObj).toDate());
@@ -337,7 +496,7 @@ public class BookRideActivity extends AppCompatActivity {
         }
     }
 
-    private void saveBooking() {
+    private void saveBooking(String finalPaymentMethod) {
         if (selectedTripIndex == -1) {
             Toast.makeText(this, "Please select a trip first", Toast.LENGTH_SHORT).show();
             return;
@@ -400,6 +559,12 @@ public class BookRideActivity extends AppCompatActivity {
             booking.put("userId", userId);
             booking.put("totalFare", totalFare);
             booking.put("createdAt", createdAt);
+            booking.put("paymentMethod", finalPaymentMethod);
+
+            // Add payment proof URL if available
+            if (uploadedProofUrl != null) {
+                booking.put("paymentProofUrl", uploadedProofUrl);
+            }
 
             transaction.set(bookingRef, booking);
 
@@ -412,12 +577,191 @@ public class BookRideActivity extends AppCompatActivity {
             etSeniorCount.setText("0");
             updateFarePreview();
 
+            // Reset payment proof
+            uploadedProofUrl = null;
+            selectedProofUri = null;
+            imgPaymentProof.setVisibility(View.GONE);
+
         }).addOnFailureListener(e ->
                 Toast.makeText(BookRideActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show()
         ).addOnCompleteListener(task -> {
             progressBar.setVisibility(View.GONE);
+            btnBookNow.setEnabled(true);
         });
     }
+
+    // ImageKit Upload Methods
+    private String generateToken() {
+        return UUID.randomUUID().toString();
+    }
+
+    private long getExpireTimestamp() {
+        return (System.currentTimeMillis() / 1000) + 3600;
+    }
+
+    private String generateSignature(String token, long expire) {
+        try {
+            String stringToSign = token + expire;
+            Mac sha256_HMAC = Mac.getInstance("HmacSHA1");
+            SecretKeySpec secret_key = new SecretKeySpec(IMAGEKIT_PRIVATE_KEY.getBytes("UTF-8"), "HmacSHA1");
+            sha256_HMAC.init(secret_key);
+            byte[] hash = sha256_HMAC.doFinal(stringToSign.getBytes("UTF-8"));
+
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (Exception e) {
+            Log.e(TAG, "Error generating signature", e);
+            return null;
+        }
+    }
+
+    private void uploadProofToImageKit(Uri imageUri) {
+        progressBar.setVisibility(View.VISIBLE);
+
+        new Thread(() -> {
+            try {
+                InputStream inputStream = getContentResolver().openInputStream(imageUri);
+                if (inputStream == null) {
+                    runOnUiThread(() -> {
+                        Toast.makeText(this, "Failed to read image", Toast.LENGTH_SHORT).show();
+                        progressBar.setVisibility(View.GONE);
+                    });
+                    return;
+                }
+
+                byte[] imageBytes = new byte[inputStream.available()];
+                inputStream.read(imageBytes);
+                inputStream.close();
+
+                String token = generateToken();
+                long expire = getExpireTimestamp();
+                String signature = generateSignature(token, expire);
+
+                if (signature == null) {
+                    runOnUiThread(() -> {
+                        Toast.makeText(this, "Failed to generate signature", Toast.LENGTH_SHORT).show();
+                        progressBar.setVisibility(View.GONE);
+                    });
+                    return;
+                }
+
+                OkHttpClient client = new OkHttpClient();
+                String fileName = "payment_proof_" + System.currentTimeMillis() + ".jpg";
+
+                RequestBody requestBody = new MultipartBody.Builder()
+                        .setType(MultipartBody.FORM)
+                        .addFormDataPart("file", fileName,
+                                RequestBody.create(imageBytes, MediaType.parse("image/jpeg")))
+                        .addFormDataPart("fileName", fileName)
+                        .addFormDataPart("publicKey", IMAGEKIT_PUBLIC_KEY)
+                        .addFormDataPart("signature", signature)
+                        .addFormDataPart("expire", String.valueOf(expire))
+                        .addFormDataPart("token", token)
+                        .addFormDataPart("folder", "payment_proofs")
+                        .addFormDataPart("useUniqueFileName", "true")
+                        .build();
+
+                Request request = new Request.Builder()
+                        .url(IMAGEKIT_UPLOAD_URL)
+                        .post(requestBody)
+                        .build();
+
+                Response response = client.newCall(request).execute();
+
+                if (response.isSuccessful() && response.body() != null) {
+                    String responseBody = response.body().string();
+                    uploadedProofUrl = parseUrlFromResponse(responseBody);
+
+                    runOnUiThread(() -> {
+                        Toast.makeText(this, "Payment proof uploaded!", Toast.LENGTH_SHORT).show();
+                        progressBar.setVisibility(View.GONE);
+                    });
+                } else {
+                    String errorBody = response.body() != null ? response.body().string() : "Unknown error";
+                    Log.e(TAG, "Upload failed: " + errorBody);
+
+                    runOnUiThread(() -> {
+                        Toast.makeText(this, "Upload failed", Toast.LENGTH_SHORT).show();
+                        progressBar.setVisibility(View.GONE);
+                    });
+                }
+
+            } catch (IOException e) {
+                Log.e(TAG, "Upload error", e);
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "Upload error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    progressBar.setVisibility(View.GONE);
+                });
+            }
+        }).start();
+    }
+
+    private String parseUrlFromResponse(String jsonResponse) {
+        try {
+            int urlStart = jsonResponse.indexOf("\"url\":\"") + 7;
+            int urlEnd = jsonResponse.indexOf("\"", urlStart);
+            return jsonResponse.substring(urlStart, urlEnd);
+        } catch (Exception e) {
+            Log.e(TAG, "Error parsing URL from response", e);
+            return null;
+        }
+    }
+
+    private void loadImageWithGlide(String url, ImageView imageView) {
+        if (url != null && !url.isEmpty()) {
+            com.bumptech.glide.Glide.with(this)
+                    .load(url)
+                    .placeholder(R.drawable.ic_launcher_background)
+                    .error(R.drawable.ic_launcher_background)
+                    .into(imageView);
+        }
+    }
+
+    private void showFullScreenImage(String imageUrl) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_fullscreen_image, null);
+
+        ImageView imgFullScreen = dialogView.findViewById(R.id.imgFullScreen);
+        ImageView btnClose = dialogView.findViewById(R.id.btnClose);
+
+        // Load image
+        Glide.with(this)
+                .load(imageUrl)
+                .placeholder(R.drawable.ic_launcher_background)
+                .error(R.drawable.ic_launcher_background)
+                .into(imgFullScreen);
+
+        builder.setView(dialogView);
+        AlertDialog dialog = builder.create();
+
+        // Make dialog fullscreen
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setLayout(
+                    android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                    android.view.ViewGroup.LayoutParams.MATCH_PARENT
+            );
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+            dialog.getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            );
+        }
+
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+        imgFullScreen.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
+    }
+
 
     @Override
     protected void onDestroy() {

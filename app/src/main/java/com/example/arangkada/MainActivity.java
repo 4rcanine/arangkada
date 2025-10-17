@@ -65,7 +65,6 @@ public class MainActivity extends BaseActivity {
         myTripsCard = findViewById(R.id.card_my_trips);
         notificationsCard = findViewById(R.id.card_notifications);
         profileCard = findViewById(R.id.card_profile);
-        notificationBadge = findViewById(R.id.iv_notification_badge);
 
         tvNextTripTitle = findViewById(R.id.tv_next_trip_title);
         tvNextTripRoute = findViewById(R.id.tv_next_trip_route);
