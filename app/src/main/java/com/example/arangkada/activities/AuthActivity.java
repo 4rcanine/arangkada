@@ -23,6 +23,11 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
+import android.content.DialogInterface;
+import androidx.appcompat.app.AlertDialog;
+import androidx.annotation.NonNull;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 
 public class AuthActivity extends AppCompatActivity {
 
@@ -362,7 +367,78 @@ public class AuthActivity extends AppCompatActivity {
     }
 
     private void showForgotPasswordDialog() {
-        Toast.makeText(this, "Forgot password feature coming soon!", Toast.LENGTH_SHORT).show();
+        // Create a dialog with an input field
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Reset Password");
+        builder.setMessage("Enter your email address to receive a password reset link.");
+
+        // Create an EditText for email input
+        final EditText input = new EditText(this);
+        input.setInputType(android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+        input.setHint("Email Address");
+
+        // Add padding to the EditText
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        params.setMargins(50, 20, 50, 20);
+        input.setLayoutParams(params);
+
+        // Create a container for the EditText
+        LinearLayout container = new LinearLayout(this);
+        container.setOrientation(LinearLayout.VERTICAL);
+        container.addView(input);
+        builder.setView(container);
+
+        // Set up the buttons
+        builder.setPositiveButton("Send Reset Link", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String email = input.getText().toString().trim();
+
+                if (email.isEmpty()) {
+                    Toast.makeText(AuthActivity.this, "Please enter your email address", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (!isValidEmail(email)) {
+                    Toast.makeText(AuthActivity.this, "Please enter a valid email address", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // Send password reset email
+                sendPasswordResetEmail(email);
+            }
+        });
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
+    private void sendPasswordResetEmail(String email) {
+        mAuth.sendPasswordResetEmail(email)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(AuthActivity.this,
+                                    "Password reset email sent! Please check your inbox.",
+                                    Toast.LENGTH_LONG).show();
+                        } else {
+                            String errorMessage = task.getException() != null ?
+                                    task.getException().getMessage() : "Unknown error";
+                            Toast.makeText(AuthActivity.this,
+                                    "Failed to send reset email: " + errorMessage,
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
     }
 
     private void navigateToMainActivity() {
