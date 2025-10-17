@@ -2,13 +2,14 @@ package com.example.arangkada;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.cardview.widget.CardView;
 
 import com.example.arangkada.activities.AdminCancellationActivity;
-import com.example.arangkada.activities.AdminProfileActivity;
 import com.example.arangkada.activities.AuthActivity;
 import com.example.arangkada.activities.BaseActivity;
 import com.example.arangkada.activities.CurrentVanScheduleActivity;
@@ -58,8 +59,14 @@ public class AdminActivity extends BaseActivity {
             loadAdminName(user.getUid());
         }
 
-        // REMOVED: setAdminCard() calls - cards are now fully defined in XML
-        // The new layout has all icons and text built-in, no need to set them dynamically
+        // Set card UI
+        setAdminCard(cardReservations, R.drawable.ic_reservations, "Manage Reservations");
+        setAdminCard(cardSchedule, R.drawable.ic_schedule, "Manage Van Schedules");
+        setAdminCard(cardTerminals, R.drawable.ic_terminal, "Manage Terminals");
+        setAdminCard(cardUsers, R.drawable.ic_users, "Manage Users");
+        setAdminCard(cardCancelled, R.drawable.ic_cancelled, "Cancelled Trips");
+        setAdminCard(cardQR, R.drawable.ic_qr, "QR Scanner");
+        setAdminCard(cardSettings, R.drawable.ic_settings, "Settings");
     }
 
     private void initializeViews() {
@@ -75,13 +82,14 @@ public class AdminActivity extends BaseActivity {
     }
 
     private void setupClickListeners() {
+        // TODO: Uncomment when activities are ready
         cardReservations.setOnClickListener(v -> startActivity(new Intent(this, ManageReservationsActivity.class)));
         cardSchedule.setOnClickListener(v -> startActivity(new Intent(this, CurrentVanScheduleActivity.class)));
         cardTerminals.setOnClickListener(v -> startActivity(new Intent(this, NewTerminalActivity.class)));
         cardUsers.setOnClickListener(v -> startActivity(new Intent(this, UserManagementActivity.class)));
         cardCancelled.setOnClickListener(v -> startActivity(new Intent(this, AdminCancellationActivity.class)));
         cardQR.setOnClickListener(v -> startActivity(new Intent(this, QRScannerActivity.class)));
-        cardSettings.setOnClickListener(v -> startActivity(new Intent(this, AdminProfileActivity.class)));
+//        cardSettings.setOnClickListener(v -> startActivity(new Intent(this, ProfileActivity.class)));
     }
 
     private void loadAdminName(String userId) {
@@ -106,6 +114,11 @@ public class AdminActivity extends BaseActivity {
         showMenuButton();
     }
 
-    // REMOVED: setAdminCard() method - no longer needed with new XML layout
-    // The cards now have their icons and text defined directly in activity_admin.xml
+    private void setAdminCard(View cardView, int iconRes, String title) {
+        ImageView icon = cardView.findViewById(R.id.admin_icon);
+        TextView text = cardView.findViewById(R.id.admin_title);
+
+        icon.setImageResource(iconRes);
+        text.setText(title);
+    }
 }

@@ -190,7 +190,7 @@ public class ProfileActivity extends AppCompatActivity {
     private void performLogout() {
         mAuth.signOut();
         Toast.makeText(this, "Logging out...", Toast.LENGTH_SHORT).show();
-        Intent intent = new Intent(ProfileActivity.this, MainActivity.class);
+        Intent intent = new Intent(ProfileActivity.this, AuthActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
