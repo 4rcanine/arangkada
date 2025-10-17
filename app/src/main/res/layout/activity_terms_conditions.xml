@@ -2,15 +2,146 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
-    android:background="@color/background_primary">
+    android:background="#F8F9FA"
+    android:padding="16dp">
 
-    <TextView
-        android:id="@+id/tv_terms_conditions"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Dummy Terms and Conditions:\n\n1. Hi everyone.\n2. terms? later na .\n3. bb hold on bb hold on."
-        android:textSize="15sp"
-        android:lineSpacingExtra="4dp"
-        android:textColor="@color/text_primary" />
+        android:orientation="vertical">
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/tvTermsTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Arangkada Terms &amp; Conditions"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="#1E3A8A"
+            android:gravity="center"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Card container -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#FFFFFF"
+            android:padding="20dp"
+            android:elevation="3dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="20dp"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="4dp">
+
+            <!-- Introduction -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Welcome to Arangkada — your trusted UV Express carpooling app. By using this application, you agree to the following terms and conditions:"
+                android:textColor="#333333"
+                android:textSize="15sp"
+                android:layout_marginBottom="16dp"
+                android:lineSpacingExtra="6dp" />
+
+            <!-- Section Template -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="1. Booking and Service Scope"
+                style="@style/TermsHeader" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Arangkada connects passengers for UV Express carpooling between Cervantes and Baguio City. Drivers operate under Arangkada’s management system and are not general users of the app."
+                style="@style/TermsBody" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="2. User Accounts"
+                style="@style/TermsHeader" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Riders must create an account with accurate personal details. Account misuse or false information may result in suspension."
+                style="@style/TermsBody" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="3. Payments"
+                style="@style/TermsHeader" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Accepted payment methods include cash and GCash. Arangkada does not store or process your GCash data directly."
+                style="@style/TermsBody" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="4. Ride Policies"
+                style="@style/TermsHeader" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Bookings are subject to driver approval. Cancellations must be made promptly to respect driver time and other passengers."
+                style="@style/TermsBody" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="5. Liability"
+                style="@style/TermsHeader" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Arangkada acts only as a platform to connect riders and drivers. The company is not liable for delays, loss, or damage during the trip."
+                style="@style/TermsBody" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="6. Privacy and Data"
+                style="@style/TermsHeader" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Personal information is collected only for booking, communication, and service improvement. We do not share data with unauthorized third parties."
+                style="@style/TermsBody" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="7. Admin Access"
+                style="@style/TermsHeader" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Drivers and operators log in with admin accounts (using @admin.com) to manage bookings."
+                style="@style/TermsBody" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="8. Amendments"
+                style="@style/TermsHeader" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Arangkada reserves the right to modify these terms at any time. Updates will be posted in-app. By continuing to use Arangkada, you confirm that you have read, understood, and agreed to these terms."
+                style="@style/TermsBody" />
+
+        </LinearLayout>
+    </LinearLayout>
 </ScrollView>
