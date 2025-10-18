@@ -272,28 +272,36 @@ public class MainActivity extends BaseActivity {
                             SharedPreferences prefs = getSharedPreferences("BookingData", MODE_PRIVATE);
                             SharedPreferences.Editor editor = prefs.edit();
 
-                            if ("Confirmed".equals(status)) {
+                            if ("Confirmed".equalsIgnoreCase(status)) {
                                 editor.putString("latest_booking_status", "confirmed").apply();
                                 NotificationHelper.showBookingNotification(
                                         this,
                                         "Booking Confirmed",
-                                        "Your UV Express booking has been confirmed!"
+                                        "Your UV Express booking has been confirmed!",
+                                        "confirmed"
                                 );
-                            } else if ("Rejected".equals(status)) {
+                            } else if ("Rejected".equalsIgnoreCase(status)) {
                                 editor.putString("latest_booking_status", "rejected").apply();
                                 NotificationHelper.showBookingNotification(
                                         this,
                                         "Booking Rejected",
-                                        "Sorry, your booking was rejected."
+                                        "Sorry, your booking was rejected.",
+                                        "rejected"
                                 );
                             } else {
-                                // Any other booking update
                                 editor.putString("latest_booking_status", "changed").apply();
+                                NotificationHelper.showBookingNotification(
+                                        this,
+                                        "Booking Update",
+                                        "Your booking details have been updated.",
+                                        "info"
+                                );
                             }
                         }
                     }
                 });
     }
+
 
     // 🔹 Create notification channel
     private void createNotificationChannel() {
