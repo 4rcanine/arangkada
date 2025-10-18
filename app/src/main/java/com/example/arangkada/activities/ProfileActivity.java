@@ -178,12 +178,41 @@ public class ProfileActivity extends BaseActivity {
 
 
     private void openBookingHistory() {
-        Toast.makeText(this, "Booking history coming soon!", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(this, MyTripsActivity.class);
+        startActivity(intent);
     }
 
+
     private void openNotificationSettings() {
-        Toast.makeText(this, "Notification settings coming soon!", Toast.LENGTH_SHORT).show();
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Notification Settings");
+        builder.setMessage("Would you like to receive notifications from Arangkada?");
+
+        builder.setPositiveButton("Turn On", (dialog, which) -> {
+            getSharedPreferences("AppSettings", MODE_PRIVATE)
+                    .edit()
+                    .putBoolean("notifications_enabled", true)
+                    .apply();
+
+            Toast.makeText(this, "Notifications turned on ✅", Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
+        });
+
+        builder.setNegativeButton("Turn Off", (dialog, which) -> {
+            getSharedPreferences("AppSettings", MODE_PRIVATE)
+                    .edit()
+                    .putBoolean("notifications_enabled", false)
+                    .apply();
+
+            Toast.makeText(this, "Notifications turned off 🚫", Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
+        });
+
+        builder.create().show();
     }
+
+
+
 
     private void openHelpSupport() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);

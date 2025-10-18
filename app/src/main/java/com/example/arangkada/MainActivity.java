@@ -361,8 +361,18 @@ public class MainActivity extends BaseActivity {
 
     private void saveAndShowNotification(String userId, String title, String message, String type,
                                          String destinationName, com.google.firebase.Timestamp departureTs, Double fare) {
-        SharedPreferences prefs = getSharedPreferences("BookingData", MODE_PRIVATE);
-        prefs.edit().putString("latest_booking_status", type).apply();
+        // 🔒 Check user preference first
+        SharedPreferences prefs = getSharedPreferences("AppSettings", MODE_PRIVATE);
+        boolean notificationsEnabled = prefs.getBoolean("notifications_enabled", true); // default: ON
+
+        if (!notificationsEnabled) {
+            // Skip notification if user turned it off
+            return;
+        }
+
+        // Continue normal flow if enabled
+        SharedPreferences bookingPrefs = getSharedPreferences("BookingData", MODE_PRIVATE);
+        bookingPrefs.edit().putString("latest_booking_status", type).apply();
 
         NotificationHelper.showBookingNotification(this, title, message, type);
         saveNotificationLocally(title, message, type);
@@ -380,6 +390,7 @@ public class MainActivity extends BaseActivity {
                 .collection("notifications")
                 .add(notifData);
     }
+
 
     private void saveNotificationLocally(String title, String message, String type) {
         String timestampNow = new SimpleDateFormat("MMM dd, yyyy • hh:mm a", Locale.getDefault()).format(new java.util.Date());
