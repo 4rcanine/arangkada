@@ -39,109 +39,226 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Welcome to Arangkada — your trusted UV Express carpooling app. By using this application, you agree to the following terms and conditions:"
+                android:text="Welcome to Arangkada — your trusted UV Express carpooling app. By using this application, you agree to the following Terms and Conditions:"
                 android:textColor="#333333"
                 android:textSize="15sp"
                 android:layout_marginBottom="16dp"
                 android:lineSpacingExtra="6dp" />
 
-            <!-- Section Template -->
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="1. Booking and Service Scope"
-                style="@style/TermsHeader" />
+            <!-- ============================== -->
+            <!-- FULL TERMS AND CONDITIONS TEXT -->
+            <!-- ============================== -->
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Arangkada connects passengers for UV Express carpooling between Cervantes and Baguio City. Drivers operate under Arangkada’s management system and are not general users of the app."
-                style="@style/TermsBody" />
+                android:text="1. Definition of Terms"
+                android:textStyle="bold"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:layout_marginTop="8dp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="2. User Accounts"
-                style="@style/TermsHeader" />
+                android:lineSpacingExtra="6dp"
+                android:text="“App” or “Arangkada” – refers to the Arangkada mobile application operated by Arangkada team.\n\n“User” – refers to any individual who registers, creates a profile, and books rides through the app.\n\n“Admin” – refers to authorized drivers or operators who manage bookings and ride schedules through a separate admin account (e.g., ending in @admin.com).\n\n“Service” – refers to the carpooling and ride-booking features provided by the app.\n\n“Booking” – refers to a confirmed ride request made through the app.\n\n“Payment” – refers to the exchange of fare made in cash or via GCash." />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Riders must create an account with accurate personal details. Account misuse or false information may result in suspension."
-                style="@style/TermsBody" />
+                android:text="2. Eligibility"
+                android:textStyle="bold"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:layout_marginTop="8dp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="3. Payments"
-                style="@style/TermsHeader" />
+                android:lineSpacingExtra="6dp"
+                android:text="• Users must be at least 18 years old to create an account and use the app.\n• Users agree to provide accurate, current, and complete information when registering.\n• The app reserves the right to suspend or terminate accounts found to contain false or misleading information." />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Accepted payment methods include cash and GCash. Arangkada does not store or process your GCash data directly."
-                style="@style/TermsBody" />
+                android:text="3. User Accounts"
+                android:textStyle="bold"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:layout_marginTop="8dp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="4. Ride Policies"
-                style="@style/TermsHeader" />
+                android:lineSpacingExtra="6dp"
+                android:text="• Each user must create an account to access booking features.\n• Users are responsible for maintaining the confidentiality of their login credentials.\n• The app is not responsible for any unauthorized use of an account.\n• Admin accounts are exclusively for verified drivers and operators; regular users are not allowed to access admin credentials." />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Bookings are subject to driver approval. Cancellations must be made promptly to respect driver time and other passengers."
-                style="@style/TermsBody" />
+                android:text="4. Booking and Ride Policies"
+                android:textStyle="bold"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:layout_marginTop="8dp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="5. Liability"
-                style="@style/TermsHeader" />
+                android:lineSpacingExtra="6dp"
+                android:text="• Users can book rides between Cervantes and Baguio City only.\n• Ride schedules, seat availability, and fares are managed by the admin.\n• Users must arrive on time at the agreed pickup point.\n• Cancellations should be made at least 30 minutes before departure.\n• No-shows may lead to temporary suspension of booking privileges.\n• Arangkada acts as a booking facilitator and does not directly operate transportation vehicles." />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Arangkada acts only as a platform to connect riders and drivers. The company is not liable for delays, loss, or damage during the trip."
-                style="@style/TermsBody" />
+                android:text="5. Payments"
+                android:textStyle="bold"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:layout_marginTop="8dp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="6. Privacy and Data"
-                style="@style/TermsHeader" />
+                android:lineSpacingExtra="6dp"
+                android:text="• Payments can be made through cash or GCash.\n• Users are responsible for entering correct payment details.\n• No refunds will be issued once a ride has commenced.\n• Arangkada is not responsible for payment errors or transfers made outside the app’s official channels." />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Personal information is collected only for booking, communication, and service improvement. We do not share data with unauthorized third parties."
-                style="@style/TermsBody" />
+                android:text="6. User Conduct"
+                android:textStyle="bold"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:layout_marginTop="8dp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="7. Admin Access"
-                style="@style/TermsHeader" />
+                android:lineSpacingExtra="6dp"
+                android:text="Users agree to:\n• Treat all drivers, admins, and other passengers with respect and courtesy.\n• Avoid any illegal, offensive, or harmful behavior during rides.\n• Refrain from creating fake bookings, duplicate accounts, or misusing the app.\nViolation of these rules may result in suspension or permanent termination of account access." />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Drivers and operators log in with admin accounts (using @admin.com) to manage bookings."
-                style="@style/TermsBody" />
+                android:text="7. Privacy and Data Protection"
+                android:textStyle="bold"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:layout_marginTop="8dp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="8. Amendments"
-                style="@style/TermsHeader" />
+                android:lineSpacingExtra="6dp"
+                android:text="• Arangkada collects user data such as name, contact number, and booking history for service improvement.\n• All personal data is stored securely and used only for operational purposes.\n• User data will not be sold or shared with third parties without consent, except as required by law.\n• Users may request deletion of their account and personal data by contacting support." />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Arangkada reserves the right to modify these terms at any time. Updates will be posted in-app. By continuing to use Arangkada, you confirm that you have read, understood, and agreed to these terms."
-                style="@style/TermsBody" />
+                android:text="8. Limitation of Liability"
+                android:textStyle="bold"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:layout_marginTop="8dp" />
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:lineSpacingExtra="6dp"
+                android:text="• Arangkada serves only as a platform connecting passengers to transport services.\n• The app is not liable for accidents, delays, or incidents during rides.\n• The app is not responsible for lost or damaged personal belongings.\n• Users assume all responsibility for their safety and belongings during rides." />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="9. Suspension or Termination"
+                android:textStyle="bold"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:layout_marginTop="8dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:lineSpacingExtra="6dp"
+                android:text="The app reserves the right to suspend or terminate user accounts that:\n• Violate these Terms.\n• Engage in fraudulent or abusive behavior.\n• Interfere with app operations or other users’ experiences.\nUsers may voluntarily delete or deactivate their account at any time." />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="10. Updates to the Terms"
+                android:textStyle="bold"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:layout_marginTop="8dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:lineSpacingExtra="6dp"
+                android:text="• Arangkada may update or modify these Terms and Conditions from time to time.\n• Any changes will be posted within the app.\n• Continued use of the app after such updates constitutes acceptance of the revised Terms." />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="11. Contact Information"
+                android:textStyle="bold"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:layout_marginTop="8dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:lineSpacingExtra="6dp"
+                android:text="For questions, concerns, or feedback regarding these Terms, please contact us at:\n📧 arangkada.support@gmail.com\n📍 Baguio City, Benguet, Philippines" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="12. Governing Law"
+                android:textStyle="bold"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:layout_marginTop="8dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:lineSpacingExtra="6dp"
+                android:text="These Terms and Conditions shall be governed by and construed in accordance with the laws of the Republic of the Philippines. Any disputes shall be resolved in the proper courts of Benguet Province." />
+
+            <!-- ========================= -->
+            <!-- ✅ I AGREE SECTION ADDED -->
+            <!-- ========================= -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="24dp">
+
+                <CheckBox
+                    android:id="@+id/checkbox_agree"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="I agree to these terms and accept"
+                    android:textColor="#000000"
+                    android:textSize="15sp" />
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btn_accept_terms"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Accept"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:background="@drawable/btn_accept_bg"
+                android:layout_marginTop="8dp"
+                android:enabled="false" />
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

@@ -41,7 +41,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1" />
 
-        <!-- Clear All Button (Material You style) -->
+        <!-- Clear All Button -->
         <FrameLayout
             android:id="@+id/btn_clear_notifications"
             android:layout_width="40dp"

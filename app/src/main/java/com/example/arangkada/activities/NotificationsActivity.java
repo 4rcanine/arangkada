@@ -37,22 +37,22 @@ public class NotificationsActivity extends BaseActivity {
         btnClear = findViewById(R.id.btn_clear_notifications);
         tvHeader.setText("Notifications");
 
-        // ✅ Load existing notifications from SharedPreferences
+
         notifications = loadNotifications();
 
-        // ✅ Setup RecyclerView and Adapter first
+
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new NotificationAdapter(this, notifications);
         recyclerView.setAdapter(adapter);
 
-        // ✅ Then check booking status (to clear flag safely)
+
         checkBookingStatus();
 
-        // ✅ Back button click
+
         ImageButton btnBack = findViewById(R.id.btn_back);
         btnBack.setOnClickListener(v -> finish());
 
-        // ✅ Clear all notifications
+
         btnClear.setOnClickListener(v -> {
             if (notifications.isEmpty()) {
                 Toast.makeText(this, "No notifications to clear", Toast.LENGTH_SHORT).show();
@@ -68,21 +68,18 @@ public class NotificationsActivity extends BaseActivity {
         // No navigation changes needed
     }
 
-    /**
-     * ✅ Simplified: Only clears booking status flag.
-     * This prevents duplicate "Booking Confirmed" messages.
-     */
+
     private void checkBookingStatus() {
         SharedPreferences prefs = getSharedPreferences("BookingData", MODE_PRIVATE);
         String bookingStatus = prefs.getString("latest_booking_status", "none");
 
         if (!"none".equals(bookingStatus)) {
-            // Just clear the flag to avoid duplicate notifications
+
             prefs.edit().putString("latest_booking_status", "none").apply();
         }
     }
 
-    // ✅ Save notification list to SharedPreferences
+
     private void saveNotifications(List<NotificationItem> list) {
         SharedPreferences prefs = getSharedPreferences("NotificationStorage", MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
@@ -99,7 +96,7 @@ public class NotificationsActivity extends BaseActivity {
         editor.apply();
     }
 
-    // ✅ Load saved notifications
+
     private List<NotificationItem> loadNotifications() {
         SharedPreferences prefs = getSharedPreferences("NotificationStorage", MODE_PRIVATE);
         String savedData = prefs.getString("notifications", "");
@@ -117,7 +114,7 @@ public class NotificationsActivity extends BaseActivity {
         return list;
     }
 
-    // ✅ Clear all notifications
+
     private void clearAllNotifications() {
         notifications.clear();
         adapter.notifyDataSetChanged();
