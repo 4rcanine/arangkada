@@ -2,8 +2,10 @@ package com.example.arangkada.activities;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -11,11 +13,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.arangkada.R;
 import com.example.arangkada.adapters.NotificationAdapter;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 public class NotificationsActivity extends BaseActivity {
 
@@ -23,6 +22,7 @@ public class NotificationsActivity extends BaseActivity {
     private NotificationAdapter adapter;
     private List<NotificationItem> notifications;
     private TextView tvHeader;
+    private FrameLayout btnClear; // ✅ Correct type
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,25 +34,33 @@ public class NotificationsActivity extends BaseActivity {
 
         recyclerView = findViewById(R.id.recycler_notifications);
         tvHeader = findViewById(R.id.tv_header);
+        btnClear = findViewById(R.id.btn_clear_notifications);
         tvHeader.setText("Notifications");
 
-        // ✅ Load existing notifications first
+        // ✅ Load existing notifications from SharedPreferences
         notifications = loadNotifications();
-        if (notifications == null) {
-            notifications = new ArrayList<>();
-        }
 
-        // ✅ Setup RecyclerView and adapter BEFORE checking for new notifications
+        // ✅ Setup RecyclerView and Adapter first
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new NotificationAdapter(this, notifications);
         recyclerView.setAdapter(adapter);
 
-        // ✅ Now it's safe to check booking status (adapter is ready)
+        // ✅ Then check booking status (to clear flag safely)
         checkBookingStatus();
 
         // ✅ Back button click
         ImageButton btnBack = findViewById(R.id.btn_back);
         btnBack.setOnClickListener(v -> finish());
+
+        // ✅ Clear all notifications
+        btnClear.setOnClickListener(v -> {
+            if (notifications.isEmpty()) {
+                Toast.makeText(this, "No notifications to clear", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            clearAllNotifications();
+            Toast.makeText(this, "All notifications cleared", Toast.LENGTH_SHORT).show();
+        });
     }
 
     @Override
@@ -60,51 +68,16 @@ public class NotificationsActivity extends BaseActivity {
         // No navigation changes needed
     }
 
+    /**
+     * ✅ Simplified: Only clears booking status flag.
+     * This prevents duplicate "Booking Confirmed" messages.
+     */
     private void checkBookingStatus() {
         SharedPreferences prefs = getSharedPreferences("BookingData", MODE_PRIVATE);
         String bookingStatus = prefs.getString("latest_booking_status", "none");
 
         if (!"none".equals(bookingStatus)) {
-            String timestamp = new SimpleDateFormat("MMM dd, yyyy • hh:mm a", Locale.getDefault())
-                    .format(new Date());
-
-            NotificationItem newItem = null;
-
-            switch (bookingStatus) {
-                case "confirmed":
-                    newItem = new NotificationItem("Booking Confirmed",
-                            "Your booking has been confirmed!", timestamp, "confirmed");
-                    NotificationHelper.showBookingNotification(this,
-                            "Booking Confirmed",
-                            "Your booking has been confirmed!",
-                            "confirmed");
-                    break;
-                case "rejected":
-                    newItem = new NotificationItem("Booking Rejected",
-                            "Sorry, your booking was rejected.", timestamp, "rejected");
-                    NotificationHelper.showBookingNotification(this,
-                            "Booking Rejected",
-                            "Sorry, your booking was rejected.",
-                            "rejected");
-                    break;
-                case "changed":
-                    newItem = new NotificationItem("Booking Updated",
-                            "Your booking details have changed.", timestamp, "changed");
-                    NotificationHelper.showBookingNotification(this,
-                            "Booking Updated",
-                            "Your booking details have changed.",
-                            "changed");
-                    break;
-            }
-
-            if (newItem != null) {
-                // Add to top of list
-                notifications.add(0, newItem);
-                saveNotifications(notifications);
-                adapter.notifyItemInserted(0);
-            }
-
-            // Reset status
+            // Just clear the flag to avoid duplicate notifications
             prefs.edit().putString("latest_booking_status", "none").apply();
         }
     }
@@ -142,5 +115,14 @@ public class NotificationsActivity extends BaseActivity {
             }
         }
         return list;
+    }
+
+    // ✅ Clear all notifications
+    private void clearAllNotifications() {
+        notifications.clear();
+        adapter.notifyDataSetChanged();
+
+        SharedPreferences prefs = getSharedPreferences("NotificationStorage", MODE_PRIVATE);
+        prefs.edit().remove("notifications").apply();
     }
 }

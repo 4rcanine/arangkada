@@ -3,19 +3,16 @@ package com.example.arangkada;
 import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.widget.Toast;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.cardview.widget.CardView;
 
@@ -36,17 +33,15 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Locale;
-
-import javax.annotation.Nullable;
+import java.util.Map;
 
 public class MainActivity extends BaseActivity {
 
@@ -82,10 +77,7 @@ public class MainActivity extends BaseActivity {
         fetchUpcomingOrRecentTrip();
         createNotificationChannel();
 
-        // 🔹 Ask for notification permission on Android 13+
         requestNotificationPermission();
-
-        // 🔹 Start listening for Firestore booking changes
         listenToBookingUpdates();
     }
 
@@ -253,7 +245,7 @@ public class MainActivity extends BaseActivity {
         btnViewQR.setVisibility(View.GONE);
     }
 
-    // 🔹 LISTEN TO BOOKING STATUS CHANGES
+    // ✅ FINAL FIXED LISTENER
     private void listenToBookingUpdates() {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser == null) return;
@@ -266,44 +258,137 @@ public class MainActivity extends BaseActivity {
 
                     for (DocumentChange dc : snapshots.getDocumentChanges()) {
                         if (dc.getType() == DocumentChange.Type.MODIFIED) {
-                            DocumentSnapshot doc = dc.getDocument();
-                            String status = doc.getString("status");
+                            final String bookingId = dc.getDocument().getId();
+                            db.collection("bookings").document(bookingId)
+                                    .get()
+                                    .addOnSuccessListener(freshBookingDoc -> {
+                                        if (freshBookingDoc == null || !freshBookingDoc.exists()) return;
 
-                            SharedPreferences prefs = getSharedPreferences("BookingData", MODE_PRIVATE);
-                            SharedPreferences.Editor editor = prefs.edit();
+                                        String status = freshBookingDoc.getString("status");
+                                        String tripId = freshBookingDoc.getString("tripId");
+                                        final com.google.firebase.Timestamp departureTs = freshBookingDoc.getTimestamp("departure");
+                                        final Double fare;
+                                        Object fareObj = freshBookingDoc.get("totalFare");
+                                        fare = (fareObj instanceof Number) ? ((Number) fareObj).doubleValue() : 0.0;
 
-                            if ("Confirmed".equalsIgnoreCase(status)) {
-                                editor.putString("latest_booking_status", "confirmed").apply();
-                                NotificationHelper.showBookingNotification(
-                                        this,
-                                        "Booking Confirmed",
-                                        "Your UV Express booking has been confirmed!",
-                                        "confirmed"
-                                );
-                            } else if ("Rejected".equalsIgnoreCase(status)) {
-                                editor.putString("latest_booking_status", "rejected").apply();
-                                NotificationHelper.showBookingNotification(
-                                        this,
-                                        "Booking Rejected",
-                                        "Sorry, your booking was rejected.",
-                                        "rejected"
-                                );
-                            } else {
-                                editor.putString("latest_booking_status", "changed").apply();
-                                NotificationHelper.showBookingNotification(
-                                        this,
-                                        "Booking Update",
-                                        "Your booking details have been updated.",
-                                        "info"
-                                );
-                            }
+                                        if (tripId == null) {
+                                            saveAndShowNotification(userId, "Booking Updated",
+                                                    "Your booking status changed.", "info",
+                                                    "Unknown Trip", departureTs, fare);
+                                            return;
+                                        }
+
+                                        db.collection("trips").document(tripId)
+                                                .get()
+                                                .addOnSuccessListener(tripDoc -> {
+                                                    if (tripDoc == null || !tripDoc.exists()) {
+                                                        saveAndShowNotification(userId, "Booking Updated",
+                                                                "Your booking status changed.", "info",
+                                                                "Unknown Trip", departureTs, fare);
+                                                        return;
+                                                    }
+
+                                                    String destinationId = tripDoc.getString("destinationId");
+                                                    String destinationNameFallback =
+                                                            tripDoc.getString("destinationName") != null
+                                                                    ? tripDoc.getString("destinationName")
+                                                                    : tripDoc.getString("name");
+
+                                                    if (destinationId != null) {
+                                                        db.collection("destinations").document(destinationId)
+                                                                .get()
+                                                                .addOnSuccessListener(destDoc -> {
+                                                                    String destinationName =
+                                                                            (destDoc != null && destDoc.exists() && destDoc.getString("name") != null)
+                                                                                    ? destDoc.getString("name")
+                                                                                    : (destinationNameFallback != null ? destinationNameFallback : "Unknown Trip");
+
+                                                                    showNotificationWithDetails(userId, status, destinationName, departureTs, fare);
+                                                                })
+                                                                .addOnFailureListener(err -> showNotificationWithDetails(
+                                                                        userId, status,
+                                                                        destinationNameFallback != null ? destinationNameFallback : "Unknown Trip",
+                                                                        departureTs, fare
+                                                                ));
+                                                    } else {
+                                                        showNotificationWithDetails(
+                                                                userId, status,
+                                                                destinationNameFallback != null ? destinationNameFallback : "Unknown Trip",
+                                                                departureTs, fare
+                                                        );
+                                                    }
+                                                });
+                                    });
                         }
                     }
                 });
     }
 
+    private void showNotificationWithDetails(String userId, String status, String destinationName,
+                                             com.google.firebase.Timestamp departureTs, Double fare) {
+        String formattedDate = (departureTs != null)
+                ? new SimpleDateFormat("MMMM dd, yyyy • hh:mm a", Locale.getDefault()).format(departureTs.toDate())
+                : "N/A";
 
-    // 🔹 Create notification channel
+        String title, message, type;
+        switch (status.toLowerCase(Locale.ROOT)) {
+            case "confirmed":
+                title = "Booking Confirmed";
+                message = "Your trip to " + destinationName + " on " + formattedDate +
+                        " has been confirmed.\nFare: ₱" + String.format(Locale.getDefault(), "%.2f", fare);
+                type = "confirmed";
+                break;
+            case "rejected":
+                title = "Booking Rejected";
+                message = "Your booking for " + destinationName + " on " + formattedDate + " was rejected.";
+                type = "rejected";
+                break;
+            case "cancelled":
+                title = "Booking Cancelled";
+                message = "Your trip to " + destinationName + " on " + formattedDate + " was cancelled.";
+                type = "cancelled";
+                break;
+            default:
+                title = "Booking Updated";
+                message = "Your booking for " + destinationName + " on " + formattedDate + " was updated.";
+                type = "info";
+                break;
+        }
+
+        saveAndShowNotification(userId, title, message, type, destinationName, departureTs, fare);
+    }
+
+
+    private void saveAndShowNotification(String userId, String title, String message, String type,
+                                         String destinationName, com.google.firebase.Timestamp departureTs, Double fare) {
+        SharedPreferences prefs = getSharedPreferences("BookingData", MODE_PRIVATE);
+        prefs.edit().putString("latest_booking_status", type).apply();
+
+        NotificationHelper.showBookingNotification(this, title, message, type);
+        saveNotificationLocally(title, message, type);
+
+        Map<String, Object> notifData = new HashMap<>();
+        notifData.put("title", title);
+        notifData.put("message", message);
+        notifData.put("type", type);
+        notifData.put("tripName", destinationName);
+        notifData.put("tripDate", departureTs != null ? departureTs : com.google.firebase.Timestamp.now());
+        notifData.put("fare", fare);
+        notifData.put("createdAt", com.google.firebase.Timestamp.now());
+
+        db.collection("users").document(userId)
+                .collection("notifications")
+                .add(notifData);
+    }
+
+    private void saveNotificationLocally(String title, String message, String type) {
+        String timestampNow = new SimpleDateFormat("MMM dd, yyyy • hh:mm a", Locale.getDefault()).format(new java.util.Date());
+        SharedPreferences notifPrefs = getSharedPreferences("NotificationStorage", MODE_PRIVATE);
+        String existing = notifPrefs.getString("notifications", "");
+        String newEntry = title + "|" + message + "|" + timestampNow + "|" + type + ";";
+        notifPrefs.edit().putString("notifications", newEntry + existing).apply();
+    }
+
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = "Booking Updates";
@@ -317,7 +402,6 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    // 🔹 Ask notification permission on Android 13+
     private void requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)

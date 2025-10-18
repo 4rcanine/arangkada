@@ -14,14 +14,17 @@
         android:gravity="center_vertical"
         android:paddingHorizontal="16dp">
 
+        <!-- Back Button -->
         <ImageButton
             android:id="@+id/btn_back"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_arrow_back"
-            app:tint="@android:color/white" />
+            app:tint="@android:color/white"
+            android:contentDescription="Back" />
 
+        <!-- Header Title -->
         <TextView
             android:id="@+id/tv_header"
             android:layout_width="wrap_content"
@@ -31,6 +34,30 @@
             android:textSize="20sp"
             android:layout_marginStart="12dp"
             android:textStyle="bold" />
+
+        <!-- Spacer -->
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <!-- Clear All Button (Material You style) -->
+        <FrameLayout
+            android:id="@+id/btn_clear_notifications"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_delete"
+                app:tint="@android:color/white"
+                android:contentDescription="Clear All" />
+        </FrameLayout>
     </LinearLayout>
 
     <!-- Notifications List -->

@@ -42,24 +42,38 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         holder.message.setText(item.getMessage());
         holder.timestamp.setText(item.getTimestamp());
 
+        // 🧭 Show trip details if available
+        if (!item.getTripName().isEmpty()) {
+            holder.tripDetails.setVisibility(View.VISIBLE);
+            holder.tripDetails.setText(
+                    "Trip: " + item.getTripName() + "\n" +
+                            "Date: " + item.getTripDate() + "\n" +
+                            "Fare: ₱" + item.getTripFare()
+            );
+        } else {
+            holder.tripDetails.setVisibility(View.GONE);
+        }
+
+        // 🟢 Icons and colors
         switch (item.getType()) {
             case "confirmed":
                 holder.icon.setImageResource(R.drawable.ic_check_circle);
-                holder.icon.setColorFilter(Color.parseColor("#2E7D32")); // Green
+                holder.icon.setColorFilter(Color.parseColor("#2E7D32"));
                 holder.cardView.setCardBackgroundColor(Color.parseColor("#E8F5E9"));
                 break;
             case "rejected":
                 holder.icon.setImageResource(R.drawable.ic_cancel);
-                holder.icon.setColorFilter(Color.parseColor("#C62828")); // Red
+                holder.icon.setColorFilter(Color.parseColor("#C62828"));
                 holder.cardView.setCardBackgroundColor(Color.parseColor("#FFEBEE"));
                 break;
             default:
                 holder.icon.setImageResource(R.drawable.ic_notifications);
-                holder.icon.setColorFilter(Color.parseColor("#1565C0")); // Blue
+                holder.icon.setColorFilter(Color.parseColor("#1565C0"));
                 holder.cardView.setCardBackgroundColor(Color.parseColor("#E3F2FD"));
                 break;
         }
     }
+
 
     @Override
     public int getItemCount() {
@@ -67,7 +81,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView title, message, timestamp;
+        TextView title, message, timestamp, tripDetails;
         ImageView icon;
         CardView cardView;
 
@@ -76,8 +90,10 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             title = itemView.findViewById(R.id.tv_title);
             message = itemView.findViewById(R.id.tv_message);
             timestamp = itemView.findViewById(R.id.tv_timestamp);
+            tripDetails = itemView.findViewById(R.id.tv_trip_details); // 🔹 add this to layout
             icon = itemView.findViewById(R.id.iv_icon);
             cardView = itemView.findViewById(R.id.notification_card);
         }
     }
+
 }
