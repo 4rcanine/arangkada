@@ -15,7 +15,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -35,7 +34,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-public class CancellationActivity extends AppCompatActivity {
+public class CancellationActivity extends BaseActivity {
 
     private RecyclerView recyclerView;
     private BookingAdapter adapter;
@@ -47,7 +46,13 @@ public class CancellationActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_cancellation);
+        setContentView(R.layout.activity_base);
+
+        // Inflate content into base layout
+        getLayoutInflater().inflate(R.layout.activity_cancellation,
+                findViewById(R.id.content_frame), true);
+
+        setupNavigation();
 
         recyclerView = findViewById(R.id.recyclerBookings);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -66,6 +71,12 @@ public class CancellationActivity extends AppCompatActivity {
         });
 
         loadBookings();
+    }
+
+    @Override
+    protected void onNavigationSetup() {
+        showBackButton();
+        setToolbarTitle("Active Trips");
     }
 
     private void loadBookings() {

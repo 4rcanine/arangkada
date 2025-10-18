@@ -12,7 +12,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -23,7 +22,6 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
@@ -32,7 +30,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class MyTripsActivity extends AppCompatActivity {
+public class MyTripsActivity extends BaseActivity {
 
     private RecyclerView recyclerView;
     private TripAdapter adapter;
@@ -53,7 +51,13 @@ public class MyTripsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_my_trips);
+        setContentView(R.layout.activity_base);
+
+        // Inflate content into base layout
+        getLayoutInflater().inflate(R.layout.activity_my_trips,
+                findViewById(R.id.content_frame), true);
+
+        setupNavigation();
 
         recyclerView = findViewById(R.id.recyclerTrips);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -91,6 +95,12 @@ public class MyTripsActivity extends AppCompatActivity {
                 updatePagination();
             }
         });
+    }
+
+    @Override
+    protected void onNavigationSetup() {
+        showBackButton();
+        setToolbarTitle("Trip History");
     }
 
     private void loadUserBookings() {

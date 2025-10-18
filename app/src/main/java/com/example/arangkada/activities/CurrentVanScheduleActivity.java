@@ -19,20 +19,23 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.arangkada.R;
 import com.google.firebase.Timestamp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
 import java.util.*;
 
-public class CurrentVanScheduleActivity extends AppCompatActivity {
+public class CurrentVanScheduleActivity extends BaseActivity {
 
     private RecyclerView rvTrips;
     private ProgressBar progressBar;
     private SwipeRefreshLayout swipeRefreshLayout;
     private Button btnCreateVanSchedule;
     private FirebaseFirestore db;
-
+    private FirebaseAuth mAuth;
+    private String currentAdminId;
 
     private final List<Object> items = new ArrayList<>();
     private final TripAdapter adapter = new TripAdapter();
@@ -43,27 +46,49 @@ public class CurrentVanScheduleActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_current_van_schedule);
+        setContentView(R.layout.activity_base);
 
-        rvTrips = findViewById(R.id.recyclerViewTrips);
-        progressBar = findViewById(R.id.progressBar);
-        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
-        btnCreateVanSchedule = findViewById(R.id.btnCreateVanSchedule);
+        // Inflate your content layout inside BaseActivity's content frame
+        View contentView = getLayoutInflater().inflate(
+                R.layout.activity_current_van_schedule,
+                findViewById(R.id.content_frame),
+                true
+        );
+
+        setupNavigation();
+
+        rvTrips = contentView.findViewById(R.id.recyclerViewTrips);
+        progressBar = contentView.findViewById(R.id.progressBar);
+        swipeRefreshLayout = contentView.findViewById(R.id.swipeRefreshLayout);
+        btnCreateVanSchedule = contentView.findViewById(R.id.btnCreateVanSchedule);
 
         db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
+
+        // Get current admin ID
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+        currentAdminId = currentUser.getUid();
 
         rvTrips.setLayoutManager(new LinearLayoutManager(this));
         rvTrips.setAdapter(adapter);
 
-        // Pull to refresh
         swipeRefreshLayout.setOnRefreshListener(this::loadTrips);
 
-        // Create button -> ManageVansActivity
-        btnCreateVanSchedule.setOnClickListener(v -> {
-            startActivity(new Intent(CurrentVanScheduleActivity.this, ManageVansActivity.class));
-        });
+        btnCreateVanSchedule.setOnClickListener(v ->
+                startActivity(new Intent(CurrentVanScheduleActivity.this, ManageVansActivity.class))
+        );
 
         loadTrips();
+    }
+
+    @Override
+    protected void onNavigationSetup() {
+        // Optional: keep empty unless you need extra nav logic
     }
 
 
@@ -121,10 +146,44 @@ public class CurrentVanScheduleActivity extends AppCompatActivity {
                         }
                     }
 
-                    // Sort each list
-                    tripsToday.sort((a, b) -> ((Timestamp) a.get("departure")).compareTo((Timestamp) b.get("departure")));
-                    upcomingTrips.sort((a, b) -> ((Timestamp) a.get("departure")).compareTo((Timestamp) b.get("departure")));
-                    completedToday.sort((a, b) -> ((Timestamp) b.get("departure")).compareTo((Timestamp) a.get("departure")));
+                    // Sort each list - prioritize current admin's trips first, then by departure time
+                    Comparator<HashMap<String, Object>> tripComparator = (a, b) -> {
+                        String adminIdA = a.get("adminID") instanceof String ? (String) a.get("adminID") : null;
+                        String adminIdB = b.get("adminID") instanceof String ? (String) b.get("adminID") : null;
+
+                        boolean isOwnA = currentAdminId.equals(adminIdA);
+                        boolean isOwnB = currentAdminId.equals(adminIdB);
+
+                        // Own trips come first
+                        if (isOwnA && !isOwnB) return -1;
+                        if (!isOwnA && isOwnB) return 1;
+
+                        // If both same ownership, sort by departure time
+                        Timestamp depA = (Timestamp) a.get("departure");
+                        Timestamp depB = (Timestamp) b.get("departure");
+                        return depA.compareTo(depB);
+                    };
+
+                    Comparator<HashMap<String, Object>> completedComparator = (a, b) -> {
+                        String adminIdA = a.get("adminID") instanceof String ? (String) a.get("adminID") : null;
+                        String adminIdB = b.get("adminID") instanceof String ? (String) b.get("adminID") : null;
+
+                        boolean isOwnA = currentAdminId.equals(adminIdA);
+                        boolean isOwnB = currentAdminId.equals(adminIdB);
+
+                        // Own trips come first
+                        if (isOwnA && !isOwnB) return -1;
+                        if (!isOwnA && isOwnB) return 1;
+
+                        // If both same ownership, sort by departure time (descending for completed)
+                        Timestamp depA = (Timestamp) a.get("departure");
+                        Timestamp depB = (Timestamp) b.get("departure");
+                        return depB.compareTo(depA);
+                    };
+
+                    tripsToday.sort(tripComparator);
+                    upcomingTrips.sort(tripComparator);
+                    completedToday.sort(completedComparator);
 
 
                     if (!tripsToday.isEmpty()) {
@@ -221,7 +280,7 @@ public class CurrentVanScheduleActivity extends AppCompatActivity {
                 tvStatus = itemView.findViewById(R.id.tv_status);
                 btnEdit = itemView.findViewById(R.id.btnEdit);
                 btnDelete = itemView.findViewById(R.id.btnDelete);
-                btnAddWalkIn = itemView.findViewById(R.id.btnAddWalkIn); // ✅ new
+                btnAddWalkIn = itemView.findViewById(R.id.btnAddWalkIn);
             }
         }
     }
@@ -233,12 +292,16 @@ public class CurrentVanScheduleActivity extends AppCompatActivity {
         final String tripId = (String) trip.get("id");
         final String vanId = trip.get("vanId") instanceof String ? (String) trip.get("vanId") : null;
         final String destinationId = trip.get("destinationId") instanceof String ? (String) trip.get("destinationId") : null;
+        final String tripAdminId = trip.get("adminID") instanceof String ? (String) trip.get("adminID") : null;
 
         Object seatsObj = trip.get("availableSeats");
         final long availableSeats = (seatsObj instanceof Number) ? ((Number) seatsObj).longValue() : 0L;
 
         Object depObj = trip.get("departure");
         final Timestamp departure = (depObj instanceof Timestamp) ? (Timestamp) depObj : null;
+
+        // Check if this trip belongs to the current admin
+        final boolean isOwnTrip = (tripAdminId != null && tripAdminId.equals(currentAdminId));
 
         holder.tvVanId.setText("Van Plate: " + (vanId != null ? vanId : "N/A"));
         holder.tvSeats.setText(String.valueOf(availableSeats));
@@ -254,11 +317,11 @@ public class CurrentVanScheduleActivity extends AppCompatActivity {
             if (departure.compareTo(now) >= 0) {
                 isUpcoming = true;
                 holder.tvStatus.setText("Upcoming");
-                holder.tvStatus.setTextColor(ContextCompat.getColor(this, android.R.color.holo_green_dark));
+                holder.tvStatus.setTextColor(ContextCompat.getColor(this, android.R.color.white));
             } else {
                 isUpcoming = false;
                 holder.tvStatus.setText("Completed");
-                holder.tvStatus.setTextColor(ContextCompat.getColor(this, android.R.color.holo_red_dark));
+                holder.tvStatus.setTextColor(ContextCompat.getColor(this, android.R.color.white));
             }
         } else {
             holder.tvDeparture.setText("N/A");
@@ -281,7 +344,24 @@ public class CurrentVanScheduleActivity extends AppCompatActivity {
             holder.tvDestination.setText("Unknown");
         }
 
+        // Show/hide action buttons based on ownership and status
+        if (isOwnTrip && isUpcoming) {
+            holder.btnEdit.setVisibility(View.VISIBLE);
+            holder.btnDelete.setVisibility(View.VISIBLE);
+            holder.btnAddWalkIn.setVisibility(View.VISIBLE);
+        } else if (isOwnTrip && !isUpcoming) {
+            // Own trip but completed - show delete only
+            holder.btnEdit.setVisibility(View.GONE);
+            holder.btnDelete.setVisibility(View.VISIBLE);
+            holder.btnAddWalkIn.setVisibility(View.GONE);
+        } else {
+            // Not own trip - hide all action buttons
+            holder.btnEdit.setVisibility(View.GONE);
+            holder.btnDelete.setVisibility(View.GONE);
+            holder.btnAddWalkIn.setVisibility(View.GONE);
+        }
 
+        // Delete button handler
         holder.btnDelete.setOnClickListener(v -> {
             new AlertDialog.Builder(CurrentVanScheduleActivity.this)
                     .setTitle("Delete Trip")
@@ -313,19 +393,7 @@ public class CurrentVanScheduleActivity extends AppCompatActivity {
                     .show();
         });
 
-
-        if (isUpcoming) {
-            holder.btnEdit.setVisibility(View.VISIBLE);
-            holder.btnAddWalkIn.setVisibility(View.VISIBLE);
-        } else {
-            holder.btnEdit.setVisibility(View.GONE);
-            holder.btnAddWalkIn.setVisibility(View.GONE);
-        }
-        holder.btnAddWalkIn.setVisibility(View.VISIBLE);
-
-
-
-
+        // Edit button handler
         holder.btnEdit.setOnClickListener(v -> {
 
             View dialogView = LayoutInflater.from(CurrentVanScheduleActivity.this)
@@ -333,7 +401,7 @@ public class CurrentVanScheduleActivity extends AppCompatActivity {
 
             EditText etVanId = dialogView.findViewById(R.id.etVanId);
             Spinner spDestination = dialogView.findViewById(R.id.spDestination);
-            TextView tvDeparture = dialogView.findViewById(R.id.etDeparture); // clickable textview in your XML
+            TextView tvDeparture = dialogView.findViewById(R.id.etDeparture);
             EditText etSeats = dialogView.findViewById(R.id.etSeats);
 
 
@@ -362,13 +430,12 @@ public class CurrentVanScheduleActivity extends AppCompatActivity {
                                     (timeView, hourOfDay, minute) -> {
                                         pickCal.set(Calendar.HOUR_OF_DAY, hourOfDay);
                                         pickCal.set(Calendar.MINUTE, minute);
-                                        // write chosen time back to calDep and textview
                                         calDep.setTime(pickCal.getTime());
                                         tvDeparture.setText(DateFormat.format("yyyy-MM-dd HH:mm", calDep));
                                     },
                                     pickCal.get(Calendar.HOUR_OF_DAY),
                                     pickCal.get(Calendar.MINUTE),
-                                    false // 12-hour format? change to true if you want 24h
+                                    false
                             ).show();
                         },
                         pickCal.get(Calendar.YEAR),
@@ -377,7 +444,7 @@ public class CurrentVanScheduleActivity extends AppCompatActivity {
                 ).show();
             });
 
-            // Load destinations into spinner and keep mapping of ids
+            // Load destinations into spinner
             final List<String> destNames = new ArrayList<>();
             final List<String> destIds = new ArrayList<>();
             ArrayAdapter<String> destAdapter = new ArrayAdapter<>(CurrentVanScheduleActivity.this,
@@ -439,7 +506,7 @@ public class CurrentVanScheduleActivity extends AppCompatActivity {
                     }
 
 
-                    Timestamp newDepartureTs = new Timestamp(calDep.getTime()); // com.google.firebase.Timestamp
+                    Timestamp newDepartureTs = new Timestamp(calDep.getTime());
                     String newDestinationId = destIds.get(destPos);
 
 
@@ -465,7 +532,7 @@ public class CurrentVanScheduleActivity extends AppCompatActivity {
 
                                 int pos = items.indexOf(trip);
                                 if (pos >= 0) adapter.notifyItemChanged(pos);
-                                else adapter.notifyDataSetChanged(); // fallback
+                                else adapter.notifyDataSetChanged();
 
                                 showLoading(false);
                                 Toast.makeText(CurrentVanScheduleActivity.this, "Trip updated", Toast.LENGTH_SHORT).show();
@@ -482,9 +549,7 @@ public class CurrentVanScheduleActivity extends AppCompatActivity {
             dialog.show();
         });
 
-
-
-        // Add Walk-In button
+        // Add Walk-In button handler
         holder.btnAddWalkIn.setOnClickListener(v -> {
             Object seatsObjInner = trip.get("availableSeats");
             long currentSeats = (seatsObjInner instanceof Number) ? ((Number) seatsObjInner).longValue() : 0L;

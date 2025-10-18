@@ -39,7 +39,7 @@ import com.google.mlkit.vision.common.InputImage;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class QRScannerActivity extends AppCompatActivity {
+public class QRScannerActivity extends BaseActivity {
 
     private static final String TAG = "QRScannerActivity";
     private FirebaseFirestore db;
@@ -63,9 +63,16 @@ public class QRScannerActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_qrscanner);
+        setContentView(R.layout.activity_base);
 
-        previewView = findViewById(R.id.previewView);
+        // Inflate your content layout inside BaseActivity’s content frame
+        View contentView = getLayoutInflater().inflate(
+                R.layout.activity_qrscanner,
+                findViewById(R.id.content_frame),
+                true
+        );;
+        setupNavigation();
+        previewView = contentView.findViewById(R.id.previewView);
         db = FirebaseFirestore.getInstance();
         cameraExecutor = Executors.newSingleThreadExecutor();
 
@@ -79,7 +86,10 @@ public class QRScannerActivity extends AppCompatActivity {
             cameraPermissionLauncher.launch(Manifest.permission.CAMERA);
         }
     }
-
+    @Override
+    protected void onNavigationSetup() {
+        // Optional: Add menu logic here if needed
+    }
     private void startCamera() {
         Log.d(TAG, "Starting camera...");
 

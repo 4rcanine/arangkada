@@ -24,7 +24,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AdminProfileActivity extends AppCompatActivity {
+public class AdminProfileActivity extends BaseActivity {
 
     private ImageView profileImage;
     private TextView userName, userEmail, userPhone;
@@ -37,7 +37,16 @@ public class AdminProfileActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_admin_profile);
+        setContentView(R.layout.activity_base);
+
+        // Inflate your content layout inside BaseActivity’s content frame
+        View contentView = getLayoutInflater().inflate(
+                R.layout.activity_admin_profile,
+                findViewById(R.id.content_frame),
+                true
+        );
+
+        setupNavigation();
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
@@ -46,7 +55,10 @@ public class AdminProfileActivity extends AppCompatActivity {
         loadUserData();
         setupClickListeners();
     }
-
+    @Override
+    protected void onNavigationSetup() {
+        // Optional: Add menu logic here if needed
+    }
     private void initializeViews() {
         profileImage = findViewById(R.id.iv_profile_image);
         userName = findViewById(R.id.tv_user_name);

@@ -11,7 +11,6 @@ import android.view.View;
 import android.widget.*;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.arangkada.MainActivity;
 import com.example.arangkada.R;
@@ -28,7 +27,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import okhttp3.*;
 
-public class BookRideActivity extends AppCompatActivity {
+public class BookRideActivity extends BaseActivity {
 
     private static final int PICK_PAYMENT_PROOF = 201;
     private static final String TAG = "BookRideActivity";
@@ -76,10 +75,30 @@ public class BookRideActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_book_ride);
+        setContentView(R.layout.activity_base);
+
+        // Inflate content into base layout
+        getLayoutInflater().inflate(R.layout.activity_book_ride,
+                findViewById(R.id.content_frame), true);
+
+        setupNavigation();
 
         db = FirebaseFirestore.getInstance();
 
+        initializeViews();
+        setupListeners();
+
+        // Load destinations
+        loadDestinations();
+    }
+
+    @Override
+    protected void onNavigationSetup() {
+        showBackButton();
+        setToolbarTitle("Book a Ride");
+    }
+
+    private void initializeViews() {
         spinnerDestinations = findViewById(R.id.spinnerDestinations);
         spinnerTrips = findViewById(R.id.spinnerTrips);
         etRegularCount = findViewById(R.id.et_regular_count);
@@ -111,10 +130,9 @@ public class BookRideActivity extends AppCompatActivity {
         btnBookNow = findViewById(R.id.btnBookNow);
         btnCancel = findViewById(R.id.btn_cancel);
         progressBar = findViewById(R.id.progressBar);
+    }
 
-        // Load destinations
-        loadDestinations();
-
+    private void setupListeners() {
         // Real-time fare preview
         TextWatcher fareWatcher = new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -138,7 +156,6 @@ public class BookRideActivity extends AppCompatActivity {
             } else if (checkedId == R.id.radioGcash) {
                 userSelectedPayment = "Gcash";
                 layoutPaymentProof.setVisibility(View.VISIBLE);
-                // Show QR and mobile number
                 updatePaymentProofUI();
             }
         });
@@ -146,7 +163,6 @@ public class BookRideActivity extends AppCompatActivity {
         btnBookNow.setOnClickListener(v -> handleBooking());
         btnUploadProof.setOnClickListener(v -> pickPaymentProof());
 
-        // Cancel
         btnCancel.setOnClickListener(v -> {
             Intent intent = new Intent(BookRideActivity.this, MainActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -331,7 +347,6 @@ public class BookRideActivity extends AppCompatActivity {
         Long availableSeatsObj = tripDoc.getLong("availableSeats");
         long availableSeats = (availableSeatsObj != null) ? availableSeatsObj : 0L;
 
-        // Get payment method, QR code, and mobile number
         currentPaymentMethod = tripDoc.getString("paymentMethod");
         currentQRCodeUrl = tripDoc.getString("qrCodeUrl");
         currentPaymentNumber = tripDoc.getString("paymentNumber");
@@ -344,9 +359,7 @@ public class BookRideActivity extends AppCompatActivity {
         tvTripTravelTime.setText("Travel Time: " + formatTravelTime(travelTimeMinutes));
         tvPaymentMethod.setText("Payment Method: " + currentPaymentMethod);
 
-        // Handle payment UI
         updatePaymentUI();
-
         layoutTripDetails.setVisibility(View.VISIBLE);
 
         boolean isSoldOut = (availableSeats == 0);
@@ -387,13 +400,11 @@ public class BookRideActivity extends AppCompatActivity {
     }
 
     private void updatePaymentUI() {
-        // Reset payment proof
         uploadedProofUrl = null;
         selectedProofUri = null;
         imgPaymentProof.setVisibility(View.GONE);
 
         if (currentPaymentMethod.equals("Cash & Gcash")) {
-            // Show payment choice radio buttons
             layoutPaymentChoice.setVisibility(View.VISIBLE);
             radioCash.setChecked(true);
             userSelectedPayment = "Cash";
@@ -409,7 +420,6 @@ public class BookRideActivity extends AppCompatActivity {
     }
 
     private void updatePaymentProofUI() {
-        // Show QR Code if available
         if (currentQRCodeUrl != null && !currentQRCodeUrl.isEmpty()) {
             layoutQRCode.setVisibility(View.VISIBLE);
             imgQRCode.setVisibility(View.VISIBLE);
@@ -420,7 +430,6 @@ public class BookRideActivity extends AppCompatActivity {
             imgQRCode.setVisibility(View.GONE);
         }
 
-        // Show Mobile Number if available
         if (currentPaymentNumber != null && !currentPaymentNumber.isEmpty()) {
             layoutMobileNumber.setVisibility(View.VISIBLE);
             tvMobileNumber.setText(currentPaymentNumber);
@@ -428,7 +437,6 @@ public class BookRideActivity extends AppCompatActivity {
             layoutMobileNumber.setVisibility(View.GONE);
         }
 
-        // If neither QR nor number is available, hide payment details
         if ((currentQRCodeUrl == null || currentQRCodeUrl.isEmpty()) &&
                 (currentPaymentNumber == null || currentPaymentNumber.isEmpty())) {
             layoutPaymentProof.setVisibility(View.GONE);
@@ -437,9 +445,7 @@ public class BookRideActivity extends AppCompatActivity {
 
     private void handleBooking() {
         if (currentPaymentMethod.equals("Cash & Gcash")) {
-            // User chose between Cash or Gcash
             if (userSelectedPayment.equals("Gcash")) {
-                // Must upload proof
                 if (uploadedProofUrl == null) {
                     Toast.makeText(this, "Please upload payment proof before booking", Toast.LENGTH_SHORT).show();
                     return;
@@ -447,14 +453,12 @@ public class BookRideActivity extends AppCompatActivity {
             }
             saveBooking(userSelectedPayment);
         } else if (currentPaymentMethod.equals("Gcash")) {
-            // Gcash: Must upload proof
             if (uploadedProofUrl == null) {
                 Toast.makeText(this, "Please upload payment proof before booking", Toast.LENGTH_SHORT).show();
                 return;
             }
             saveBooking("Gcash");
         } else {
-            // Cash: Direct booking
             saveBooking("Cash");
         }
     }
@@ -561,7 +565,6 @@ public class BookRideActivity extends AppCompatActivity {
             booking.put("createdAt", createdAt);
             booking.put("paymentMethod", finalPaymentMethod);
 
-            // Add payment proof URL if available
             if (uploadedProofUrl != null) {
                 booking.put("paymentProofUrl", uploadedProofUrl);
             }
@@ -577,7 +580,6 @@ public class BookRideActivity extends AppCompatActivity {
             etSeniorCount.setText("0");
             updateFarePreview();
 
-            // Reset payment proof
             uploadedProofUrl = null;
             selectedProofUri = null;
             imgPaymentProof.setVisibility(View.GONE);
@@ -714,7 +716,7 @@ public class BookRideActivity extends AppCompatActivity {
 
     private void loadImageWithGlide(String url, ImageView imageView) {
         if (url != null && !url.isEmpty()) {
-            com.bumptech.glide.Glide.with(this)
+            Glide.with(this)
                     .load(url)
                     .placeholder(R.drawable.ic_launcher_background)
                     .error(R.drawable.ic_launcher_background)
@@ -729,7 +731,6 @@ public class BookRideActivity extends AppCompatActivity {
         ImageView imgFullScreen = dialogView.findViewById(R.id.imgFullScreen);
         ImageView btnClose = dialogView.findViewById(R.id.btnClose);
 
-        // Load image
         Glide.with(this)
                 .load(imageUrl)
                 .placeholder(R.drawable.ic_launcher_background)
@@ -739,7 +740,6 @@ public class BookRideActivity extends AppCompatActivity {
         builder.setView(dialogView);
         AlertDialog dialog = builder.create();
 
-        // Make dialog fullscreen
         if (dialog.getWindow() != null) {
             dialog.getWindow().setLayout(
                     android.view.ViewGroup.LayoutParams.MATCH_PARENT,
@@ -761,7 +761,6 @@ public class BookRideActivity extends AppCompatActivity {
 
         dialog.show();
     }
-
 
     @Override
     protected void onDestroy() {

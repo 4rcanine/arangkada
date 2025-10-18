@@ -29,7 +29,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ProfileActivity extends AppCompatActivity {
+public class ProfileActivity extends BaseActivity {
 
     private ImageView profileImage;
     private TextView userName, userEmail, userPhone;
@@ -42,7 +42,10 @@ public class ProfileActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_profile);
+        setContentView(R.layout.activity_base);
+        getLayoutInflater().inflate(R.layout.activity_profile,
+                findViewById(R.id.content_frame), true);
+        setupNavigation();
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
@@ -50,6 +53,11 @@ public class ProfileActivity extends AppCompatActivity {
         initializeViews();
         loadUserData();
         setupClickListeners();
+    }
+    @Override
+    protected void onNavigationSetup() {
+        showBackButton(); // or showMenuButton()
+        setToolbarTitle("Your Title");
     }
 
     private void initializeViews() {
@@ -225,7 +233,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        Intent intent = new Intent(ProfileActivity.this, AuthActivity.class);
+        Intent intent = new Intent(ProfileActivity.this, MainActivity.class);
         startActivity(intent);
         finish();
     }

@@ -14,6 +14,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.arangkada.R;
 import com.google.firebase.Timestamp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import java.io.IOException;
@@ -24,8 +26,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import okhttp3.*;
 
-public class ManageVansActivity extends AppCompatActivity {
-
+public class ManageVansActivity extends BaseActivity {
     private static final int PICK_QR_IMAGE = 101;
     private static final String TAG = "ManageVansActivity";
 
@@ -39,6 +40,7 @@ public class ManageVansActivity extends AppCompatActivity {
     private FrameLayout rootLayout;
 
     private FirebaseFirestore db;
+    private FirebaseAuth mAuth;
     private List<String> destinationNames = new ArrayList<>();
     private List<String> destinationIds = new ArrayList<>();
     private Calendar departureCalendar = Calendar.getInstance();
@@ -57,23 +59,33 @@ public class ManageVansActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_manage_vans);
+        setContentView(R.layout.activity_base);
 
-        spinnerDestination = findViewById(R.id.spinnerDestination);
-        spinnerPaymentMethod = findViewById(R.id.spinnerPaymentMethod);
-        tvDeparture = findViewById(R.id.tvDeparture);
-        btnPickDeparture = findViewById(R.id.btnPickDeparture);
-        etVanPlate = findViewById(R.id.etVanPlate);
-        etSeatCapacity = findViewById(R.id.etSeatCapacity);
-        etPaymentNumber = findViewById(R.id.etPaymentNumber);
-        btnSaveSchedule = findViewById(R.id.btnSaveSchedule);
-        progressBar = findViewById(R.id.progressBar);
-        rootLayout = findViewById(R.id.rootLayout);
-        layoutQRUpload = findViewById(R.id.layoutQRUpload);
-        btnUploadQR = findViewById(R.id.btnUploadQR);
-        imgQRPreview = findViewById(R.id.imgQRPreview);
+        // Inflate the actual content layout into BaseActivity's content frame
+        View contentView = getLayoutInflater().inflate(
+                R.layout.activity_manage_vans,
+                findViewById(R.id.content_frame),
+                true
+        );
+
+        setupNavigation();
+
+        spinnerDestination = contentView.findViewById(R.id.spinnerDestination);
+        spinnerPaymentMethod = contentView.findViewById(R.id.spinnerPaymentMethod);
+        tvDeparture = contentView.findViewById(R.id.tvDeparture);
+        btnPickDeparture = contentView.findViewById(R.id.btnPickDeparture);
+        etVanPlate = contentView.findViewById(R.id.etVanPlate);
+        etSeatCapacity = contentView.findViewById(R.id.etSeatCapacity);
+        etPaymentNumber = contentView.findViewById(R.id.etPaymentNumber);
+        btnSaveSchedule = contentView.findViewById(R.id.btnSaveSchedule);
+        progressBar = contentView.findViewById(R.id.progressBar);
+        rootLayout = contentView.findViewById(R.id.rootLayout);
+        layoutQRUpload = contentView.findViewById(R.id.layoutQRUpload);
+        btnUploadQR = contentView.findViewById(R.id.btnUploadQR);
+        imgQRPreview = contentView.findViewById(R.id.imgQRPreview);
 
         db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
 
         loadDestinations();
         setupPaymentMethodSpinner();
@@ -84,6 +96,10 @@ public class ManageVansActivity extends AppCompatActivity {
         btnUploadQR.setOnClickListener(v -> pickQRImage());
     }
 
+    @Override
+    protected void onNavigationSetup() {
+        // Optional: leave empty or use if you need custom navigation logic
+    }
     private void setupPaymentMethodSpinner() {
         String[] methods = {"Cash", "Gcash", "Cash & Gcash"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
@@ -339,6 +355,14 @@ public class ManageVansActivity extends AppCompatActivity {
     }
 
     private void saveTripSchedule() {
+        // Get current user ID
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String adminId = currentUser.getUid();
+
         int selectedIndex = spinnerDestination.getSelectedItemPosition();
         if (selectedIndex < 0 || selectedIndex >= destinationIds.size() || destinationIds.get(selectedIndex).isEmpty()) {
             Toast.makeText(this, "Please select a valid destination", Toast.LENGTH_SHORT).show();
@@ -392,6 +416,7 @@ public class ManageVansActivity extends AppCompatActivity {
         }
 
         HashMap<String, Object> tripData = new HashMap<>();
+        tripData.put("adminID", adminId);
         tripData.put("destinationId", destinationId);
         tripData.put("departure", new Timestamp(departureCalendar.getTime()));
         tripData.put("vanId", vanPlate);

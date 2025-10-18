@@ -26,7 +26,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class UserManagementActivity extends AppCompatActivity {
+public class UserManagementActivity extends BaseActivity {
 
     private RecyclerView recyclerUsers;
     private UserAdapter adapter;
@@ -37,16 +37,27 @@ public class UserManagementActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_user_management);
+        setContentView(R.layout.activity_base);
 
-        recyclerUsers = findViewById(R.id.recyclerUsers);
+        // Inflate your content layout inside BaseActivity’s content frame
+        View contentView = getLayoutInflater().inflate(
+                R.layout.activity_user_management,
+                findViewById(R.id.content_frame),
+                true
+        );;
+        setupNavigation();
+
+        recyclerUsers = contentView.findViewById(R.id.recyclerUsers);
         recyclerUsers.setLayoutManager(new LinearLayoutManager(this));
         adapter = new UserAdapter(userList);
         recyclerUsers.setAdapter(adapter);
 
         loadUsers();
     }
-
+    @Override
+    protected void onNavigationSetup() {
+        // Optional: Add menu logic here if needed
+    }
     private void loadUsers() {
         db.collection("accounts")
                 .get()

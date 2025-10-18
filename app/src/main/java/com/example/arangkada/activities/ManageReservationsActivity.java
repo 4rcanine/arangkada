@@ -18,12 +18,14 @@ import com.bumptech.glide.Glide;
 import com.example.arangkada.R;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.Timestamp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.*;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class ManageReservationsActivity extends AppCompatActivity {
+public class ManageReservationsActivity extends BaseActivity {
 
     private RecyclerView recyclerView;
     private SwipeRefreshLayout swipeRefresh;
@@ -34,6 +36,8 @@ public class ManageReservationsActivity extends AppCompatActivity {
     private List<Booking> currentPageList = new ArrayList<>();
 
     private FirebaseFirestore db;
+    private FirebaseAuth mAuth;
+    private String currentAdminId;
 
     private Spinner spinnerStatus, spinnerDestination;
     private EditText etDateFrom, etDateTo;
@@ -57,25 +61,42 @@ public class ManageReservationsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_manage_reservations);
+        setContentView(R.layout.activity_base);
 
-        recyclerView = findViewById(R.id.recyclerBookings);
-        swipeRefresh = findViewById(R.id.swipeRefresh);
+        View contentView = getLayoutInflater().inflate(
+                R.layout.activity_manage_reservations,
+                findViewById(R.id.content_frame),
+                true
+        );
+
+        setupNavigation();
+
+        recyclerView = contentView.findViewById(R.id.recyclerBookings);
+        swipeRefresh = contentView.findViewById(R.id.swipeRefresh);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         adapter = new ManageReservationsAdapter(currentPageList);
         recyclerView.setAdapter(adapter);
 
-        spinnerStatus = findViewById(R.id.spinnerStatus);
-        spinnerDestination = findViewById(R.id.spinnerDestination);
-        etDateFrom = findViewById(R.id.etDateFrom);
-        etDateTo = findViewById(R.id.etDateTo);
-        btnPrev = findViewById(R.id.btnPrev);
-        btnNext = findViewById(R.id.btnNext);
-        tvPageIndicator = findViewById(R.id.tvPageIndicator);
+        spinnerStatus = contentView.findViewById(R.id.spinnerStatus);
+        spinnerDestination = contentView.findViewById(R.id.spinnerDestination);
+        etDateFrom = contentView.findViewById(R.id.etDateFrom);
+        etDateTo = contentView.findViewById(R.id.etDateTo);
+        btnPrev = contentView.findViewById(R.id.btnPrev);
+        btnNext = contentView.findViewById(R.id.btnNext);
+        tvPageIndicator = contentView.findViewById(R.id.tvPageIndicator);
 
         db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
 
+        // Get current admin ID
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+        currentAdminId = currentUser.getUid();
 
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         currentPage = prefs.getInt(KEY_CURRENT_PAGE, 1);
@@ -106,6 +127,11 @@ public class ManageReservationsActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    protected void onNavigationSetup() {
+        showBackButton(); // or showMenuButton()
+        setToolbarTitle("Your Title");
+    }
     private void saveCurrentPage() {
         SharedPreferences.Editor editor = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit();
         editor.putInt(KEY_CURRENT_PAGE, currentPage);
@@ -204,17 +230,41 @@ public class ManageReservationsActivity extends AppCompatActivity {
                             }
                         }
 
-                        // Fetch destinations for each booking
-                        if (tempList.isEmpty()) return;
+                        // Fetch trip details and filter by adminID
+                        if (tempList.isEmpty()) {
+                            applyFilters(false);
+                            return;
+                        }
+
+                        final int totalBookings = tempList.size();
+                        final int[] processedCount = {0};
+
                         for (Booking booking : tempList) {
                             db.collection("trips").document(booking.getTripId()).get()
                                     .addOnSuccessListener(tripDoc -> {
-                                        if (tripDoc.exists()) {
-                                            booking.setDestinationId(tripDoc.getString("destinationId"));
-                                        }
-                                        allBookings.add(booking);
+                                        processedCount[0]++;
 
-                                        if (allBookings.size() == tempList.size()) {
+                                        if (tripDoc.exists()) {
+                                            String tripAdminId = tripDoc.getString("adminID");
+                                            String destinationId = tripDoc.getString("destinationId");
+
+                                            // Only add booking if trip belongs to current admin
+                                            if (tripAdminId != null && tripAdminId.equals(currentAdminId)) {
+                                                booking.setDestinationId(destinationId);
+                                                allBookings.add(booking);
+                                            }
+                                        }
+
+                                        // When all bookings are processed, apply filters
+                                        if (processedCount[0] == totalBookings) {
+                                            if (resetPage) currentPage = 1;
+                                            applyFilters(false);
+                                        }
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        processedCount[0]++;
+                                        // Continue even if one fails
+                                        if (processedCount[0] == totalBookings) {
                                             if (resetPage) currentPage = 1;
                                             applyFilters(false);
                                         }
@@ -364,7 +414,29 @@ public class ManageReservationsActivity extends AppCompatActivity {
 
             holder.tvDeparture.setText(booking.getDeparture() != null ? sdf.format(booking.getDeparture().toDate()) : "N/A");
             holder.tvTotalFare.setText("₱" + String.format("%.2f", booking.getTotalFare()));
-            holder.tvPassengers.setText(String.valueOf(booking.getSeats()));
+
+            // Build passenger breakdown string with total first
+            StringBuilder passengersBreakdown = new StringBuilder();
+            passengersBreakdown.append(booking.getSeats()).append(" (");
+
+            boolean hasBreakdown = false;
+            if (booking.getRegularCount() > 0) {
+                passengersBreakdown.append("Regular: ").append(booking.getRegularCount());
+                hasBreakdown = true;
+            }
+            if (booking.getStudentCount() > 0) {
+                if (hasBreakdown) passengersBreakdown.append(", ");
+                passengersBreakdown.append("Student: ").append(booking.getStudentCount());
+                hasBreakdown = true;
+            }
+            if (booking.getSeniorCount() > 0) {
+                if (hasBreakdown) passengersBreakdown.append(", ");
+                passengersBreakdown.append("Senior: ").append(booking.getSeniorCount());
+                hasBreakdown = true;
+            }
+            passengersBreakdown.append(")");
+
+            holder.tvPassengers.setText(passengersBreakdown.toString());
             holder.tvStatus.setText(booking.getStatus());
 
             // Display payment method

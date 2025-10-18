@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CurrentTerminalActivity extends AppCompatActivity {
+public class CurrentTerminalActivity extends BaseActivity {
 
     private RecyclerView recyclerView;
     private TerminalAdapter adapter;
@@ -35,9 +35,17 @@ public class CurrentTerminalActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_current_terminal);
+        setContentView(R.layout.activity_base);
 
-        recyclerView = findViewById(R.id.recyclerTerminals);
+        // Inflate your content layout inside BaseActivity’s content frame
+        View contentView = getLayoutInflater().inflate(
+                R.layout.activity_current_terminal,
+                findViewById(R.id.content_frame),
+                true
+        );;
+        setupNavigation();
+
+        recyclerView = contentView.findViewById(R.id.recyclerTerminals);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         db = FirebaseFirestore.getInstance();
@@ -73,6 +81,10 @@ public class CurrentTerminalActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         loadTerminals();
+    }
+    @Override
+    protected void onNavigationSetup() {
+        // Optional: Add menu logic here if needed
     }
 
     private void loadTerminals() {

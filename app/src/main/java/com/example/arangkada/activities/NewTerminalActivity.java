@@ -17,7 +17,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
 
-public class NewTerminalActivity extends AppCompatActivity {
+public class NewTerminalActivity extends BaseActivity {
 
     private EditText etTerminal, etDestination, etLocation, etRegularFare, etStudentFare, etSeniorFare, etTravelTime;
     private Button btnAddRoute, btnCurrentRoutes;
@@ -27,21 +27,29 @@ public class NewTerminalActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_new_terminal);
+        setContentView(R.layout.activity_base);
+
+        // Inflate your content layout inside BaseActivity’s content frame
+        View contentView = getLayoutInflater().inflate(
+                R.layout.activity_new_terminal,
+                findViewById(R.id.content_frame),
+                true
+        );;
+        setupNavigation();
 
         // Initialize Firestore
         db = FirebaseFirestore.getInstance();
 
         // Bind views
-        etTerminal = findViewById(R.id.etTerminal);
-        etDestination = findViewById(R.id.etDestination);
-        etLocation = findViewById(R.id.etLocation);
-        etRegularFare = findViewById(R.id.etRegularFare);
-        etStudentFare = findViewById(R.id.etStudentFare);
-        etSeniorFare = findViewById(R.id.etSeniorFare);
-        etTravelTime = findViewById(R.id.etTravelTime);
-        btnAddRoute = findViewById(R.id.btnAddRoute);
-        btnCurrentRoutes = findViewById(R.id.btnCurrentRoutes);
+        etTerminal = contentView.findViewById(R.id.etTerminal);
+        etDestination = contentView.findViewById(R.id.etDestination);
+        etLocation = contentView.findViewById(R.id.etLocation);
+        etRegularFare = contentView.findViewById(R.id.etRegularFare);
+        etStudentFare = contentView.findViewById(R.id.etStudentFare);
+        etSeniorFare = contentView.findViewById(R.id.etSeniorFare);
+        etTravelTime = contentView.findViewById(R.id.etTravelTime);
+        btnAddRoute = contentView.findViewById(R.id.btnAddRoute);
+        btnCurrentRoutes = contentView.findViewById(R.id.btnCurrentRoutes);
 
         // Add Route Button
         btnAddRoute.setOnClickListener(new View.OnClickListener() {
@@ -60,7 +68,10 @@ public class NewTerminalActivity extends AppCompatActivity {
             }
         });
     }
-
+    @Override
+    protected void onNavigationSetup() {
+        // Optional: Add menu logic here if needed
+    }
     private void saveRoute() {
         String terminal = etTerminal.getText().toString().trim();
         String destination = etDestination.getText().toString().trim();
