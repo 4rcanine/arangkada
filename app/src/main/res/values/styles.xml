@@ -45,4 +45,10 @@
         <item name="android:layout_marginBottom">10dp</item>
     </style>
 
+
+    <style name="RoundedDialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="android:windowMinWidthMajor">80%</item>
+        <item name="android:windowMinWidthMinor">80%</item>
+    </style>
+
 </resources>

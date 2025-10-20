@@ -1,33 +1,26 @@
 package com.example.arangkada.activities;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
-
+import android.widget.*;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.arangkada.AdminActivity;
 import com.example.arangkada.MainActivity;
 import com.example.arangkada.R;
-import androidx.cardview.widget.CardView;
-import com.google.android.material.textfield.TextInputLayout;
-import com.google.android.material.textfield.TextInputEditText;
-
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.FirebaseFirestore;
-import java.util.HashMap;
-import java.util.Map;
-import android.content.DialogInterface;
-import androidx.appcompat.app.AlertDialog;
-import androidx.annotation.NonNull;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.*;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class AuthActivity extends AppCompatActivity {
 
@@ -77,8 +70,6 @@ public class AuthActivity extends AppCompatActivity {
         showLoginMode();
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
-
-
     }
 
     private void initializeViews() {
@@ -115,51 +106,21 @@ public class AuthActivity extends AppCompatActivity {
 
     private void setupClickListeners() {
 
-        switchModeTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                toggleMode();
-            }
-        });
+        switchModeTextView.setOnClickListener(v -> toggleMode());
 
-        switchToAdminTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showAdminSignupMode();
-            }
-        });
+        switchToAdminTextView.setOnClickListener(v -> showAdminSignupMode());
 
         // Login
-        loginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                performLogin();
-            }
-        });
+        loginButton.setOnClickListener(v -> performLogin());
 
-        // Signup
-        signupButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                performSignup(false);
-            }
-        });
+        // Signup - show Terms dialog first (always)
+        signupButton.setOnClickListener(v -> showTermsDialog(false));
 
-        // ignore pls
-        adminSignupButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                performSignup(true);
-            }
-        });
+        // Admin signup - show Terms dialog first
+        adminSignupButton.setOnClickListener(v -> showTermsDialog(true));
 
         // Forgot password
-        forgotPasswordTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showForgotPasswordDialog();
-            }
-        });
+        forgotPasswordTextView.setOnClickListener(v -> showForgotPasswordDialog());
     }
 
     private void toggleMode() {
@@ -250,6 +211,110 @@ public class AuthActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Terms dialog that always shows before any signup.
+     * Has a clickable link to open the full Terms activity.
+     */
+    private void showTermsDialog(boolean isAdmin) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setCancelable(true);
+
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        int padding = (int) (20 * getResources().getDisplayMetrics().density);
+        root.setPadding(padding, padding, padding, padding);
+
+        TextView title = new TextView(this);
+        title.setText("Terms and Conditions");
+        title.setTextSize(18f);
+        title.setPadding(0, 0, 0, 12);
+        title.setGravity(Gravity.CENTER_HORIZONTAL);
+        root.addView(title);
+
+        // Short message + scrollable preview
+        ScrollView sv = new ScrollView(this);
+        LinearLayout svInner = new LinearLayout(this);
+        svInner.setOrientation(LinearLayout.VERTICAL);
+        svInner.setPadding(0, 6, 0, 6);
+
+        TextView preview = new TextView(this);
+        preview.setText("By signing up you agree to Arangkada's Terms & Conditions. Please read them before proceeding.");
+        preview.setTextSize(14f);
+        preview.setLineSpacing(1.1f, 1.1f);
+        svInner.addView(preview);
+        sv.addView(svInner);
+
+        root.addView(sv);
+
+        // Link to open full terms
+        TextView readFull = new TextView(this);
+        readFull.setText("📄 Read full Terms and Conditions");
+        readFull.setTextColor(getResources().getColor(R.color.purple_500));
+        readFull.setPadding(0, 12, 0, 12);
+        readFull.setOnClickListener(v -> {
+            // Open the activity that displays full T&C
+            startActivity(new Intent(AuthActivity.this, TermsAndConditionsActivity.class));
+        });
+        root.addView(readFull);
+
+        // Checkbox to require explicit accept
+        CheckBox cb = new CheckBox(this);
+        cb.setText("I agree to these terms and accept");
+        root.addView(cb);
+
+        // Buttons row
+        LinearLayout btnRow = new LinearLayout(this);
+        btnRow.setOrientation(LinearLayout.HORIZONTAL);
+        btnRow.setGravity(Gravity.CENTER_HORIZONTAL);
+        btnRow.setPadding(0, 18, 0, 0);
+
+        Button decline = new Button(this);
+        decline.setText("Decline");
+        styleRoundedButton(decline, 0xFF888888); // gray
+
+        Button accept = new Button(this);
+        accept.setText("Accept");
+        styleRoundedButton(accept, getResources().getColor(R.color.purple_500)); // primary
+
+        // layout params so they share the row
+        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+        p.setMargins(12, 0, 12, 0);
+        decline.setLayoutParams(p);
+        accept.setLayoutParams(p);
+
+        btnRow.addView(decline);
+        btnRow.addView(accept);
+        root.addView(btnRow);
+
+        builder.setView(root);
+        AlertDialog dialog = builder.create();
+
+        decline.setOnClickListener(v -> {
+            dialog.dismiss();
+            // user declined — simply return to signup screen
+            Toast.makeText(AuthActivity.this, "You must accept Terms and Conditions to create an account.", Toast.LENGTH_SHORT).show();
+        });
+
+        accept.setOnClickListener(v -> {
+            if (!cb.isChecked()) {
+                Toast.makeText(AuthActivity.this, "Please check the box to proceed.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            dialog.dismiss();
+            // proceed with original signup flow
+            performSignup(isAdmin);
+        });
+
+        dialog.show();
+    }
+
+    private void styleRoundedButton(Button btn, int colorInt) {
+        GradientDrawable gd = new GradientDrawable();
+        gd.setCornerRadius(24f * getResources().getDisplayMetrics().density);
+        gd.setColor(colorInt);
+        btn.setBackground(gd);
+        btn.setTextColor(getResources().getColor(android.R.color.white));
+    }
 
     private void performSignup(boolean isAdmin) {
         String fullName, email, phone, password, confirmPassword;
@@ -268,7 +333,7 @@ public class AuthActivity extends AppCompatActivity {
             confirmPassword = signupConfirmPasswordEditText.getText().toString().trim();
         }
 
-        // Validation
+        // Validation (keeps your original checks)
         if (fullName.isEmpty()) {
             setError(isAdmin ? adminFullNameEditText : signupFullNameEditText, "Full name is required");
             return;
@@ -281,13 +346,10 @@ public class AuthActivity extends AppCompatActivity {
             setError(isAdmin ? adminEmailEditText : signupEmailEditText, "Please enter a valid email");
             return;
         }
-
-        // Admin email validation
         if (isAdmin && !email.contains("@admin")) {
             setError(adminEmailEditText, "Admin email must contain '@admin'");
             return;
         }
-
         if (phone.isEmpty()) {
             setError(isAdmin ? adminPhoneEditText : signupPhoneEditText, "Phone number is required");
             return;
@@ -305,7 +367,7 @@ public class AuthActivity extends AppCompatActivity {
             return;
         }
 
-        // uhh firebase auth
+        // Firebase create user (as original)
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
@@ -324,7 +386,6 @@ public class AuthActivity extends AppCompatActivity {
                         userData.put("number", phone);
                         userData.put("userType", isAdmin ? "admin" : "user");
                         userData.put("isAdmin", isAdmin);
-
 
                         String collection = isAdmin ? "admins" : "accounts";
 
@@ -367,7 +428,7 @@ public class AuthActivity extends AppCompatActivity {
     }
 
     private void showForgotPasswordDialog() {
-        // Create a dialog with an input field
+        // Original working implementation preserved exactly
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Reset Password");
         builder.setMessage("Enter your email address to receive a password reset link.");
@@ -394,6 +455,7 @@ public class AuthActivity extends AppCompatActivity {
         builder.setPositiveButton("Send Reset Link", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+
                 String email = input.getText().toString().trim();
 
                 if (email.isEmpty()) {
@@ -411,12 +473,7 @@ public class AuthActivity extends AppCompatActivity {
             }
         });
 
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
 
         builder.show();
     }
@@ -496,5 +553,4 @@ public class AuthActivity extends AppCompatActivity {
                     Toast.makeText(AuthActivity.this, "Error checking user type: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
     }
-
 }
