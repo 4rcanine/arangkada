@@ -100,7 +100,7 @@ public class MainActivity extends BaseActivity {
 
     private void setupClickListeners() {
         bookRideCard.setOnClickListener(v -> startActivity(new Intent(this, BookRideActivity.class)));
-        myTripsCard.setOnClickListener(v -> startActivity(new Intent(this, MyTripsActivity.class)));
+        myTripsCard.setOnClickListener(v -> startActivity(new Intent(this, CancellationActivity.class)));
         notificationsCard.setOnClickListener(v -> startActivity(new Intent(this, NotificationsActivity.class)));
         profileCard.setOnClickListener(v -> startActivity(new Intent(this, ProfileActivity.class)));
     }

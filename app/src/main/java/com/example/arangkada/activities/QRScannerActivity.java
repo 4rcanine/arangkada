@@ -28,6 +28,8 @@ import androidx.core.content.ContextCompat;
 
 import com.example.arangkada.R;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.mlkit.vision.barcode.common.Barcode;
@@ -43,6 +45,8 @@ public class QRScannerActivity extends BaseActivity {
 
     private static final String TAG = "QRScannerActivity";
     private FirebaseFirestore db;
+    private FirebaseAuth mAuth;
+    private String currentAdminId;
     private PreviewView previewView;
     private boolean isProcessing = false;
     private ExecutorService cameraExecutor;
@@ -65,17 +69,28 @@ public class QRScannerActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_base);
 
-        // Inflate your content layout inside BaseActivity’s content frame
+        // Inflate your content layout inside BaseActivity's content frame
         View contentView = getLayoutInflater().inflate(
                 R.layout.activity_qrscanner,
                 findViewById(R.id.content_frame),
                 true
-        );;
+        );
+
         setupNavigation();
+
         previewView = contentView.findViewById(R.id.previewView);
         db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
         cameraExecutor = Executors.newSingleThreadExecutor();
 
+        // Get current admin ID
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+        currentAdminId = currentUser.getUid();
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_GRANTED) {
@@ -86,10 +101,12 @@ public class QRScannerActivity extends BaseActivity {
             cameraPermissionLauncher.launch(Manifest.permission.CAMERA);
         }
     }
+
     @Override
     protected void onNavigationSetup() {
         // Optional: Add menu logic here if needed
     }
+
     private void startCamera() {
         Log.d(TAG, "Starting camera...");
 
@@ -115,27 +132,21 @@ public class QRScannerActivity extends BaseActivity {
             return;
         }
 
-
         cameraProvider.unbindAll();
 
-
         CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
-
 
         Preview preview = new Preview.Builder()
                 .build();
 
-
         preview.setSurfaceProvider(previewView.getSurfaceProvider());
         Log.d(TAG, "Preview surface provider set");
-
 
         BarcodeScannerOptions options = new BarcodeScannerOptions.Builder()
                 .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
                 .build();
 
         BarcodeScanner scanner = BarcodeScanning.getClient(options);
-
 
         ImageAnalysis imageAnalysis = new ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
@@ -146,7 +157,6 @@ public class QRScannerActivity extends BaseActivity {
         });
 
         try {
-
             Camera camera = cameraProvider.bindToLifecycle(
                     this,
                     cameraSelector,
@@ -209,11 +219,44 @@ public class QRScannerActivity extends BaseActivity {
         Log.d(TAG, "Fetching booking details for: " + bookingId);
 
         db.collection("bookings").document(bookingId).get()
-                .addOnSuccessListener(documentSnapshot -> {
+                .addOnSuccessListener(bookingDoc -> {
                     try {
-                        if (documentSnapshot.exists()) {
-                            Log.d(TAG, "Booking found, showing dialog");
-                            showBookingDialog(documentSnapshot);
+                        if (bookingDoc.exists()) {
+                            String tripId = bookingDoc.getString("tripId");
+
+                            if (tripId == null || tripId.isEmpty()) {
+                                Toast.makeText(this, "Booking has no associated trip.", Toast.LENGTH_SHORT).show();
+                                isProcessing = false;
+                                return;
+                            }
+
+                            // Verify if this booking belongs to the current admin's trip
+                            db.collection("trips").document(tripId).get()
+                                    .addOnSuccessListener(tripDoc -> {
+                                        if (tripDoc.exists()) {
+                                            String tripAdminId = tripDoc.getString("adminID");
+
+                                            if (tripAdminId != null && tripAdminId.equals(currentAdminId)) {
+                                                // Admin owns this trip, proceed normally
+                                                Log.d(TAG, "Admin verified, showing booking dialog");
+                                                showBookingDialog(bookingDoc);
+                                            } else {
+                                                // This booking is not for this admin's trip
+                                                Log.w(TAG, "Booking does not belong to current admin");
+                                                showUnauthorizedBookingDialog();
+                                                isProcessing = false;
+                                            }
+                                        } else {
+                                            Toast.makeText(this, "Trip not found.", Toast.LENGTH_SHORT).show();
+                                            isProcessing = false;
+                                        }
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Log.e(TAG, "Error fetching trip", e);
+                                        Toast.makeText(this, "Error verifying trip: " + e.getMessage(),
+                                                Toast.LENGTH_SHORT).show();
+                                        isProcessing = false;
+                                    });
                         } else {
                             Log.w(TAG, "Booking not found");
                             Toast.makeText(this, "Booking not found.", Toast.LENGTH_SHORT).show();
@@ -232,6 +275,18 @@ public class QRScannerActivity extends BaseActivity {
                             Toast.LENGTH_SHORT).show();
                     isProcessing = false;
                 });
+    }
+
+    private void showUnauthorizedBookingDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Unauthorized Booking")
+                .setMessage("This booking is not for your trip. You cannot complete or cancel this booking.")
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setPositiveButton("OK", (dialog, which) -> {
+                    dialog.dismiss();
+                })
+                .setCancelable(true)
+                .show();
     }
 
     private void showBookingDialog(DocumentSnapshot doc) {
@@ -290,11 +345,9 @@ public class QRScannerActivity extends BaseActivity {
 
             AlertDialog dialog = builder.create();
 
-
             if (dialog.getWindow() != null) {
                 dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
             }
-
 
             if (userId != null) {
                 db.collection("accounts").document(userId)
@@ -306,7 +359,6 @@ public class QRScannerActivity extends BaseActivity {
             } else {
                 txtUser.setText("Unknown User");
             }
-
 
             if (destinationId != null) {
                 db.collection("destinations").document(destinationId)
@@ -345,7 +397,6 @@ public class QRScannerActivity extends BaseActivity {
         }
     }
 
-
     private void showCancelReasonDialog(DocumentSnapshot doc, AlertDialog parentDialog) {
         try {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -357,7 +408,6 @@ public class QRScannerActivity extends BaseActivity {
             Button btnProceed = reasonView.findViewById(R.id.btnProceed);
 
             AlertDialog dialog = builder.create();
-
 
             if (dialog.getWindow() != null) {
                 dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
@@ -372,18 +422,50 @@ public class QRScannerActivity extends BaseActivity {
                     return;
                 }
 
-                db.collection("bookings").document(doc.getId())
-                        .update("status", "Cancelled", "reason", reason)
-                        .addOnSuccessListener(aVoid -> {
-                            Toast.makeText(this, "Booking cancelled.", Toast.LENGTH_SHORT).show();
-                            dialog.dismiss();
-                            parentDialog.dismiss();
-                            isProcessing = false;
-                        })
-                        .addOnFailureListener(e -> {
-                            Log.e(TAG, "Failed to cancel booking", e);
-                            Toast.makeText(this, "Failed to cancel booking.", Toast.LENGTH_SHORT).show();
-                        });
+                // Get trip ID and current booking status to determine if seats need restoration
+                String tripId = doc.getString("tripId");
+                String currentStatus = doc.getString("status");
+                Long seatsLong = doc.getLong("seats");
+                int seats = (seatsLong != null) ? seatsLong.intValue() : 0;
+
+                if ("Confirmed".equals(currentStatus) && tripId != null) {
+                    // Restore seats if booking was confirmed
+                    db.collection("trips").document(tripId)
+                            .update("availableSeats", com.google.firebase.firestore.FieldValue.increment(seats))
+                            .addOnSuccessListener(unused -> {
+                                // After restoring seats, cancel the booking
+                                db.collection("bookings").document(doc.getId())
+                                        .update("status", "Cancelled", "reason", reason)
+                                        .addOnSuccessListener(aVoid -> {
+                                            Toast.makeText(this, "Booking cancelled & seats restored.", Toast.LENGTH_SHORT).show();
+                                            dialog.dismiss();
+                                            parentDialog.dismiss();
+                                            isProcessing = false;
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            Log.e(TAG, "Failed to cancel booking", e);
+                                            Toast.makeText(this, "Failed to cancel booking.", Toast.LENGTH_SHORT).show();
+                                        });
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e(TAG, "Failed to restore seats", e);
+                                Toast.makeText(this, "Failed to restore seats.", Toast.LENGTH_SHORT).show();
+                            });
+                } else {
+                    // Just cancel without restoring seats (Pending status)
+                    db.collection("bookings").document(doc.getId())
+                            .update("status", "Cancelled", "reason", reason)
+                            .addOnSuccessListener(aVoid -> {
+                                Toast.makeText(this, "Booking cancelled.", Toast.LENGTH_SHORT).show();
+                                dialog.dismiss();
+                                parentDialog.dismiss();
+                                isProcessing = false;
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e(TAG, "Failed to cancel booking", e);
+                                Toast.makeText(this, "Failed to cancel booking.", Toast.LENGTH_SHORT).show();
+                            });
+                }
             });
 
             dialog.show();

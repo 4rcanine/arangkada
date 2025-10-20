@@ -492,23 +492,57 @@ public class ManageReservationsActivity extends BaseActivity {
 
     private void updateBookingStatus(String bookingId, String status, int seats, String tripId, String reason) {
         if ("Cancelled".equals(status)) {
+            // Only restore seats if the booking was previously "Confirmed"
+            db.collection("bookings").document(bookingId).get()
+                    .addOnSuccessListener(bookingDoc -> {
+                        if (bookingDoc.exists()) {
+                            String currentStatus = bookingDoc.getString("status");
+
+                            if ("Confirmed".equals(currentStatus)) {
+                                // Booking was confirmed, restore seats
+                                db.collection("trips").document(tripId)
+                                        .update("availableSeats", FieldValue.increment(seats))
+                                        .addOnSuccessListener(unused -> db.collection("bookings")
+                                                .document(bookingId)
+                                                .update("status", status, "reason", reason)
+                                                .addOnSuccessListener(unused2 -> {
+                                                    Toast.makeText(this, "Booking Cancelled & seats restored", Toast.LENGTH_SHORT).show();
+                                                    loadAllBookings(false);
+                                                })
+                                                .addOnFailureListener(e -> Toast.makeText(this, "Error updating booking: " + e.getMessage(), Toast.LENGTH_SHORT).show()))
+                                        .addOnFailureListener(e -> Toast.makeText(this, "Error restoring seats: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                            } else {
+                                // Booking was pending, just cancel without restoring seats
+                                db.collection("bookings").document(bookingId)
+                                        .update("status", status, "reason", reason)
+                                        .addOnSuccessListener(unused -> {
+                                            Toast.makeText(this, "Booking Cancelled", Toast.LENGTH_SHORT).show();
+                                            loadAllBookings(false);
+                                        })
+                                        .addOnFailureListener(e -> Toast.makeText(this, "Error updating booking: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                            }
+                        }
+                    })
+                    .addOnFailureListener(e -> Toast.makeText(this, "Error fetching booking: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+        } else if ("Confirmed".equals(status)) {
+            // Deduct seats when confirming
             db.collection("trips").document(tripId)
-                    .update("availableSeats", FieldValue.increment(seats))
+                    .update("availableSeats", FieldValue.increment(-seats))
                     .addOnSuccessListener(unused -> db.collection("bookings")
                             .document(bookingId)
-                            .update("status", status, "reason", reason)
+                            .update("status", status)
                             .addOnSuccessListener(unused2 -> {
-                                Toast.makeText(this, "Booking Cancelled & seats restored", Toast.LENGTH_SHORT).show();
-                                loadAllBookings(false); // preserve page & filters
+                                Toast.makeText(this, "Booking Confirmed & seats deducted", Toast.LENGTH_SHORT).show();
+                                loadAllBookings(false);
                             })
                             .addOnFailureListener(e -> Toast.makeText(this, "Error updating booking: " + e.getMessage(), Toast.LENGTH_SHORT).show()))
-                    .addOnFailureListener(e -> Toast.makeText(this, "Error restoring seats: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                    .addOnFailureListener(e -> Toast.makeText(this, "Error deducting seats: " + e.getMessage(), Toast.LENGTH_SHORT).show());
         } else {
             db.collection("bookings").document(bookingId)
                     .update("status", status)
                     .addOnSuccessListener(unused -> {
                         Toast.makeText(this, "Booking " + status, Toast.LENGTH_SHORT).show();
-                        loadAllBookings(false); // preserve page & filters
+                        loadAllBookings(false);
                     })
                     .addOnFailureListener(e -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
         }

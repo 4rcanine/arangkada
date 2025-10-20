@@ -35,7 +35,8 @@ public class BookRideActivity extends BaseActivity {
     private Spinner spinnerDestinations, spinnerTrips;
     private EditText etRegularCount, etStudentCount, etSeniorCount;
     private TextView tvTotalFare, tvTripDeparture, tvTripVan, tvTripSeats, tvTripTravelTime;
-    private LinearLayout layoutTripDetails, layoutPaymentProof, layoutQRCode, layoutMobileNumber, layoutPaymentChoice;
+    private TextView tvAdminName, tvAdminNumber;
+    private LinearLayout layoutTripDetails, layoutPaymentProof, layoutQRCode, layoutMobileNumber, layoutPaymentChoice, layoutAdminInfo;
     private Button btnBookNow, btnCancel, btnUploadProof;
     private ProgressBar progressBar;
     private ImageView imgQRCode, imgPaymentProof;
@@ -65,7 +66,7 @@ public class BookRideActivity extends BaseActivity {
     private String currentPaymentNumber = null;
     private Uri selectedProofUri = null;
     private String uploadedProofUrl = null;
-    private String userSelectedPayment = "Cash"; // User's choice for Cash & Gcash
+    private String userSelectedPayment = "Cash";
 
     // ImageKit Configuration
     private static final String IMAGEKIT_PUBLIC_KEY = "public_aM1dq8aVaA7PBiP8Pdfo6mYpUsM=";
@@ -77,7 +78,6 @@ public class BookRideActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_base);
 
-        // Inflate content into base layout
         getLayoutInflater().inflate(R.layout.activity_book_ride,
                 findViewById(R.id.content_frame), true);
 
@@ -88,7 +88,6 @@ public class BookRideActivity extends BaseActivity {
         initializeViews();
         setupListeners();
 
-        // Load destinations
         loadDestinations();
     }
 
@@ -113,6 +112,11 @@ public class BookRideActivity extends BaseActivity {
         tvTripTravelTime = findViewById(R.id.tvTripTravelTime);
         layoutTripDetails = findViewById(R.id.layoutTripDetails);
 
+        // Admin info
+        tvAdminName = findViewById(R.id.tvAdminName);
+        tvAdminNumber = findViewById(R.id.tvAdminNumber);
+        layoutAdminInfo = findViewById(R.id.layoutAdminInfo);
+
         // Payment views
         tvPaymentMethod = findViewById(R.id.tvPaymentMethod);
         layoutPaymentProof = findViewById(R.id.layoutPaymentProof);
@@ -133,7 +137,6 @@ public class BookRideActivity extends BaseActivity {
     }
 
     private void setupListeners() {
-        // Real-time fare preview
         TextWatcher fareWatcher = new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -145,7 +148,6 @@ public class BookRideActivity extends BaseActivity {
         etStudentCount.addTextChangedListener(fareWatcher);
         etSeniorCount.addTextChangedListener(fareWatcher);
 
-        // Radio button listener for Cash & Gcash option
         radioGroupPayment.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.radioCash) {
                 userSelectedPayment = "Cash";
@@ -359,6 +361,14 @@ public class BookRideActivity extends BaseActivity {
         tvTripTravelTime.setText("Travel Time: " + formatTravelTime(travelTimeMinutes));
         tvPaymentMethod.setText("Payment Method: " + currentPaymentMethod);
 
+        // Load admin info
+        String adminId = tripDoc.getString("adminID");
+        if (adminId != null && !adminId.isEmpty()) {
+            loadAdminInfo(adminId);
+        } else {
+            layoutAdminInfo.setVisibility(View.GONE);
+        }
+
         updatePaymentUI();
         layoutTripDetails.setVisibility(View.VISIBLE);
 
@@ -396,6 +406,30 @@ public class BookRideActivity extends BaseActivity {
                             tvTotalFare.setText("Total Fare: ₱0");
                         }
                     }
+                });
+    }
+
+    private void loadAdminInfo(String adminId) {
+        db.collection("accounts").document(adminId).get()
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        String name = doc.getString("name");
+                        String number = doc.getString("number");
+
+                        if (name != null || number != null) {
+                            layoutAdminInfo.setVisibility(View.VISIBLE);
+                            tvAdminName.setText("Operator: " + (name != null ? name : "N/A"));
+                            tvAdminNumber.setText("Contact: " + (number != null ? number : "N/A"));
+                        } else {
+                            layoutAdminInfo.setVisibility(View.GONE);
+                        }
+                    } else {
+                        layoutAdminInfo.setVisibility(View.GONE);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Failed to load admin info: " + e.getMessage());
+                    layoutAdminInfo.setVisibility(View.GONE);
                 });
     }
 
@@ -530,49 +564,33 @@ public class BookRideActivity extends BaseActivity {
         progressBar.setVisibility(View.VISIBLE);
         btnBookNow.setEnabled(false);
 
-        db.runTransaction((Transaction.Function<Void>) transaction -> {
-            DocumentReference tripRef = db.collection("trips").document(tripId);
-            DocumentSnapshot tripSnapshot = transaction.get(tripRef);
+        // Create booking document
+        DocumentReference bookingRef = db.collection("bookings").document();
+        String bookingId = bookingRef.getId();
 
-            Long availableSeatsObj = tripSnapshot.getLong("availableSeats");
-            long availableSeats = (availableSeatsObj != null) ? availableSeatsObj : 0L;
+        Map<String, Object> booking = new HashMap<>();
+        booking.put("bookingId", bookingId);
+        booking.put("status", "Pending");
+        booking.put("regularCount", regular);
+        booking.put("studentCount", student);
+        booking.put("seniorCount", senior);
+        booking.put("seats", passengerCount);
+        booking.put("departure", departure);
+        booking.put("destinationId", destinationId);
+        booking.put("tripId", tripId);
+        booking.put("userId", userId);
+        booking.put("totalFare", totalFare);
+        booking.put("createdAt", createdAt);
+        booking.put("paymentMethod", finalPaymentMethod);
 
-            if (passengerCount > availableSeats) {
-                throw new FirebaseFirestoreException(
-                        "Not enough available seats",
-                        FirebaseFirestoreException.Code.ABORTED
-                );
-            }
+        if (uploadedProofUrl != null) {
+            booking.put("paymentProofUrl", uploadedProofUrl);
+        }
 
-            long newSeats = availableSeats - passengerCount;
-            transaction.update(tripRef, "availableSeats", newSeats);
+        bookingRef.set(booking).addOnSuccessListener(aVoid -> {
+            progressBar.setVisibility(View.GONE);
+            btnBookNow.setEnabled(true);
 
-            DocumentReference bookingRef = db.collection("bookings").document();
-            String bookingId = bookingRef.getId();
-
-            Map<String, Object> booking = new HashMap<>();
-            booking.put("bookingId", bookingId);
-            booking.put("status", "Pending");
-            booking.put("regularCount", regular);
-            booking.put("studentCount", student);
-            booking.put("seniorCount", senior);
-            booking.put("seats", passengerCount);
-            booking.put("departure", departure);
-            booking.put("destinationId", destinationId);
-            booking.put("tripId", tripId);
-            booking.put("userId", userId);
-            booking.put("totalFare", totalFare);
-            booking.put("createdAt", createdAt);
-            booking.put("paymentMethod", finalPaymentMethod);
-
-            if (uploadedProofUrl != null) {
-                booking.put("paymentProofUrl", uploadedProofUrl);
-            }
-
-            transaction.set(bookingRef, booking);
-
-            return null;
-        }).addOnSuccessListener(aVoid -> {
             Toast.makeText(BookRideActivity.this, "Booking confirmed!", Toast.LENGTH_SHORT).show();
 
             etRegularCount.setText("0");
@@ -584,11 +602,11 @@ public class BookRideActivity extends BaseActivity {
             selectedProofUri = null;
             imgPaymentProof.setVisibility(View.GONE);
 
-        }).addOnFailureListener(e ->
-                Toast.makeText(BookRideActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-        ).addOnCompleteListener(task -> {
+        }).addOnFailureListener(e -> {
             progressBar.setVisibility(View.GONE);
             btnBookNow.setEnabled(true);
+
+            Toast.makeText(BookRideActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         });
     }
 
