@@ -85,6 +85,40 @@
                 android:textSize="14sp"
                 android:layout_marginBottom="8dp" />
 
+            <!-- Driver Name label -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Driver"
+                android:textColor="#666"
+                android:textSize="12sp" />
+
+            <!-- Driver Name value -->
+            <TextView
+                android:id="@+id/tv_driverName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="N/A"
+                android:textSize="14sp"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Driver Number label -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Driver Contact"
+                android:textColor="#666"
+                android:textSize="12sp" />
+
+            <!-- Driver Number value -->
+            <TextView
+                android:id="@+id/tv_driverNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="N/A"
+                android:textSize="14sp"
+                android:layout_marginBottom="8dp" />
+
             <!-- Available Seats label -->
             <TextView
                 android:layout_width="wrap_content"

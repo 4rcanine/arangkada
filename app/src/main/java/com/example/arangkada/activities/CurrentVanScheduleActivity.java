@@ -268,7 +268,7 @@ public class CurrentVanScheduleActivity extends BaseActivity {
 
 
         class TripVH extends RecyclerView.ViewHolder {
-            TextView tvVanId, tvDestination, tvDeparture, tvSeats, tvStatus;
+            TextView tvVanId, tvDestination, tvDeparture, tvSeats, tvStatus, tvDriverName, tvDriverNumber;
             Button btnEdit, btnDelete, btnAddWalkIn;
 
             TripVH(@NonNull View itemView) {
@@ -278,6 +278,8 @@ public class CurrentVanScheduleActivity extends BaseActivity {
                 tvDeparture = itemView.findViewById(R.id.tv_departure);
                 tvSeats = itemView.findViewById(R.id.tv_seats);
                 tvStatus = itemView.findViewById(R.id.tv_status);
+                tvDriverName = itemView.findViewById(R.id.tv_driverName);
+                tvDriverNumber = itemView.findViewById(R.id.tv_driverNumber);
                 btnEdit = itemView.findViewById(R.id.btnEdit);
                 btnDelete = itemView.findViewById(R.id.btnDelete);
                 btnAddWalkIn = itemView.findViewById(R.id.btnAddWalkIn);
@@ -293,6 +295,8 @@ public class CurrentVanScheduleActivity extends BaseActivity {
         final String vanId = trip.get("vanId") instanceof String ? (String) trip.get("vanId") : null;
         final String destinationId = trip.get("destinationId") instanceof String ? (String) trip.get("destinationId") : null;
         final String tripAdminId = trip.get("adminID") instanceof String ? (String) trip.get("adminID") : null;
+        final String driverName = trip.get("driverName") instanceof String ? (String) trip.get("driverName") : null;
+        final String driverNumber = trip.get("driverNumber") instanceof String ? (String) trip.get("driverNumber") : null;
 
         Object seatsObj = trip.get("availableSeats");
         final long availableSeats = (seatsObj instanceof Number) ? ((Number) seatsObj).longValue() : 0L;
@@ -305,6 +309,10 @@ public class CurrentVanScheduleActivity extends BaseActivity {
 
         holder.tvVanId.setText("Van Plate: " + (vanId != null ? vanId : "N/A"));
         holder.tvSeats.setText(String.valueOf(availableSeats));
+
+        // Display driver information
+        holder.tvDriverName.setText(driverName != null && !driverName.isEmpty() ? driverName : "N/A");
+        holder.tvDriverNumber.setText(driverNumber != null && !driverNumber.isEmpty() ? driverNumber : "N/A");
 
         boolean isUpcoming = false;
         if (departure != null) {
@@ -365,28 +373,65 @@ public class CurrentVanScheduleActivity extends BaseActivity {
         holder.btnDelete.setOnClickListener(v -> {
             new AlertDialog.Builder(CurrentVanScheduleActivity.this)
                     .setTitle("Delete Trip")
-                    .setMessage("Are you sure you want to delete this trip?")
+                    .setMessage("Are you sure you want to delete this trip? All associated bookings will also be deleted.")
                     .setPositiveButton("Delete", (dialog, which) -> {
                         showLoading(true);
-                        db.collection("trips").document(tripId).delete()
-                                .addOnSuccessListener(unused -> {
-                                    int idx = items.indexOf(trip);
-                                    if (idx != -1) {
-                                        items.remove(idx);
-                                        if (idx - 1 >= 0 && items.get(idx - 1) instanceof String) {
-                                            boolean removeHeader = (idx >= items.size()) || (items.get(idx) instanceof String);
-                                            if (removeHeader) items.remove(idx - 1);
+
+                        // First, delete all bookings associated with this trip
+                        db.collection("bookings")
+                                .whereEqualTo("tripId", tripId)
+                                .get()
+                                .addOnSuccessListener(bookingsSnapshot -> {
+                                    // Create a batch to delete all bookings at once
+                                    if (!bookingsSnapshot.isEmpty()) {
+                                        // Delete each booking
+                                        for (DocumentSnapshot bookingDoc : bookingsSnapshot.getDocuments()) {
+                                            db.collection("bookings")
+                                                    .document(bookingDoc.getId())
+                                                    .delete()
+                                                    .addOnFailureListener(e -> {
+                                                        // Log error but continue with trip deletion
+                                                        Toast.makeText(CurrentVanScheduleActivity.this,
+                                                                "Warning: Some bookings may not have been deleted",
+                                                                Toast.LENGTH_SHORT).show();
+                                                    });
                                         }
-                                        adapter.notifyDataSetChanged();
-                                    } else {
-                                        loadTrips();
                                     }
-                                    showLoading(false);
-                                    Toast.makeText(CurrentVanScheduleActivity.this, "Trip deleted", Toast.LENGTH_SHORT).show();
+
+                                    // Now delete the trip itself
+                                    db.collection("trips").document(tripId).delete()
+                                            .addOnSuccessListener(unused -> {
+                                                int idx = items.indexOf(trip);
+                                                if (idx != -1) {
+                                                    items.remove(idx);
+                                                    if (idx - 1 >= 0 && items.get(idx - 1) instanceof String) {
+                                                        boolean removeHeader = (idx >= items.size()) || (items.get(idx) instanceof String);
+                                                        if (removeHeader) items.remove(idx - 1);
+                                                    }
+                                                    adapter.notifyDataSetChanged();
+                                                } else {
+                                                    loadTrips();
+                                                }
+                                                showLoading(false);
+
+                                                int bookingsDeleted = bookingsSnapshot.size();
+                                                String message = bookingsDeleted > 0
+                                                        ? "Trip and " + bookingsDeleted + " booking(s) deleted"
+                                                        : "Trip deleted";
+                                                Toast.makeText(CurrentVanScheduleActivity.this, message, Toast.LENGTH_SHORT).show();
+                                            })
+                                            .addOnFailureListener(e -> {
+                                                showLoading(false);
+                                                Toast.makeText(CurrentVanScheduleActivity.this,
+                                                        "Delete failed: " + e.getMessage(),
+                                                        Toast.LENGTH_SHORT).show();
+                                            });
                                 })
                                 .addOnFailureListener(e -> {
                                     showLoading(false);
-                                    Toast.makeText(CurrentVanScheduleActivity.this, "Delete failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(CurrentVanScheduleActivity.this,
+                                            "Failed to check bookings: " + e.getMessage(),
+                                            Toast.LENGTH_SHORT).show();
                                 });
                     })
                     .setNegativeButton("Cancel", null)
