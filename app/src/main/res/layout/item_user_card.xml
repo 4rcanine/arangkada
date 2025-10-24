@@ -13,31 +13,61 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Header: User Name -->
+        <!-- Header: Profile Picture + User Info -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="#2E8B87"
             android:padding="12dp"
-            android:orientation="vertical">
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-            <TextView
-                android:id="@+id/tvUserName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="User Name"
-                android:textColor="@android:color/white"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+            <!-- Profile Picture -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                card_view:cardCornerRadius="24dp"
+                card_view:cardElevation="2dp"
+                android:layout_marginEnd="12dp">
 
-            <TextView
-                android:id="@+id/tvUserEmail"
-                android:layout_width="wrap_content"
+                <ImageView
+                    android:id="@+id/ivUserProfilePicture"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/ic_profile_placeholder"
+                    android:scaleType="centerCrop" />
+            </androidx.cardview.widget.CardView>
+
+            <!-- User Name and Email -->
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="user@email.com"
-                android:textColor="@android:color/white"
-                android:textSize="13sp"
-                android:layout_marginTop="2dp" />
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvUserName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="User Name"
+                    android:textColor="@android:color/white"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+                <TextView
+                    android:id="@+id/tvUserEmail"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="user@email.com"
+                    android:textColor="@android:color/white"
+                    android:textSize="13sp"
+                    android:layout_marginTop="2dp"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+            </LinearLayout>
+
         </LinearLayout>
 
         <!-- Body -->

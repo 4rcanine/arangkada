@@ -71,7 +71,10 @@
                             android:layout_width="80dp"
                             android:layout_height="80dp"
                             app:cardCornerRadius="40dp"
-                            app:cardElevation="4dp">
+                            app:cardElevation="4dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:foreground="?android:attr/selectableItemBackground">
 
                             <ImageView
                                 android:id="@+id/iv_profile_image"
@@ -79,7 +82,10 @@
                                 android:layout_height="match_parent"
                                 android:src="@drawable/ic_profile_placeholder"
                                 android:scaleType="centerCrop"
-                                android:background="@color/primary_color" />
+                                android:background="@color/primary_color"
+                                android:clickable="true"
+                                android:focusable="true" />
+                            
 
                         </androidx.cardview.widget.CardView>
 
@@ -126,6 +132,15 @@
             </androidx.cardview.widget.CardView>
 
         </LinearLayout>
+
+        <!-- Progress Bar for Image Upload -->
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:layout_marginBottom="16dp" />
 
         <!-- Profile Options -->
         <LinearLayout
@@ -402,7 +417,6 @@
                 </LinearLayout>
 
             </androidx.cardview.widget.CardView>
-
 
         </LinearLayout>
 

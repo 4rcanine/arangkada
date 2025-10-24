@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -13,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.arangkada.R;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
@@ -39,12 +41,12 @@ public class UserManagementActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_base);
 
-        // Inflate your content layout inside BaseActivity’s content frame
+        // Inflate your content layout inside BaseActivity's content frame
         View contentView = getLayoutInflater().inflate(
                 R.layout.activity_user_management,
                 findViewById(R.id.content_frame),
                 true
-        );;
+        );
         setupNavigation();
 
         recyclerUsers = contentView.findViewById(R.id.recyclerUsers);
@@ -54,10 +56,12 @@ public class UserManagementActivity extends BaseActivity {
 
         loadUsers();
     }
+
     @Override
     protected void onNavigationSetup() {
         // Optional: Add menu logic here if needed
     }
+
     private void loadUsers() {
         db.collection("accounts")
                 .get()
@@ -70,11 +74,12 @@ public class UserManagementActivity extends BaseActivity {
 
                         String name = doc.getString("name");
                         String email = doc.getString("email");
+                        String profilePicture = doc.getString("profilePicture");
 
                         if (name == null) name = "Unknown User";
                         if (email == null) email = "No email";
 
-                        UserModel user = new UserModel(userId, name, email, 0, "N/A");
+                        UserModel user = new UserModel(userId, name, email, profilePicture, 0, "N/A");
                         userList.add(user);
 
                         // fetch bookings for each user
@@ -137,15 +142,17 @@ public class UserManagementActivity extends BaseActivity {
         private String userId;
         private String name;
         private String email;
+        private String profilePicture;
         private int totalBookings;
         private String lastBookingDate;
 
         public UserModel() {}
 
-        public UserModel(String userId, String name, String email, int totalBookings, String lastBookingDate) {
+        public UserModel(String userId, String name, String email, String profilePicture, int totalBookings, String lastBookingDate) {
             this.userId = userId;
             this.name = name;
             this.email = email;
+            this.profilePicture = profilePicture;
             this.totalBookings = totalBookings;
             this.lastBookingDate = lastBookingDate;
         }
@@ -153,6 +160,7 @@ public class UserManagementActivity extends BaseActivity {
         public String getUserId() { return userId; }
         public String getName() { return name; }
         public String getEmail() { return email; }
+        public String getProfilePicture() { return profilePicture; }
         public int getTotalBookings() { return totalBookings; }
         public String getLastBookingDate() { return lastBookingDate; }
 
@@ -187,15 +195,25 @@ public class UserManagementActivity extends BaseActivity {
             holder.tvTotalBookings.setText("Total Bookings: " + user.getTotalBookings());
             holder.tvLastBooking.setText("Last Booking: " + user.getLastBookingDate());
 
+            // Load profile picture using Glide
+            if (user.getProfilePicture() != null && !user.getProfilePicture().isEmpty()) {
+                Glide.with(holder.itemView.getContext())
+                        .load(user.getProfilePicture())
+                        .placeholder(R.drawable.ic_profile_placeholder)
+                        .error(R.drawable.ic_profile_placeholder)
+                        .circleCrop()
+                        .into(holder.ivUserProfilePicture);
+            } else {
+                holder.ivUserProfilePicture.setImageResource(R.drawable.ic_profile_placeholder);
+            }
+
             holder.btnViewHistory.setOnClickListener(v -> {
                 android.content.Context context = v.getContext();
                 android.content.Intent intent = new android.content.Intent(context, UserHistoryActivity.class);
                 intent.putExtra("userId", user.getUserId()); // pass userId
                 context.startActivity(intent);
             });
-
         }
-
 
         @Override
         public int getItemCount() {
@@ -203,11 +221,13 @@ public class UserManagementActivity extends BaseActivity {
         }
 
         public static class UserViewHolder extends RecyclerView.ViewHolder {
+            ImageView ivUserProfilePicture;
             TextView tvUserName, tvUserEmail, tvTotalBookings, tvLastBooking;
             Button btnViewHistory;
 
             public UserViewHolder(@NonNull View itemView) {
                 super(itemView);
+                ivUserProfilePicture = itemView.findViewById(R.id.ivUserProfilePicture);
                 tvUserName = itemView.findViewById(R.id.tvUserName);
                 tvUserEmail = itemView.findViewById(R.id.tvUserEmail);
                 tvTotalBookings = itemView.findViewById(R.id.tvTotalBookings);

@@ -371,8 +371,8 @@ public class ManageReservationsActivity extends BaseActivity {
     }
 
     // ======================================================
-    // Adapter
-    // ======================================================
+// Adapter
+// ======================================================
     private class ManageReservationsAdapter extends RecyclerView.Adapter<ManageReservationsAdapter.BookingViewHolder> {
 
         private final List<Booking> bookings;
@@ -395,8 +395,42 @@ public class ManageReservationsActivity extends BaseActivity {
         public void onBindViewHolder(@NonNull BookingViewHolder holder, int position) {
             Booking booking = bookings.get(position);
 
+            // Load user info including profile picture
             db.collection("accounts").document(booking.getUserId()).get()
-                    .addOnSuccessListener(doc -> holder.txtUser.setText(doc.exists() ? doc.getString("name") : "Unknown User"));
+                    .addOnSuccessListener(doc -> {
+                        if (doc.exists()) {
+                            // Set user name
+                            String userName = doc.getString("name");
+                            holder.txtUser.setText(userName != null ? userName : "Unknown User");
+
+                        // Display mobile number
+                            String userNumber = doc.getString("number");
+                            holder.tvUserNumber.setText(userNumber != null && !userNumber.isEmpty()
+                                    ? "Mobile: " + userNumber
+                                    : "Mobile: N/A");
+
+
+                            // Load profile picture
+                            String profilePicture = doc.getString("profilePicture");
+                            if (profilePicture != null && !profilePicture.isEmpty()) {
+                                Glide.with(holder.itemView.getContext())
+                                        .load(profilePicture)
+                                        .placeholder(R.drawable.ic_profile_placeholder)
+                                        .error(R.drawable.ic_profile_placeholder)
+                                        .circleCrop()
+                                        .into(holder.ivUserProfilePicture);
+                            } else {
+                                holder.ivUserProfilePicture.setImageResource(R.drawable.ic_profile_placeholder);
+                            }
+                        } else {
+                            holder.txtUser.setText("Unknown User");
+                            holder.ivUserProfilePicture.setImageResource(R.drawable.ic_profile_placeholder);
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        holder.txtUser.setText("Unknown User");
+                        holder.ivUserProfilePicture.setImageResource(R.drawable.ic_profile_placeholder);
+                    });
 
             db.collection("trips").document(booking.getTripId()).get()
                     .addOnSuccessListener(tripDoc -> {
@@ -471,10 +505,13 @@ public class ManageReservationsActivity extends BaseActivity {
         public int getItemCount() { return bookings.size(); }
 
         class BookingViewHolder extends RecyclerView.ViewHolder {
-            TextView txtUser, tvRoute, tvVan, tvDeparture, tvPassengers, tvTotalFare, tvStatus, tvPaymentMethod;
+            ImageView ivUserProfilePicture;  // Added this
+            TextView txtUser, tvRoute, tvVan, tvDeparture, tvPassengers, tvTotalFare, tvStatus, tvPaymentMethod, tvUserNumber;
             Button btnConfirm, btnCancel, btnViewProof;
+
             BookingViewHolder(@NonNull View itemView) {
                 super(itemView);
+                ivUserProfilePicture = itemView.findViewById(R.id.ivUserProfilePicture);  // Added this
                 txtUser = itemView.findViewById(R.id.txtUser);
                 tvRoute = itemView.findViewById(R.id.tv_route);
                 tvVan = itemView.findViewById(R.id.tv_van);
@@ -486,6 +523,7 @@ public class ManageReservationsActivity extends BaseActivity {
                 btnConfirm = itemView.findViewById(R.id.btnConfirm);
                 btnCancel = itemView.findViewById(R.id.btnCancel);
                 btnViewProof = itemView.findViewById(R.id.btnViewProof);
+                tvUserNumber = itemView.findViewById(R.id.tvUserNumber);
             }
         }
     }

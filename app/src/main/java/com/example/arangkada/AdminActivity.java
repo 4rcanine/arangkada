@@ -23,6 +23,7 @@ import com.example.arangkada.activities.NewTerminalActivity;
 import com.example.arangkada.activities.ProfileActivity;
 import com.example.arangkada.activities.QRScannerActivity;
 import com.example.arangkada.activities.UserManagementActivity;
+import com.bumptech.glide.Glide;  // Add this import
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -34,6 +35,7 @@ public class AdminActivity extends BaseActivity {
 
     private CardView cardReservations, cardSchedule, cardTerminals, cardUsers, cardCancelled, cardQR, cardSettings;
     private TextView tvAdminName;
+    private ImageView adminProfileImageView;  // Add this
     private Button btnMakeAdmin;
 
     private FirebaseFirestore db;
@@ -58,7 +60,7 @@ public class AdminActivity extends BaseActivity {
         user = FirebaseAuth.getInstance().getCurrentUser();
 
         if (user != null) {
-            loadAdminName(user.getUid());
+            loadAdminInfo(user.getUid());  // Changed from loadAdminName
         }
 
         // Set card UI
@@ -81,6 +83,7 @@ public class AdminActivity extends BaseActivity {
         cardSettings = findViewById(R.id.card_settings);
 
         tvAdminName = findViewById(R.id.tv_admin_name);
+        adminProfileImageView = findViewById(R.id.iv_admin_profile_image);  // Add this
         btnMakeAdmin = findViewById(R.id.btn_make_admin);
 
         Button logoutButton = findViewById(R.id.btn_logout);
@@ -102,7 +105,51 @@ public class AdminActivity extends BaseActivity {
         cardQR.setOnClickListener(v -> startActivity(new Intent(this, QRScannerActivity.class)));
         cardSettings.setOnClickListener(v -> startActivity(new Intent(this, AdminProfileActivity.class)));
 
+        // Make profile image clickable to go to settings/profile
+        adminProfileImageView.setOnClickListener(v -> startActivity(new Intent(this, AdminProfileActivity.class)));
+
         btnMakeAdmin.setOnClickListener(v -> showCreateAdminDialog());
+    }
+
+    // Add this new method to load both name and profile picture
+    private void loadAdminInfo(String userId) {
+        db.collection("accounts").document(userId).get()
+                .addOnSuccessListener(document -> {
+                    if (document.exists()) {
+                        // Load name
+                        String name = document.getString("name");
+                        if (name != null) {
+                            tvAdminName.setText(name);
+                        } else {
+                            tvAdminName.setText("Admin");
+                        }
+
+                        // Load profile picture
+                        String profilePicture = document.getString("profilePicture");
+                        if (profilePicture != null && !profilePicture.isEmpty()) {
+                            loadProfileImage(profilePicture);
+                        } else {
+                            adminProfileImageView.setImageResource(R.drawable.ic_profile_placeholder);
+                        }
+                    } else {
+                        tvAdminName.setText("Admin");
+                        adminProfileImageView.setImageResource(R.drawable.ic_profile_placeholder);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    tvAdminName.setText("Admin");
+                    adminProfileImageView.setImageResource(R.drawable.ic_profile_placeholder);
+                });
+    }
+
+    // Add this method to load profile image using Glide
+    private void loadProfileImage(String imageUrl) {
+        Glide.with(this)
+                .load(imageUrl)
+                .placeholder(R.drawable.ic_profile_placeholder)
+                .error(R.drawable.ic_profile_placeholder)
+                .circleCrop()
+                .into(adminProfileImageView);
     }
 
     private void showCreateAdminDialog() {
@@ -251,23 +298,6 @@ public class AdminActivity extends BaseActivity {
 
     private boolean isValidEmail(String email) {
         return email.contains("@") && email.contains(".");
-    }
-
-    private void loadAdminName(String userId) {
-        db.collection("accounts").document(userId).get()
-                .addOnSuccessListener(document -> {
-                    if (document.exists()) {
-                        String name = document.getString("name");
-                        if (name != null) {
-                            tvAdminName.setText(name);
-                        } else {
-                            tvAdminName.setText("Admin");
-                        }
-                    } else {
-                        tvAdminName.setText("Admin");
-                    }
-                })
-                .addOnFailureListener(e -> tvAdminName.setText("Admin"));
     }
 
     @Override

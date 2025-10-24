@@ -77,7 +77,7 @@
     <string name="departure">Departure: %s</string>
     <string name="van">Van: %s</string>
     <string name="available_seats">Available Seats: %s</string>
-    <string name="travel_time">Travel Time: %s</string>
+    <string name="travel_time">Travel Time: hrs</string>
     <string name="operator">Operator: %s</string>
     <string name="contact">Contact: %s</string>
     <string name="payment_method_cash">Payment Method: Cash</string>

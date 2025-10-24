@@ -68,29 +68,64 @@
         <LinearLayout
             android:id="@+id/header_container"
             android:layout_width="match_parent"
-            android:layout_height="130dp"
+            android:layout_height="wrap_content"
             android:layout_below="@id/navigation_container"
             android:orientation="vertical"
-            android:gravity="bottom"
             android:background="@drawable/auth_gradient_background"
-            android:padding="24dp">
+            android:padding="30dp">
 
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/welcome_back"
-                android:textColor="@color/white"
-                android:textSize="16sp" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-            <TextView
-                android:id="@+id/tv_admin_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/loading"
-                android:textColor="@color/white"
-                android:textSize="26sp"
-                android:textStyle="bold"
-                android:layout_marginTop="4dp" />
+                <!-- Profile Image -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    app:cardCornerRadius="30dp"
+                    app:cardElevation="4dp"
+                    android:layout_marginEnd="16dp">
+
+                    <ImageView
+                        android:id="@+id/iv_admin_profile_image"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/ic_profile_placeholder"
+                        android:scaleType="centerCrop"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="?android:attr/selectableItemBackgroundBorderless" />
+                </androidx.cardview.widget.CardView>
+
+                <!-- Welcome texts -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/welcome_back"
+                        android:textColor="@color/white"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:id="@+id/tv_admin_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/loading"
+                        android:textColor="@color/white"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
         </LinearLayout>
 
         <!-- Dashboard Content -->

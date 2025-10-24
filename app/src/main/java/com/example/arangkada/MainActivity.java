@@ -27,6 +27,7 @@ import com.example.arangkada.activities.NotificationsActivity;
 import com.example.arangkada.activities.ProfileActivity;
 import com.example.arangkada.activities.BaseActivity;
 import com.example.arangkada.activities.NotificationHelper;
+import com.bumptech.glide.Glide;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -46,6 +47,7 @@ import java.util.Map;
 public class MainActivity extends BaseActivity {
 
     private TextView userNameTextView;
+    private ImageView profileImageView;
     private CardView bookRideCard, myTripsCard, notificationsCard, profileCard;
     private ImageView notificationBadge;
     private TextView tvNextTripTitle, tvNextTripRoute, tvNextTripDate, tvTotalFare, tvTripStatus;
@@ -83,6 +85,7 @@ public class MainActivity extends BaseActivity {
 
     private void initializeViews() {
         userNameTextView = findViewById(R.id.tv_user_name);
+        profileImageView = findViewById(R.id.iv_profile_image_dashboard);
         bookRideCard = findViewById(R.id.card_book_ride);
         myTripsCard = findViewById(R.id.card_my_trips);
         notificationsCard = findViewById(R.id.card_notifications);
@@ -103,6 +106,9 @@ public class MainActivity extends BaseActivity {
         myTripsCard.setOnClickListener(v -> startActivity(new Intent(this, CancellationActivity.class)));
         notificationsCard.setOnClickListener(v -> startActivity(new Intent(this, NotificationsActivity.class)));
         profileCard.setOnClickListener(v -> startActivity(new Intent(this, ProfileActivity.class)));
+
+        // Make profile image clickable to go to profile
+        profileImageView.setOnClickListener(v -> startActivity(new Intent(this, ProfileActivity.class)));
     }
 
     private void setupSwipeRefresh() {
@@ -119,12 +125,40 @@ public class MainActivity extends BaseActivity {
             db.collection("accounts").document(currentUser.getUid())
                     .get()
                     .addOnSuccessListener(document -> {
-                        if (document.exists())
-                            userNameTextView.setText(document.getString("name"));
-                        else userNameTextView.setText("Unknown User");
+                        if (document.exists()) {
+                            // Set user name
+                            String name = document.getString("name");
+                            userNameTextView.setText(name != null ? name : "Unknown User");
+
+                            // Load profile picture
+                            String profilePicture = document.getString("profilePicture");
+                            if (profilePicture != null && !profilePicture.isEmpty()) {
+                                loadProfileImage(profilePicture);
+                            } else {
+                                profileImageView.setImageResource(R.drawable.ic_profile_placeholder);
+                            }
+                        } else {
+                            userNameTextView.setText("Unknown User");
+                            profileImageView.setImageResource(R.drawable.ic_profile_placeholder);
+                        }
                     })
-                    .addOnFailureListener(e -> userNameTextView.setText("Error loading user"));
-        } else userNameTextView.setText("Guest");
+                    .addOnFailureListener(e -> {
+                        userNameTextView.setText("Error loading user");
+                        profileImageView.setImageResource(R.drawable.ic_profile_placeholder);
+                    });
+        } else {
+            userNameTextView.setText("Guest");
+            profileImageView.setImageResource(R.drawable.ic_profile_placeholder);
+        }
+    }
+
+    private void loadProfileImage(String imageUrl) {
+        Glide.with(this)
+                .load(imageUrl)
+                .placeholder(R.drawable.ic_profile_placeholder)
+                .error(R.drawable.ic_profile_placeholder)
+                .circleCrop()
+                .into(profileImageView);
     }
 
     private void fetchUpcomingOrRecentTrip() {

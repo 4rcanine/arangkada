@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Header: User Name + Status -->
+        <!-- Header: Profile Picture + User Name + Status -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -22,36 +22,72 @@
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
-            <TextView
-                android:id="@+id/txtUser"
+            <!-- Profile Picture -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                card_view:cardCornerRadius="20dp"
+                card_view:cardElevation="2dp"
+                android:layout_marginEnd="12dp">
+
+                <ImageView
+                    android:id="@+id/ivUserProfilePicture"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/ic_profile_placeholder"
+                    android:scaleType="centerCrop" />
+            </androidx.cardview.widget.CardView>
+
+            <!-- Wrap User Name + Number vertically -->
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="User Name"
-                android:textColor="@android:color/white"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:orientation="vertical">
 
+                <TextView
+                    android:id="@+id/txtUser"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="User Name"
+                    android:textColor="@android:color/white"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+                <TextView
+                    android:id="@+id/tvUserNumber"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Mobile: 09XXXXXXXXX"
+                    android:textColor="@android:color/white"
+                    android:textSize="13sp"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+            <!-- Status Badge -->
             <TextView
                 android:id="@+id/tv_status"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingLeft="8dp"
-                android:paddingRight="8dp"
-                android:paddingTop="4dp"
-                android:paddingBottom="4dp"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
                 android:text="Pending"
                 android:textColor="@android:color/white"
                 android:textSize="12sp"
                 android:textStyle="bold" />
         </LinearLayout>
 
+
         <!-- Body -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingHorizontal="16dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="8dp">
 
             <!-- Route -->
             <TextView
@@ -66,9 +102,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Loading..."
-                android:textSize="14sp"
+                android:textSize="15sp"
                 android:textStyle="bold"
-                android:layout_marginBottom="8dp" />
+                android:layout_marginBottom="10dp" />
 
             <!-- Van -->
             <TextView
@@ -83,8 +119,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Loading..."
-                android:textSize="14sp"
-                android:layout_marginBottom="8dp" />
+                android:textSize="15sp"
+                android:layout_marginBottom="10dp" />
 
             <!-- Departure -->
             <TextView
@@ -99,8 +135,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Loading..."
-                android:textSize="14sp"
-                android:layout_marginBottom="8dp" />
+                android:textSize="15sp"
+                android:layout_marginBottom="10dp" />
 
             <!-- Passengers -->
             <TextView
@@ -115,8 +151,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="0"
-                android:textSize="14sp"
-                android:layout_marginBottom="8dp" />
+                android:textSize="15sp"
+                android:layout_marginBottom="10dp" />
 
             <!-- Payment Method -->
             <TextView
@@ -125,9 +161,9 @@
                 android:layout_height="wrap_content"
                 android:text="Payment: Cash"
                 android:textColor="#D2691E"
-                android:textSize="14sp"
+                android:textSize="15sp"
                 android:textStyle="bold"
-                android:layout_marginBottom="8dp" />
+                android:layout_marginBottom="10dp" />
 
             <!-- View Payment Proof Button (Only for Gcash) -->
             <Button
@@ -138,7 +174,7 @@
                 android:textSize="13sp"
                 android:textColor="@android:color/white"
                 android:backgroundTint="#FFA500"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="10dp"
                 android:visibility="gone" />
 
         </LinearLayout>
@@ -147,47 +183,73 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="12dp"
-            android:background="#FFF3E0"
-            android:gravity="center_vertical">
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="12dp"
+            android:background="#FFF3E0">
 
-            <TextView
-                android:layout_width="0dp"
+            <!-- Total Fare Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Total Fare"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
 
-            <TextView
-                android:id="@+id/tv_total_fare"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="₱900"
-                android:textColor="#D2691E"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:layout_marginEnd="16dp" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Total Fare"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
 
-            <Button
-                android:id="@+id/btnConfirm"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Confirm"
-                android:textColor="@android:color/white"
-                android:backgroundTint="#2E8B87"
-                android:minWidth="80dp" />
+                <TextView
+                    android:id="@+id/tv_total_fare"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="₱900"
+                    android:textColor="#D2691E"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
 
-            <Button
-                android:id="@+id/btnCancel"
-                android:layout_width="wrap_content"
+            <!-- Buttons Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Cancel"
-                android:textColor="@android:color/white"
-                android:layout_marginStart="8dp"
-                android:backgroundTint="#B22222"
-                android:minWidth="80dp" />
+                android:orientation="horizontal"
+                android:gravity="end"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="4dp"
+                android:weightSum="2"
+                android:baselineAligned="false">
+
+                <Button
+                    android:id="@+id/btnConfirm"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Confirm"
+                    android:textColor="@android:color/white"
+                    android:backgroundTint="#2E8B87"
+                    android:minWidth="0dp"
+                    android:layout_marginEnd="6dp"
+                    android:paddingVertical="8dp"
+                    android:textSize="13sp" />
+
+                <Button
+                    android:id="@+id/btnCancel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Cancel"
+                    android:textColor="@android:color/white"
+                    android:backgroundTint="#B22222"
+                    android:minWidth="0dp"
+                    android:paddingVertical="8dp"
+                    android:textSize="13sp" />
+            </LinearLayout>
         </LinearLayout>
 
     </LinearLayout>
