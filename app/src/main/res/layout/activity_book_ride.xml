@@ -27,7 +27,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Book Your Ride"
+                    android:text="@string/book_your_ride"
                     android:textColor="@color/white"
                     android:textSize="28sp"
                     android:textStyle="bold"
@@ -36,7 +36,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Choose your travel details"
+                    android:text="@string/choose_travel_details"
                     android:textColor="@color/white"
                     android:textSize="16sp"
                     android:alpha="0.9" />
@@ -52,7 +52,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Destination"
+                    android:text="@string/destination"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary"
@@ -84,7 +84,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Trip Schedule"
+                    android:text="@string/trip_schedule"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary"
@@ -120,7 +120,7 @@
                         android:id="@+id/tvTripDeparture"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Departure: -"
+                        android:text="@string/departure"
                         android:textSize="14sp"
                         android:layout_marginBottom="6dp" />
 
@@ -128,7 +128,7 @@
                         android:id="@+id/tvTripVan"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Van: -"
+                        android:text="@string/van"
                         android:textSize="14sp"
                         android:layout_marginBottom="6dp" />
 
@@ -136,7 +136,7 @@
                         android:id="@+id/tvTripSeats"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Available Seats: -"
+                        android:text="@string/available_seats"
                         android:textSize="14sp"
                         android:layout_marginBottom="6dp" />
 
@@ -144,7 +144,7 @@
                         android:id="@+id/tvTripTravelTime"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Travel Time: -"
+                        android:text="@string/travel_time"
                         android:textSize="14sp"
                         android:layout_marginBottom="6dp" />
 
@@ -162,7 +162,7 @@
                             android:id="@+id/tvAdminName"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Operator: -"
+                            android:text="@string/operator"
                             android:textSize="14sp"
                             android:layout_marginBottom="6dp" />
 
@@ -170,7 +170,7 @@
                             android:id="@+id/tvAdminNumber"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Contact: -"
+                            android:text="@string/contact"
                             android:textSize="14sp" />
                     </LinearLayout>
 
@@ -178,7 +178,7 @@
                         android:id="@+id/tvPaymentMethod"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Payment Method: Cash"
+                        android:text="@string/payment_method_cash"
                         android:textSize="14sp"
                         android:textStyle="bold"
                         android:textColor="@color/primary_color"
@@ -197,7 +197,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Passengers"
+                    android:text="@string/passengers"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary"
@@ -229,7 +229,7 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="Regular"
+                                android:text="@string/regular"
                                 android:textSize="16sp"
                                 android:textColor="@color/text_primary" />
 
@@ -239,7 +239,7 @@
                                 android:layout_height="40dp"
                                 android:background="@drawable/edittext_background"
                                 android:inputType="number"
-                                android:hint="0"
+                                android:hint="@string/hint_zero"
                                 android:textAlignment="center"
                                 android:imeOptions="actionNext" />
                         </LinearLayout>
@@ -256,7 +256,7 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="Student"
+                                android:text="@string/student"
                                 android:textSize="16sp"
                                 android:textColor="@color/text_primary" />
 
@@ -266,7 +266,7 @@
                                 android:layout_height="40dp"
                                 android:background="@drawable/edittext_background"
                                 android:inputType="number"
-                                android:hint="0"
+                                android:hint="@string/hint_zero"
                                 android:textAlignment="center"
                                 android:imeOptions="actionNext" />
                         </LinearLayout>
@@ -282,7 +282,7 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="Senior / PWD"
+                                android:text="@string/senior_pwd"
                                 android:textSize="16sp"
                                 android:textColor="@color/text_primary" />
 
@@ -292,7 +292,7 @@
                                 android:layout_height="40dp"
                                 android:background="@drawable/edittext_background"
                                 android:inputType="number"
-                                android:hint="0"
+                                android:hint="@string/hint_zero"
                                 android:textAlignment="center"
                                 android:imeOptions="actionDone" />
                         </LinearLayout>
@@ -311,7 +311,7 @@
                     android:id="@+id/tvTotalFare"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Total Fare: ₱0"
+                    android:text="@string/total_fare_format"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@color/primary_color" />
@@ -329,7 +329,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Choose Payment Method"
+                    android:text="@string/choose_payment_method"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary"
@@ -354,7 +354,7 @@
                             android:id="@+id/radioCash"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Pay with Cash"
+                            android:text="@string/pay_with_cash"
                             android:textSize="16sp"
                             android:textColor="@color/text_primary"
                             android:padding="12dp"
@@ -364,7 +364,7 @@
                             android:id="@+id/radioGcash"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Pay with Gcash"
+                            android:text="@string/pay_with_gcash"
                             android:textSize="16sp"
                             android:textColor="@color/text_primary"
                             android:padding="12dp" />
@@ -385,7 +385,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Payment Details"
+                    android:text="@string/payment_details"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary"
@@ -416,7 +416,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Scan QR Code to Pay"
+                                android:text="@string/scan_qr_to_pay"
                                 android:textSize="16sp"
                                 android:textStyle="bold"
                                 android:textColor="@color/text_primary"
@@ -429,12 +429,12 @@
                                 android:layout_gravity="center"
                                 android:scaleType="fitCenter"
                                 android:visibility="gone"
-                                android:contentDescription="GCash QR Code" />
+                                android:contentDescription="@string/gcash_qr_code" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Tap to view full screen"
+                                android:text="@string/tap_view_fullscreen"
                                 android:textSize="12sp"
                                 android:textColor="#666666"
                                 android:layout_gravity="center"
@@ -453,7 +453,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="GCash Mobile Number"
+                                android:text="@string/gcash_mobile_number"
                                 android:textSize="16sp"
                                 android:textStyle="bold"
                                 android:textColor="@color/text_primary"
@@ -487,7 +487,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Send payment to this number"
+                                android:text="@string/send_payment_to_number"
                                 android:textSize="12sp"
                                 android:textColor="#666666"
                                 android:layout_marginTop="4dp"
@@ -498,7 +498,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Upload Payment Proof"
+                            android:text="@string/upload_payment_proof"
                             android:textSize="16sp"
                             android:textStyle="bold"
                             android:textColor="@color/text_primary"
@@ -508,7 +508,7 @@
                             android:id="@+id/btnUploadProof"
                             android:layout_width="match_parent"
                             android:layout_height="48dp"
-                            android:text="Select Image"
+                            android:text="@string/select_image"
                             android:textSize="14sp"
                             android:textColor="@color/white"
                             android:backgroundTint="@color/secondary_color" />
@@ -520,7 +520,7 @@
                             android:layout_marginTop="12dp"
                             android:scaleType="centerCrop"
                             android:visibility="gone"
-                            android:contentDescription="Payment Proof" />
+                            android:contentDescription="@string/payment_proof" />
 
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
@@ -541,7 +541,7 @@
                     android:layout_height="56dp"
                     android:layout_weight="1"
                     android:layout_marginEnd="8dp"
-                    android:text="Cancel"
+                    android:text="@string/cancel"
                     android:textSize="16sp"
                     android:textColor="@color/white"
                     android:backgroundTint="@color/secondary_color" />
@@ -552,7 +552,7 @@
                     android:layout_height="56dp"
                     android:layout_weight="1"
                     android:layout_marginStart="8dp"
-                    android:text="Confirm Booking"
+                    android:text="@string/confirm_booking"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@color/white"

@@ -43,7 +43,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Dashboard"
+                android:text="@string/dashboard_title"
                 android:textColor="@color/white"
                 android:textSize="20sp"
                 android:textStyle="bold"
@@ -105,7 +105,7 @@
                                     android:id="@+id/tv_welcome"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Welcome back,"
+                                    android:text="@string/welcome_back"
                                     android:textColor="@color/white"
                                     android:textSize="16sp" />
 
@@ -113,7 +113,7 @@
                                     android:id="@+id/tv_user_name"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Loading..."
+                                    android:text="@string/loading"
                                     android:textColor="@color/white"
                                     android:textSize="24sp"
                                     android:textStyle="bold" />
@@ -135,7 +135,7 @@
                             android:id="@+id/tv_trip_section_title"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Your Trips"
+                            android:text="@string/your_trips"
                             android:textSize="20sp"
                             android:textStyle="bold"
                             android:textColor="@color/text_primary"
@@ -170,7 +170,7 @@
                                         android:layout_width="0dp"
                                         android:layout_height="wrap_content"
                                         android:layout_weight="1"
-                                        android:text="Recent Trip"
+                                        android:text="@string/recent_trip"
                                         android:textSize="13sp"
                                         android:textColor="@color/text_secondary"
                                         android:textStyle="bold"
@@ -183,7 +183,7 @@
                                         android:layout_height="wrap_content"
                                         android:paddingHorizontal="12dp"
                                         android:paddingVertical="4dp"
-                                        android:text="Cancelled"
+                                        android:text="@string/trip_status_cancelled"
                                         android:textColor="@android:color/white"
                                         android:textStyle="bold"
                                         android:textSize="11sp"
@@ -213,7 +213,7 @@
                                         android:layout_width="0dp"
                                         android:layout_height="wrap_content"
                                         android:layout_weight="1"
-                                        android:text="Loading trip..."
+                                        android:text="@string/loading_trip"
                                         android:textSize="17sp"
                                         android:textStyle="bold"
                                         android:textColor="@color/text_primary"
@@ -247,7 +247,7 @@
                                         <TextView
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
-                                            android:text="Date and Time"
+                                            android:text="@string/date_and_time"
                                             android:textSize="11sp"
                                             android:textColor="@color/text_secondary"
                                             android:textStyle="bold"
@@ -275,7 +275,7 @@
                                         <TextView
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
-                                            android:text="Total Fare"
+                                            android:text="@string/total_fare"
                                             android:textSize="11sp"
                                             android:textColor="@color/text_secondary"
                                             android:textStyle="bold"
@@ -301,7 +301,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="50dp"
                                     android:layout_marginTop="16dp"
-                                    android:text="View QR Code"
+                                    android:text="@string/view_qr_code"
                                     android:textAllCaps="false"
                                     android:textStyle="bold"
                                     android:textSize="15sp"
@@ -330,7 +330,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Main Features"
+                            android:text="@string/main_features"
                             android:textSize="20sp"
                             android:textStyle="bold"
                             android:textColor="@color/text_primary"
@@ -347,7 +347,7 @@
                             <androidx.cardview.widget.CardView
                                 android:id="@+id/card_book_ride"
                                 android:layout_width="0dp"
-                                android:layout_height="140dp"
+                                android:layout_height="150dp"
                                 android:layout_weight="1"
                                 android:layout_marginEnd="8dp"
                                 app:cardCornerRadius="16dp"
@@ -362,33 +362,37 @@
                                     android:layout_height="match_parent"
                                     android:orientation="vertical"
                                     android:gravity="center"
-                                    android:padding="20dp"
+                                    android:padding="16dp"
                                     android:background="@drawable/card_border_background">
 
                                     <ImageView
-                                        android:layout_width="48dp"
-                                        android:layout_height="48dp"
+                                        android:layout_width="44dp"
+                                        android:layout_height="44dp"
                                         android:src="@drawable/ic_route"
                                         android:tint="@color/secondary_color"
-                                        android:layout_marginBottom="12dp" />
+                                        android:layout_marginBottom="10dp" />
 
                                     <TextView
-                                        android:layout_width="wrap_content"
+                                        android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:text="Book Ride"
-                                        android:textSize="16sp"
+                                        android:text="@string/book_ride"
+                                        android:textSize="15sp"
                                         android:textStyle="bold"
                                         android:textColor="@color/primary_color"
                                         android:gravity="center"
+                                        android:maxLines="2"
+                                        android:ellipsize="end"
                                         android:layout_marginBottom="4dp" />
 
                                     <TextView
-                                        android:layout_width="wrap_content"
+                                        android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:text="Find and book"
-                                        android:textSize="12sp"
+                                        android:text="@string/find_and_book"
+                                        android:textSize="11sp"
                                         android:textColor="@color/text_secondary"
-                                        android:gravity="center" />
+                                        android:gravity="center"
+                                        android:maxLines="2"
+                                        android:ellipsize="end" />
 
                                 </LinearLayout>
 
@@ -397,7 +401,7 @@
                             <androidx.cardview.widget.CardView
                                 android:id="@+id/card_my_trips"
                                 android:layout_width="0dp"
-                                android:layout_height="140dp"
+                                android:layout_height="150dp"
                                 android:layout_weight="1"
                                 android:layout_marginStart="8dp"
                                 app:cardCornerRadius="16dp"
@@ -412,33 +416,37 @@
                                     android:layout_height="match_parent"
                                     android:orientation="vertical"
                                     android:gravity="center"
-                                    android:padding="20dp"
+                                    android:padding="16dp"
                                     android:background="@drawable/card_border_background">
 
                                     <ImageView
-                                        android:layout_width="48dp"
-                                        android:layout_height="48dp"
+                                        android:layout_width="44dp"
+                                        android:layout_height="44dp"
                                         android:src="@drawable/ic_history"
                                         android:tint="@color/secondary_color"
-                                        android:layout_marginBottom="12dp" />
+                                        android:layout_marginBottom="10dp" />
 
                                     <TextView
-                                        android:layout_width="wrap_content"
+                                        android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:text="My Trips"
-                                        android:textSize="16sp"
+                                        android:text="@string/my_trips"
+                                        android:textSize="15sp"
                                         android:textStyle="bold"
                                         android:textColor="@color/primary_color"
                                         android:gravity="center"
+                                        android:maxLines="2"
+                                        android:ellipsize="end"
                                         android:layout_marginBottom="4dp" />
 
                                     <TextView
-                                        android:layout_width="wrap_content"
+                                        android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:text="View bookings"
-                                        android:textSize="12sp"
+                                        android:text="@string/view_bookings"
+                                        android:textSize="11sp"
                                         android:textColor="@color/text_secondary"
-                                        android:gravity="center" />
+                                        android:gravity="center"
+                                        android:maxLines="2"
+                                        android:ellipsize="end" />
 
                                 </LinearLayout>
 
@@ -456,7 +464,7 @@
                             <androidx.cardview.widget.CardView
                                 android:id="@+id/card_notifications"
                                 android:layout_width="0dp"
-                                android:layout_height="140dp"
+                                android:layout_height="150dp"
                                 android:layout_weight="1"
                                 android:layout_marginEnd="8dp"
                                 app:cardCornerRadius="16dp"
@@ -471,33 +479,37 @@
                                     android:layout_height="match_parent"
                                     android:orientation="vertical"
                                     android:gravity="center"
-                                    android:padding="20dp"
+                                    android:padding="16dp"
                                     android:background="@drawable/card_border_background">
 
                                     <ImageView
-                                        android:layout_width="48dp"
-                                        android:layout_height="48dp"
+                                        android:layout_width="44dp"
+                                        android:layout_height="44dp"
                                         android:src="@drawable/ic_notifications"
                                         android:tint="@color/secondary_color"
-                                        android:layout_marginBottom="12dp" />
+                                        android:layout_marginBottom="10dp" />
 
                                     <TextView
-                                        android:layout_width="wrap_content"
+                                        android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:text="Notifications"
-                                        android:textSize="16sp"
+                                        android:text="@string/notifications"
+                                        android:textSize="15sp"
                                         android:textStyle="bold"
                                         android:textColor="@color/primary_color"
                                         android:gravity="center"
+                                        android:maxLines="2"
+                                        android:ellipsize="end"
                                         android:layout_marginBottom="4dp" />
 
                                     <TextView
-                                        android:layout_width="wrap_content"
+                                        android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:text="Updates"
-                                        android:textSize="12sp"
+                                        android:text="@string/updates"
+                                        android:textSize="11sp"
                                         android:textColor="@color/text_secondary"
-                                        android:gravity="center" />
+                                        android:gravity="center"
+                                        android:maxLines="2"
+                                        android:ellipsize="end" />
 
                                 </LinearLayout>
 
@@ -506,7 +518,7 @@
                             <androidx.cardview.widget.CardView
                                 android:id="@+id/card_profile"
                                 android:layout_width="0dp"
-                                android:layout_height="140dp"
+                                android:layout_height="150dp"
                                 android:layout_weight="1"
                                 android:layout_marginStart="8dp"
                                 app:cardCornerRadius="16dp"
@@ -521,33 +533,37 @@
                                     android:layout_height="match_parent"
                                     android:orientation="vertical"
                                     android:gravity="center"
-                                    android:padding="20dp"
+                                    android:padding="16dp"
                                     android:background="@drawable/card_border_background">
 
                                     <ImageView
-                                        android:layout_width="48dp"
-                                        android:layout_height="48dp"
+                                        android:layout_width="44dp"
+                                        android:layout_height="44dp"
                                         android:src="@drawable/ic_profile"
                                         android:tint="@color/secondary_color"
-                                        android:layout_marginBottom="12dp" />
+                                        android:layout_marginBottom="10dp" />
 
                                     <TextView
-                                        android:layout_width="wrap_content"
+                                        android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:text="Profile"
-                                        android:textSize="16sp"
+                                        android:text="@string/profile"
+                                        android:textSize="15sp"
                                         android:textStyle="bold"
                                         android:textColor="@color/primary_color"
                                         android:gravity="center"
+                                        android:maxLines="2"
+                                        android:ellipsize="end"
                                         android:layout_marginBottom="4dp" />
 
                                     <TextView
-                                        android:layout_width="wrap_content"
+                                        android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
-                                        android:text="Account"
-                                        android:textSize="12sp"
+                                        android:text="@string/account"
+                                        android:textSize="11sp"
                                         android:textColor="@color/text_secondary"
-                                        android:gravity="center" />
+                                        android:gravity="center"
+                                        android:maxLines="2"
+                                        android:ellipsize="end" />
 
                                 </LinearLayout>
 
@@ -568,7 +584,7 @@
                             android:id="@+id/btn_logout"
                             android:layout_width="match_parent"
                             android:layout_height="48dp"
-                            android:text="Logout"
+                            android:text="@string/logout"
                             android:textSize="16sp"
                             android:textColor="@color/white"
                             android:background="@drawable/button_logout"

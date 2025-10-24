@@ -22,7 +22,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Profile"
+                android:text="@string/profile_title"
                 android:textColor="@color/white"
                 android:textSize="28sp"
                 android:textStyle="bold"
@@ -31,7 +31,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Manage your account and preferences"
+                android:text="@string/manage_account"
                 android:textColor="@color/white"
                 android:textSize="16sp"
                 android:alpha="0.9" />
@@ -139,7 +139,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Account Settings"
+                android:text="@string/account_settings"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="@color/text_primary"
@@ -181,14 +181,14 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Edit Profile"
+                            android:text="@string/edit_profile"
                             android:textSize="16sp"
                             android:textColor="@color/text_primary" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Update your personal information"
+                            android:text="@string/update_personal_info"
                             android:textSize="12sp"
                             android:textColor="@color/text_secondary" />
 
@@ -240,14 +240,14 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Booking History"
+                            android:text="@string/booking_history_menu"
                             android:textSize="16sp"
                             android:textColor="@color/text_primary" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="View your past and upcoming trips"
+                            android:text="@string/view_past_trips"
                             android:textSize="12sp"
                             android:textColor="@color/text_secondary" />
 
@@ -267,7 +267,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="App Settings"
+                android:text="@string/app_settings"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="@color/text_primary"
@@ -310,14 +310,14 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Notifications"
+                            android:text="@string/notification_settings"
                             android:textSize="16sp"
                             android:textColor="@color/text_primary" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Configure notification preferences"
+                            android:text="@string/configure_notifications"
                             android:textSize="12sp"
                             android:textColor="@color/text_secondary" />
 
@@ -337,7 +337,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Support"
+                android:text="@string/support"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="@color/text_primary"
@@ -380,14 +380,14 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Terms &amp; Conditions"
+                            android:text="@string/terms_conditions"
                             android:textSize="16sp"
                             android:textColor="@color/text_primary" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="View the terms and conditions in using the app"
+                            android:text="@string/view_terms"
                             android:textSize="12sp"
                             android:textColor="@color/text_secondary" />
 
@@ -417,7 +417,7 @@
                 android:id="@+id/btn_logout"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:text="Logout"
+                android:text="@string/logout"
                 android:textSize="16sp"
                 android:textColor="@color/white"
                 android:background="@drawable/button_logout"

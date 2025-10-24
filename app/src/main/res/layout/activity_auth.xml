@@ -40,7 +40,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Arangkada"
+                android:text="@string/app_name"
                 android:textSize="32sp"
                 android:textStyle="bold"
                 android:textColor="@color/white"
@@ -49,7 +49,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Your Ride, Your Way!"
+                android:text="@string/app_catchphrase"
                 android:textSize="16sp"
                 android:textColor="@color/white"
                 android:alpha="0.8"
@@ -76,7 +76,7 @@
                     android:id="@+id/tv_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Welcome Back"
+                    android:text="@string/welcome_back_title"
                     android:textSize="28sp"
                     android:textStyle="bold"
                     android:textColor="@color/primary_color"
@@ -103,7 +103,7 @@
                             android:id="@+id/et_login_email"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="Email Address"
+                            android:hint="@string/email_address"
                             android:inputType="textEmailAddress"
                             android:textColor="@color/text_primary"
                             android:textColorHint="@color/text_hint"/>
@@ -123,7 +123,7 @@
                             android:id="@+id/et_login_password"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="Password"
+                            android:hint="@string/password"
                             android:inputType="textPassword"
                             android:textColor="@color/text_primary"
                             android:textColorHint="@color/text_hint"/>
@@ -134,7 +134,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="end"
-                        android:text="Forgot Password?"
+                        android:text="@string/forgot_password"
                         android:textSize="14sp"
                         android:textColor="@color/secondary_color"
                         android:layout_marginBottom="32dp" />
@@ -143,7 +143,7 @@
                         android:id="@+id/btn_login"
                         android:layout_width="match_parent"
                         android:layout_height="56dp"
-                        android:text="Log In"
+                        android:text="@string/log_in"
                         android:background="@drawable/button_gradient"
                         android:textColor="@color/white"
                         android:textSize="18sp"
@@ -171,7 +171,7 @@
                             android:id="@+id/et_signup_fullname"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="Full Name"
+                            android:hint="@string/full_name"
                             android:inputType="textPersonName"
                             android:textColor="@color/text_primary"
                             android:textColorHint="@color/text_hint"/>
@@ -190,7 +190,7 @@
                             android:id="@+id/et_signup_email"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="Email Address"
+                            android:hint="@string/email_address"
                             android:inputType="textEmailAddress"
                             android:textColor="@color/text_primary"
                             android:textColorHint="@color/text_hint"/>
@@ -209,7 +209,7 @@
                             android:id="@+id/et_signup_phone"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="Phone Number"
+                            android:hint="@string/phone_number"
                             android:inputType="phone"
                             android:textColor="@color/text_primary"
                             android:textColorHint="@color/text_hint"/>
@@ -229,7 +229,7 @@
                             android:id="@+id/et_signup_password"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="Password"
+                            android:hint="@string/password"
                             android:inputType="textPassword"
                             android:textColor="@color/text_primary"
                             android:textColorHint="@color/text_hint"/>
@@ -249,7 +249,7 @@
                             android:id="@+id/et_signup_confirm_password"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="Confirm Password"
+                            android:hint="@string/confirm_password"
                             android:inputType="textPassword"
                             android:textColor="@color/text_primary"
                             android:textColorHint="@color/text_hint"/>
@@ -259,7 +259,7 @@
                         android:id="@+id/btn_signup"
                         android:layout_width="match_parent"
                         android:layout_height="56dp"
-                        android:text="Sign Up"
+                        android:text="@string/sign_up"
                         android:background="@drawable/button_gradient"
                         android:textColor="@color/white"
                         android:textSize="18sp" />
@@ -286,7 +286,7 @@
                             android:id="@+id/et_admin_fullname"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="Full Name"
+                            android:hint="@string/full_name"
                             android:inputType="textPersonName"
                             android:textColor="@color/text_primary"
                             android:textColorHint="@color/text_hint"/>
@@ -305,7 +305,7 @@
                             android:id="@+id/et_admin_email"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="Email Address"
+                            android:hint="@string/email_address"
                             android:inputType="textEmailAddress"
                             android:textColor="@color/text_primary"
                             android:textColorHint="@color/text_hint"/>
@@ -324,7 +324,7 @@
                             android:id="@+id/et_admin_phone"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="Phone Number"
+                            android:hint="@string/phone_number"
                             android:inputType="phone"
                             android:textColor="@color/text_primary"
                             android:textColorHint="@color/text_hint"/>
@@ -344,7 +344,7 @@
                             android:id="@+id/et_admin_password"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="Password"
+                            android:hint="@string/password"
                             android:inputType="textPassword"
                             android:textColor="@color/text_primary"
                             android:textColorHint="@color/text_hint"/>
@@ -364,7 +364,7 @@
                             android:id="@+id/et_admin_confirm_password"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="Confirm Password"
+                            android:hint="@string/confirm_password"
                             android:inputType="textPassword"
                             android:textColor="@color/text_primary"
                             android:textColorHint="@color/text_hint"/>
@@ -374,7 +374,7 @@
                         android:id="@+id/btn_admin_signup"
                         android:layout_width="match_parent"
                         android:layout_height="56dp"
-                        android:text="Admin Sign Up"
+                        android:text="@string/admin_sign_up"
                         android:background="@drawable/button_gradient"
                         android:textColor="@color/white"
                         android:textSize="18sp" />
@@ -386,7 +386,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:text="Don’t have an account? Sign up"
+                    android:text="@string/dont_have_account"
                     android:textColor="@color/text_secondary"
                     android:textSize="16sp"
                     android:layout_marginTop="16dp" />
@@ -409,7 +409,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="© 2024 Arangkada Philippines"
+            android:text="@string/copyright_footer"
             android:textSize="12sp"
             android:textColor="@color/white"
             android:alpha="0.7"

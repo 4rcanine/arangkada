@@ -1,15 +1,14 @@
 package com.example.arangkada.activities;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
-
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -18,6 +17,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.arangkada.R;
+import com.example.arangkada.utils.LocaleHelper;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -39,6 +39,11 @@ public abstract class BaseActivity extends AppCompatActivity implements Navigati
         super.onCreate(savedInstanceState);
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
+    }
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(LocaleHelper.onAttach(newBase));
     }
 
     protected void setupNavigation() {
@@ -87,7 +92,6 @@ public abstract class BaseActivity extends AppCompatActivity implements Navigati
         }
     }
 
-    // helper
     protected void setToolbarTitle(String title) {
         TextView toolbarTitle = findViewById(R.id.toolbar_title);
         if (toolbarTitle != null) {
@@ -118,12 +122,93 @@ public abstract class BaseActivity extends AppCompatActivity implements Navigati
     }
 
     private void openNotifications() {
-        Toast.makeText(this, "This feature is coming soon!", Toast.LENGTH_SHORT).show();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
 
+        if (currentUser == null) {
+            Toast.makeText(this, R.string.no_user_logged_in, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String userId = currentUser.getUid();
+
+        // Check if user is admin
+        db.collection("accounts").document(userId)
+                .get()
+                .addOnSuccessListener(document -> {
+                    if (document.exists()) {
+                        Boolean isAdmin = document.getBoolean("isAdmin");
+
+                        if (isAdmin != null && isAdmin) {
+                            // User is admin - show toast
+                            Toast.makeText(this, "This is a User Account Feature", Toast.LENGTH_SHORT).show();
+                        } else {
+                            // User is not admin - open NotificationsActivity
+                            Intent intent = new Intent(this, NotificationsActivity.class);
+                            startActivity(intent);
+                        }
+                    } else {
+                        // Document doesn't exist - assume regular user
+                        Intent intent = new Intent(this, NotificationsActivity.class);
+                        startActivity(intent);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Error checking user type: " + e.getMessage(),
+                            Toast.LENGTH_SHORT).show();
+                });
     }
 
     private void openLanguageSettings() {
-        Toast.makeText(this, "Language Settings: English/Filipino - Coming soon!", Toast.LENGTH_SHORT).show();
+        String currentLanguage = LocaleHelper.getLanguage(this);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.language_settings);
+
+        // Language options
+        String[] languages = {
+                getString(R.string.language_english),
+                getString(R.string.language_filipino)
+        };
+
+        int checkedItem = currentLanguage.equals("fil") ? 1 : 0;
+
+        builder.setSingleChoiceItems(languages, checkedItem, null);
+
+        builder.setPositiveButton(R.string.ok, (dialog, which) -> {
+            AlertDialog alertDialog = (AlertDialog) dialog;
+            int selectedPosition = alertDialog.getListView().getCheckedItemPosition();
+            String selectedLanguage = selectedPosition == 1 ? "fil" : "en";
+
+            if (!selectedLanguage.equals(currentLanguage)) {
+                LocaleHelper.setLocale(this, selectedLanguage);
+
+                // Recreate activity to apply language immediately
+                recreate();
+            }
+        });
+
+        builder.setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss());
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void showRestartDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.language_settings)
+                .setMessage(R.string.restart_required)
+                .setPositiveButton(R.string.ok, (dialog, which) -> {
+                    // Restart the app
+                    Intent intent = getBaseContext().getPackageManager()
+                            .getLaunchIntentForPackage(getBaseContext().getPackageName());
+                    if (intent != null) {
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+                        finish();
+                    }
+                })
+                .setCancelable(false)
+                .show();
     }
 
     private void openTermsAndConditions() {
@@ -133,12 +218,12 @@ public abstract class BaseActivity extends AppCompatActivity implements Navigati
 
     private void showDeleteAccountConfirmation() {
         new AlertDialog.Builder(this)
-                .setTitle("Delete Account")
-                .setMessage("Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently deleted.")
-                .setPositiveButton("Delete", (dialog, which) -> {
+                .setTitle(R.string.delete_account_title)
+                .setMessage(R.string.delete_account_message)
+                .setPositiveButton(R.string.delete, (dialog, which) -> {
                     performAccountDeletion();
                 })
-                .setNegativeButton("Cancel", (dialog, which) -> {
+                .setNegativeButton(R.string.cancel, (dialog, which) -> {
                     dialog.dismiss();
                 })
                 .setIcon(android.R.drawable.ic_dialog_alert)
@@ -149,44 +234,39 @@ public abstract class BaseActivity extends AppCompatActivity implements Navigati
         FirebaseUser currentUser = mAuth.getCurrentUser();
 
         if (currentUser == null) {
-            Toast.makeText(this, "No user is currently logged in", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.no_user_logged_in, Toast.LENGTH_SHORT).show();
             return;
         }
 
         String userId = currentUser.getUid();
 
-        // Show progress
-        Toast.makeText(this, "Deleting account...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, R.string.deleting_account, Toast.LENGTH_SHORT).show();
 
-        // First, delete Firestore document
         db.collection("accounts").document(userId)
                 .delete()
                 .addOnSuccessListener(aVoid -> {
-                    // Firestore document deleted successfully, now delete auth account
                     currentUser.delete()
                             .addOnCompleteListener(task -> {
                                 if (task.isSuccessful()) {
                                     Toast.makeText(BaseActivity.this,
-                                            "Account deleted successfully",
+                                            R.string.account_deleted,
                                             Toast.LENGTH_SHORT).show();
 
-                                    // Redirect to auth activity
                                     Intent intent = new Intent(BaseActivity.this, AuthActivity.class);
                                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                     startActivity(intent);
                                     overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                                     finish();
                                 } else {
-                                    Toast.makeText(BaseActivity.this,
-                                            "Failed to delete account: " + task.getException().getMessage(),
-                                            Toast.LENGTH_LONG).show();
+                                    String errorMsg = getString(R.string.delete_failed,
+                                            task.getException() != null ? task.getException().getMessage() : "Unknown error");
+                                    Toast.makeText(BaseActivity.this, errorMsg, Toast.LENGTH_LONG).show();
                                 }
                             });
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(BaseActivity.this,
-                            "Failed to delete account data: " + e.getMessage(),
-                            Toast.LENGTH_LONG).show();
+                    String errorMsg = getString(R.string.delete_data_failed, e.getMessage());
+                    Toast.makeText(BaseActivity.this, errorMsg, Toast.LENGTH_LONG).show();
                 });
     }
 
@@ -195,7 +275,7 @@ public abstract class BaseActivity extends AppCompatActivity implements Navigati
             mAuth.signOut();
         }
 
-        Toast.makeText(this, "Logging out...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, R.string.logging_out, Toast.LENGTH_SHORT).show();
 
         Intent intent = new Intent(this, AuthActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -212,7 +292,6 @@ public abstract class BaseActivity extends AppCompatActivity implements Navigati
             super.onBackPressed();
         }
     }
-
 
     protected abstract void onNavigationSetup();
 }

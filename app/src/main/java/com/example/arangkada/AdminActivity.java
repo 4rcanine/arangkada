@@ -45,15 +45,7 @@ public class AdminActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin);
 
-        Button logoutButton = findViewById(R.id.btn_logout);
-        logoutButton.setOnClickListener(v -> {
-            FirebaseAuth.getInstance().signOut();
-            Intent intent = new Intent(AdminActivity.this, AuthActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-            finish();
-        });
-
+        // Setup navigation FIRST
         setupNavigation();
         onNavigationSetup();
 
@@ -70,13 +62,13 @@ public class AdminActivity extends BaseActivity {
         }
 
         // Set card UI
-        setAdminCard(cardReservations, R.drawable.ic_reservations, "Manage Reservations");
-        setAdminCard(cardSchedule, R.drawable.ic_cancelled, "Manage Van Schedules");
-        setAdminCard(cardTerminals, R.drawable.ic_terminal, "Manage Terminals");
-        setAdminCard(cardUsers, R.drawable.ic_users, "Manage All Users");
-        setAdminCard(cardCancelled, R.drawable.ic_schedule, "Booking History");
-        setAdminCard(cardQR, R.drawable.ic_qr, "QR Scanner");
-        setAdminCard(cardSettings, R.drawable.ic_settings, "Settings");
+        setAdminCard(cardReservations, R.drawable.ic_reservations, getString(R.string.card_manage_reservations));
+        setAdminCard(cardSchedule, R.drawable.ic_cancelled, getString(R.string.card_manage_van_schedules));
+        setAdminCard(cardTerminals, R.drawable.ic_terminal, getString(R.string.card_manage_terminals));
+        setAdminCard(cardUsers, R.drawable.ic_users, getString(R.string.card_manage_all_users));
+        setAdminCard(cardCancelled, R.drawable.ic_schedule, getString(R.string.card_booking_history));
+        setAdminCard(cardQR, R.drawable.ic_qr, getString(R.string.card_qr_scanner));
+        setAdminCard(cardSettings, R.drawable.ic_settings, getString(R.string.card_settings));
     }
 
     private void initializeViews() {
@@ -90,6 +82,15 @@ public class AdminActivity extends BaseActivity {
 
         tvAdminName = findViewById(R.id.tv_admin_name);
         btnMakeAdmin = findViewById(R.id.btn_make_admin);
+
+        Button logoutButton = findViewById(R.id.btn_logout);
+        logoutButton.setOnClickListener(v -> {
+            FirebaseAuth.getInstance().signOut();
+            Intent intent = new Intent(AdminActivity.this, AuthActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+        });
     }
 
     private void setupClickListeners() {
@@ -128,42 +129,42 @@ public class AdminActivity extends BaseActivity {
 
             // Validation
             if (fullName.isEmpty()) {
-                etFullName.setError("Full name is required");
+                etFullName.setError(getString(R.string.full_name_required));
                 etFullName.requestFocus();
                 return;
             }
             if (email.isEmpty()) {
-                etEmail.setError("Email is required");
+                etEmail.setError(getString(R.string.email_required));
                 etEmail.requestFocus();
                 return;
             }
             if (!isValidEmail(email)) {
-                etEmail.setError("Please enter a valid email");
+                etEmail.setError(getString(R.string.valid_email_required));
                 etEmail.requestFocus();
                 return;
             }
             if (!email.contains("@admin")) {
-                etEmail.setError("Admin email must contain '@admin'");
+                etEmail.setError(getString(R.string.admin_email_must_contain));
                 etEmail.requestFocus();
                 return;
             }
             if (phone.isEmpty()) {
-                etPhone.setError("Phone number is required");
+                etPhone.setError(getString(R.string.phone_required));
                 etPhone.requestFocus();
                 return;
             }
             if (password.isEmpty()) {
-                etPassword.setError("Password is required");
+                etPassword.setError(getString(R.string.password_required));
                 etPassword.requestFocus();
                 return;
             }
             if (password.length() < 6) {
-                etPassword.setError("Password must be at least 6 characters");
+                etPassword.setError(getString(R.string.password_min_length));
                 etPassword.requestFocus();
                 return;
             }
             if (!password.equals(confirmPassword)) {
-                etConfirmPassword.setError("Passwords do not match");
+                etConfirmPassword.setError(getString(R.string.passwords_do_not_match));
                 etConfirmPassword.requestFocus();
                 return;
             }
@@ -271,7 +272,10 @@ public class AdminActivity extends BaseActivity {
 
     @Override
     protected void onNavigationSetup() {
+        // Show menu button for admin dashboard (main screen)
         showMenuButton();
+        // Optionally set custom title
+        setToolbarTitle(getString(R.string.admin_dashboard));
     }
 
     private void setAdminCard(View cardView, int iconRes, String title) {
@@ -280,5 +284,10 @@ public class AdminActivity extends BaseActivity {
 
         icon.setImageResource(iconRes);
         text.setText(title);
+    }
+
+    @Override
+    public void onBackPressed() {
+        Toast.makeText(this, "Press back again to exit", Toast.LENGTH_SHORT).show();
     }
 }

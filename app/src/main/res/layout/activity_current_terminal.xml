@@ -15,7 +15,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Manage Terminals"
+            android:text="@string/manage_terminals"
             android:textColor="@color/white"
             android:textSize="26sp"
             android:textStyle="bold"
@@ -24,7 +24,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="View, Edit, and Manage all the Terminals"
+            android:text="@string/manage_terminals_description"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:alpha="0.9" />

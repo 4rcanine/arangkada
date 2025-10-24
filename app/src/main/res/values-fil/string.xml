@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Name -->
+    <string name="app_name">Arangkada</string>
+    <string name="app_name_display">ARANGKADA</string>
+
+    <!-- Info Page Strings -->
+    <string name="app_catchphrase">"Ang Iyong Sakay, Sa Iyong Paraan!"</string>
+    <string name="app_description">Mag-book ng iyong UV Express rides mula Cervantes hanggang Baguio at iba pa. Ligtas, maginhawa, at mapagkakatiwalaang transportasyon sa iyong mga daliri.</string>
+    <string name="get_started">Magsimula</string>
+    <string name="welcome_footer">Maligayang pagdating sa kinabukasan ng UV Express booking</string>
+    <string name="app_logo">Arangkada App Logo</string>
+
+    <!-- Navigation Menu -->
+    <string name="nav_notifications">Mga Notipikasyon</string>
+    <string name="nav_language">Wika</string>
+    <string name="nav_terms">Mga Tuntunin at Kondisyon</string>
+    <string name="nav_delete_account">Burahin ang Account</string>
+    <string name="nav_logout">Mag-logout</string>
+
+    <!-- Language Dialog -->
+    <string name="language_settings">Mga Setting ng Wika</string>
+    <string name="language_english">Ingles</string>
+    <string name="language_filipino">Filipino</string>
+    <string name="language_changed">Matagumpay na nabago ang wika</string>
+    <string name="restart_required">Mangyaring i-restart ang app upang mailapat ang mga pagbabago</string>
+    <string name="cancel">Kanselahin</string>
+    <string name="ok">OK</string>
+
+    <!-- Account Actions -->
+    <string name="delete_account_title">Burahin ang Account</string>
+    <string name="delete_account_message">Sigurado ka bang gusto mong burahin ang iyong account? Ang aksyon na ito ay hindi na maaaring bawiin at ang lahat ng iyong data ay permanenteng mabubura.</string>
+    <string name="delete">Burahin</string>
+    <string name="deleting_account">Binubura ang account...</string>
+    <string name="account_deleted">Matagumpay na nabura ang account</string>
+    <string name="delete_failed">Nabigong burahin ang account: %s</string>
+    <string name="delete_data_failed">Nabigong burahin ang data ng account: %s</string>
+    <string name="no_user_logged_in">Walang user na naka-log in</string>
+
+    <!-- Logout -->
+    <string name="logging_out">Nag-lo-logout...</string>
+
+    <!-- Coming Soon -->
+    <string name="feature_coming_soon">Malapit nang dumating ang feature na ito!</string>
+
+    <!-- Dashboard/Main Activity -->
+    <string name="dashboard_title">Dashboard</string>
+    <string name="welcome_back">Maligayang pagbabalik,</string>
+    <string name="loading">Naglo-load...</string>
+    <string name="your_trips">Iyong mga Biyahe</string>
+    <string name="recent_trip">Kamakailang Biyahe</string>
+    <string name="next_trip">Susunod na Biyahe</string>
+    <string name="trip_status_confirmed">Nakumpirma</string>
+    <string name="trip_status_pending">Nakabinbin</string>
+    <string name="trip_status_cancelled">Nakansela</string>
+    <string name="trip_status_completed">Natapos</string>
+    <string name="loading_trip">Naglo-load ng biyahe...</string>
+    <string name="date_and_time">Petsa at Oras</string>
+    <string name="total_fare">Kabuuang Bayad</string>
+    <string name="view_qr_code">Tingnan ang QR Code</string>
+    <string name="main_features">Pangunahing Features</string>
+    <string name="book_ride">Mag-book ng Sakay</string>
+    <string name="find_and_book">Maghanap at mag-book</string>
+    <string name="my_trips">Aking mga Biyahe</string>
+    <string name="view_bookings">Tingnan ang mga booking</string>
+    <string name="notifications">Mga Notipikasyon</string>
+    <string name="updates">Mga Update</string>
+    <string name="profile">Profile</string>
+    <string name="account">Account</string>
+    <string name="logout">Mag-logout</string>
+
+    <!-- Book Ride Activity -->
+    <string name="book_your_ride">Mag-book ng Biyahe</string>
+    <string name="choose_travel_details">Piliin ang detalye ng biyahe</string>
+    <string name="destination">Destinasyon</string>
+    <string name="trip_schedule">Iskedyul ng Biyahe</string>
+    <string name="departure">Alis: %s</string>
+    <string name="van">Van: %s</string>
+    <string name="available_seats">Available na Upuan: %s</string>
+    <string name="travel_time">Oras ng Biyahe: %s</string>
+    <string name="operator">Operator: %s</string>
+    <string name="contact">Contact: %s</string>
+    <string name="payment_method_cash">Paraan ng Bayad: Cash</string>
+    <string name="payment_method_gcash">Paraan ng Bayad: GCash</string>
+    <string name="passengers">Mga Pasahero</string>
+    <string name="regular">Regular</string>
+    <string name="student">Estudyante</string>
+    <string name="senior_pwd">Senior / PWD</string>
+    <string name="hint_zero">0</string>
+    <string name="total_fare_format">Kabuuang Bayad: ₱%s</string>
+    <string name="choose_payment_method">Pumili ng Paraan ng Bayad</string>
+    <string name="pay_with_cash">Magbayad gamit ang Cash</string>
+    <string name="pay_with_gcash">Magbayad gamit ang Gcash</string>
+    <string name="payment_details">Detalye ng Bayad</string>
+    <string name="scan_qr_to_pay">I-scan ang QR Code para Magbayad</string>
+    <string name="tap_view_fullscreen">Pindutin para sa full screen</string>
+    <string name="gcash_mobile_number">GCash Mobile Number</string>
+    <string name="send_payment_to_number">Ipadala ang bayad sa numerong ito</string>
+    <string name="upload_payment_proof">Mag-upload ng Patunay ng Bayad</string>
+    <string name="select_image">Pumili ng Larawan</string>
+    <string name="confirm_booking">Kumpirmahin ang Booking</string>
+    <string name="gcash_qr_code">GCash QR Code</string>
+    <string name="payment_proof">Patunay ng Bayad</string>
+
+    <!-- Cancellation Activity -->
+    <string name="active_trips">Mga Aktibong Biyahe</string>
+    <string name="manage_active_trips">Pamahalaan ang iyong mga aktibo at nakabinbing biyahe sa ibaba</string>
+    <string name="no_active_booking">Walang aktibong booking sa ngayon.</string>
+    <string name="view_history">Tingnan ang Kasaysayan</string>
+
+    <!-- My Trips Activity -->
+    <string name="booking_history">Kasaysayan ng Booking</string>
+    <string name="view_recent_history">Tingnan ang pinakabagong kasaysayan ng booking</string>
+    <string name="clear">Linisin</string>
+    <string name="no_booking_history">Walang kasaysayan ng booking.</string>
+    <string name="page_indicator">%1$d / %2$d</string>
+
+    <!-- Profile Activity -->
+    <string name="profile_title">Profile</string>
+    <string name="manage_account">Pamahalaan ang iyong account at mga kagustuhan</string>
+    <string name="account_settings">Mga Setting ng Account</string>
+    <string name="edit_profile">I-edit ang Profile</string>
+    <string name="update_personal_info">I-update ang iyong personal na impormasyon</string>
+    <string name="booking_history_menu">Kasaysayan ng Booking</string>
+    <string name="view_past_trips">Tingnan ang iyong mga nakaraang at paparating na biyahe</string>
+    <string name="app_settings">Mga Setting ng App</string>
+    <string name="notification_settings">Mga Notipikasyon</string>
+    <string name="configure_notifications">I-configure ang mga kagustuhan sa notipikasyon</string>
+    <string name="support">Suporta</string>
+    <string name="terms_conditions">Mga Tuntunin at Kondisyon</string>
+    <string name="view_terms">Tingnan ang mga tuntunin at kondisyon sa paggamit ng app</string>
+
+    <!-- Admin Dashboard Activity -->
+    <string name="admin_dashboard">Admin Dashboard</string>
+    <string name="admin_features">Mga Admin Features</string>
+    <string name="make_admin_account">Gumawa ng Admin Account</string>
+
+    <!-- Manage Reservations Activity -->
+    <string name="manage_bookings">Pamahalaan ang mga Booking</string>
+    <string name="confirm_cancel_bookings">Kumpirmahin o Kanselahin ang nakabinbing booking ng user</string>
+    <string name="from">Mula</string>
+    <string name="to">Hanggang</string>
+
+    <!-- Current Van Schedules Activity -->
+    <string name="current_van_schedules">Kasalukuyang Iskedyul ng Van</string>
+    <string name="current_van_schedules_description">Ipinapakita ang paparating at natapos na Iskedyul ng Van para sa araw na ito</string>
+    <string name="create_van_schedule">Gumawa ng Iskedyul ng Van</string>
+
+    <!-- Manage Van Schedules Activity -->
+    <string name="manage_van_schedules">Pamahalaan ang Iskedyul ng Van</string>
+    <string name="add_new_van_trips">Magdagdag ng bagong biyahe ng van nang madali</string>
+    <string name="time_of_departure">Oras ng Pag-alis</string>
+    <string name="select_date_and_time">Pumili ng petsa at oras</string>
+    <string name="pick_date_and_time">Pumili ng Petsa at Oras</string>
+    <string name="van_details">Detalye ng Van</string>
+    <string name="enter_plate_number">Ilagay ang Plate Number</string>
+    <string name="enter_seat_capacity">Ilagay ang Kapasidad ng Upuan</string>
+    <string name="payment_method">Paraan ng Bayad</string>
+    <string name="gcash_payment_details">Detalye ng Bayad sa GCash</string>
+    <string name="provide_qr_or_number">Magbigay ng kahit isa: QR code o mobile number</string>
+    <string name="gcash_mobile_number_hint">GCash Mobile Number (hal., 09123456789)</string>
+    <string name="or"> O </string>
+    <string name="upload_gcash_qr_code">Mag-upload ng GCash QR Code</string>
+    <string name="save_schedule">I-save ang Iskedyul</string>
+
+    <!-- Manage Terminals Activity -->
+    <string name="manage_terminals">Pamahalaan ang mga Terminal</string>
+    <string name="manage_terminals_description">Tingnan, I-edit, at Pamahalaan ang lahat ng Terminal</string>
+
+    <!-- New Terminal Activity -->
+    <string name="add_new_route">Magdagdag ng Bagong Ruta</string>
+    <string name="add_new_route_description">Magrehistro ng bagong terminal, pamasahe, at oras ng biyahe</string>
+    <string name="terminal">Terminal</string>
+    <string name="enter_terminal">Ilagay ang Terminal</string>
+    <string name="enter_destination">Ilagay ang Destinasyon</string>
+    <string name="location">Lokasyon</string>
+    <string name="enter_location">Ilagay ang Lokasyon</string>
+    <string name="fare_details">Detalye ng Pamasahe</string>
+    <string name="enter_regular_fare">Ilagay ang Regular na Pamasahe</string>
+    <string name="enter_student_fare">Ilagay ang Pamasahe ng Estudyante</string>
+    <string name="enter_senior_fare">Ilagay ang Pamasahe ng Senior</string>
+    <string name="enter_travel_time">Ilagay ang Oras ng Biyahe (minuto)</string>
+    <string name="add_route">Magdagdag ng Ruta</string>
+    <string name="current_routes">Kasalukuyang mga Ruta</string>
+
+    <!-- User Management Activity -->
+    <string name="user_management">Pamamahala ng User</string>
+    <string name="user_management_description">Tingnan ang lahat ng user ng Arangkada</string>
+
+    <!-- Admin Cancellation Activity -->
+    <string name="bookings_history">Kasaysayan ng mga Booking</string>
+    <string name="bookings_history_description">Tingnan ang lahat ng Natapos at Nakansela na Biyahe ng mga user</string>
+    <string name="no_cancelled_completed_bookings">Walang Nakansela o Natapos na Booking</string>
+    <string name="page_indicator_default">1 / 1</string>
+
+    <!-- QR Scanner Activity -->
+    <string name="align_qr_code">Ihanay ang QR Code sa loob ng frame</string>
+
+    <!-- Admin Profile Activity -->
+    <string name="sample_name">Juan Dela Cruz</string>
+    <string name="sample_email">juan.delacruz@email.com</string>
+    <string name="sample_phone">+63 912 345 6789</string>
+    <string name="terms_and_services">Mga Tuntunin at Serbisyo</string>
+
+    <!-- Auth Activity -->
+    <string name="welcome_back_title">Maligayang Pagbabalik</string>
+    <string name="email_address">Email Address</string>
+    <string name="password">Password</string>
+    <string name="forgot_password">Nakalimutan ang Password?</string>
+    <string name="log_in">Mag-log In</string>
+    <string name="full_name">Buong Pangalan</string>
+    <string name="phone_number">Numero ng Telepono</string>
+    <string name="confirm_password">Kumpirmahin ang Password</string>
+    <string name="sign_up">Mag-sign Up</string>
+    <string name="admin_sign_up">Admin Sign Up</string>
+    <string name="dont_have_account">Walang account? Mag-sign up</string>
+    <string name="copyright_footer">© 2024 Arangkada Philippines</string>
+
+    <!-- Admin Dashboard Card Titles -->
+    <string name="card_manage_reservations">Mga Reserbasyon</string>
+    <string name="card_manage_van_schedules">Mga Iskedyul ng Van</string>
+    <string name="card_manage_terminals">Mga Terminal</string>
+    <string name="card_manage_all_users">Lahat ng mga User</string>
+    <string name="card_booking_history">Kasaysayan ng Booking</string>
+    <string name="card_qr_scanner">QR Scanner</string>
+    <string name="card_settings">Mga Setting</string>
+
+    <!-- Admin Creation Dialog -->
+    <string name="full_name_required">Kailangan ang buong pangalan</string>
+    <string name="email_required">Kailangan ang email</string>
+    <string name="valid_email_required">Mangyaring maglagay ng wastong email</string>
+    <string name="admin_email_must_contain">Ang admin email ay dapat may \'@admin\'</string>
+    <string name="phone_required">Kailangan ang numero ng telepono</string>
+    <string name="password_required">Kailangan ang password</string>
+    <string name="password_min_length">Ang password ay dapat na hindi bababa sa 6 na character</string>
+    <string name="passwords_do_not_match">Hindi magkatugma ang mga password</string>
+    <string name="admin_account_created">Matagumpay na nagawa ang admin account!</string>
+    <string name="failed_create_admin">Nabigong gumawa ng admin account</string>
+    <string name="please_login_again">Mangyaring mag-login muli</string>
+    <string name="failed_save_admin_data">Nabigong i-save ang admin data: %s</string>
+    <string name="cleaned_up_account">Na-linis ang bahagyang nagawang account</string>
+    <string name="failed_create_account">Nabigong gumawa ng account: %s</string>
+    <string name="admin_default_name">Admin</string>
+</resources>

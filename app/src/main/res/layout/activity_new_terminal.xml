@@ -27,7 +27,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Add New Route"
+                    android:text="@string/add_new_route"
                     android:textColor="@color/white"
                     android:textSize="26sp"
                     android:textStyle="bold"
@@ -36,7 +36,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Register new terminals, fares, and travel times"
+                    android:text="@string/add_new_route_description"
                     android:textColor="@color/white"
                     android:textSize="16sp"
                     android:alpha="0.9" />
@@ -53,7 +53,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Terminal"
+                    android:text="@string/terminal"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary"
@@ -70,7 +70,7 @@
                         android:id="@+id/etTerminal"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Enter Terminal"
+                        android:hint="@string/enter_terminal"
                         android:padding="16dp"
                         android:inputType="textCapWords"
                         android:background="@android:color/transparent"/>
@@ -80,7 +80,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="To"
+                    android:text="@string/to"
                     android:textSize="18sp"
                     android:textColor="@color/text_primary"
                     android:layout_marginBottom="8dp" />
@@ -96,7 +96,7 @@
                         android:id="@+id/etDestination"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Enter Destination"
+                        android:hint="@string/enter_destination"
                         android:padding="16dp"
                         android:inputType="textCapWords"
                         android:background="@android:color/transparent"/>
@@ -106,7 +106,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Location"
+                    android:text="@string/location"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary"
@@ -123,7 +123,7 @@
                         android:id="@+id/etLocation"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Enter Location"
+                        android:hint="@string/enter_location"
                         android:padding="16dp"
                         android:inputType="textCapWords"
                         android:background="@android:color/transparent"/>
@@ -133,7 +133,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Fare Details"
+                    android:text="@string/fare_details"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary"
@@ -151,7 +151,7 @@
                         android:id="@+id/etRegularFare"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Enter Regular Fare"
+                        android:hint="@string/enter_regular_fare"
                         android:padding="16dp"
                         android:inputType="number"
                         android:background="@android:color/transparent"/>
@@ -169,7 +169,7 @@
                         android:id="@+id/etStudentFare"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Enter Student Fare"
+                        android:hint="@string/enter_student_fare"
                         android:padding="16dp"
                         android:inputType="number"
                         android:background="@android:color/transparent"/>
@@ -187,7 +187,7 @@
                         android:id="@+id/etSeniorFare"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Enter Senior Fare"
+                        android:hint="@string/enter_senior_fare"
                         android:padding="16dp"
                         android:inputType="number"
                         android:background="@android:color/transparent"/>
@@ -196,7 +196,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Travel Time"
+                    android:text="@string/travel_time"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary"
@@ -214,7 +214,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@android:color/transparent"
-                        android:hint="Enter Travel Time (minutes)"
+                        android:hint="@string/enter_travel_time"
                         android:inputType="number"
                         android:padding="16dp" />
                 </androidx.cardview.widget.CardView>
@@ -229,7 +229,7 @@
                         android:id="@+id/btnAddRoute"
                         android:layout_width="match_parent"
                         android:layout_height="56dp"
-                        android:text="Add Route"
+                        android:text="@string/add_route"
                         android:textSize="16sp"
                         android:textStyle="bold"
                         android:textColor="@color/white"
@@ -244,7 +244,7 @@
                         android:id="@+id/btnCurrentRoutes"
                         android:layout_width="match_parent"
                         android:layout_height="56dp"
-                        android:text="Current Routes"
+                        android:text="@string/current_routes"
                         android:textSize="16sp"
                         android:textStyle="bold"
                         android:textColor="@color/white"

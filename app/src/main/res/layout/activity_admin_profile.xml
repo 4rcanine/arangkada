@@ -22,7 +22,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Profile"
+                android:text="@string/profile"
                 android:textColor="@color/white"
                 android:textSize="28sp"
                 android:textStyle="bold"
@@ -31,7 +31,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Manage your account and preferences"
+                android:text="@string/manage_account"
                 android:textColor="@color/white"
                 android:textSize="16sp"
                 android:alpha="0.9" />
@@ -92,7 +92,7 @@
                                 android:id="@+id/tv_user_name"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Juan Dela Cruz"
+                                android:text="@string/sample_name"
                                 android:textSize="22sp"
                                 android:textStyle="bold"
                                 android:textColor="@color/text_primary"
@@ -102,7 +102,7 @@
                                 android:id="@+id/tv_user_email"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="juan.delacruz@email.com"
+                                android:text="@string/sample_email"
                                 android:textSize="14sp"
                                 android:textColor="@color/text_secondary"
                                 android:layout_marginBottom="2dp" />
@@ -111,7 +111,7 @@
                                 android:id="@+id/tv_user_phone"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="+63 912 345 6789"
+                                android:text="@string/sample_phone"
                                 android:textSize="14sp"
                                 android:textColor="@color/text_secondary" />
                         </LinearLayout>
@@ -132,7 +132,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Account Settings"
+                android:text="@string/account_settings"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="@color/text_primary"
@@ -168,7 +168,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Edit Profile"
+                        android:text="@string/edit_profile"
                         android:textSize="16sp"
                         android:textColor="@color/text_primary" />
                 </LinearLayout>
@@ -204,7 +204,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Terms and Services"
+                        android:text="@string/terms_and_services"
                         android:textSize="16sp"
                         android:textColor="@color/text_primary" />
                 </LinearLayout>
@@ -222,7 +222,7 @@
                 android:id="@+id/btn_logout"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:text="Logout"
+                android:text="@string/logout"
                 android:textSize="16sp"
                 android:textColor="@color/white"
                 android:background="@drawable/button_logout"

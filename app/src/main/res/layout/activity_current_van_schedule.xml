@@ -17,7 +17,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Current Van Schedules"
+            android:text="@string/current_van_schedules"
             android:textColor="@color/white"
             android:textSize="28sp"
             android:textStyle="bold"
@@ -26,7 +26,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Shows the upcoming and completed Van Schedules for this day"
+            android:text="@string/current_van_schedules_description"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:alpha="0.9" />
@@ -54,7 +54,7 @@
         android:id="@+id/btnCreateVanSchedule"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Create Van Schedule"
+        android:text="@string/create_van_schedule"
         android:backgroundTint="@color/secondary_color"
         android:textColor="@color/white"
         android:layout_margin="12dp"

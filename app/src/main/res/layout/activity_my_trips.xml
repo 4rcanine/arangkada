@@ -24,7 +24,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Booking History"
+                android:text="@string/booking_history"
                 android:textColor="@color/white"
                 android:textSize="28sp"
                 android:textStyle="bold"
@@ -33,7 +33,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="View most recent booking history"
+                android:text="@string/view_recent_history"
                 android:textColor="@color/white"
                 android:textSize="16sp"
                 android:alpha="0.9" />
@@ -44,7 +44,7 @@
             android:id="@+id/btnClearHistory"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Clear"
+            android:text="@string/clear"
             android:backgroundTint="@color/secondary_color"
             android:textColor="@color/white"
             android:visibility="gone" />
@@ -55,7 +55,7 @@
         android:id="@+id/tvEmpty"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="No booking history."
+        android:text="@string/no_booking_history"
         android:textSize="16sp"
         android:gravity="center"
         android:padding="16dp"
@@ -96,7 +96,7 @@
             android:id="@+id/tvPageIndicator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="1 / 1"
+            android:text="@string/page_indicator"
             android:textColor="@color/black"
             android:textSize="18sp"
             android:textStyle="bold" />

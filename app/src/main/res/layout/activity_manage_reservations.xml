@@ -15,7 +15,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Manage Bookings"
+            android:text="@string/manage_bookings"
             android:textColor="@color/white"
             android:textSize="28sp"
             android:textStyle="bold"
@@ -24,7 +24,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Confirm or Cancel pending user bookings"
+            android:text="@string/confirm_cancel_bookings"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:alpha="0.9" />
@@ -76,7 +76,7 @@
                 android:layout_width="0dp"
                 android:layout_height="36dp"
                 android:layout_weight="1"
-                android:hint="From"
+                android:hint="@string/from"
                 android:textSize="12sp"
                 android:paddingHorizontal="6dp"
                 android:focusable="false"
@@ -88,7 +88,7 @@
                 android:layout_height="36dp"
                 android:layout_weight="1"
                 android:layout_marginStart="6dp"
-                android:hint="To"
+                android:hint="@string/to"
                 android:textSize="12sp"
                 android:paddingHorizontal="6dp"
                 android:focusable="false"
@@ -137,7 +137,7 @@
             android:id="@+id/tvPageIndicator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="1 / 1"
+            android:text="@string/page_indicator"
             android:textColor="@color/black"
             android:textSize="18sp"
             android:textStyle="bold" />

@@ -16,7 +16,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Bookings History"
+            android:text="@string/bookings_history"
             android:textColor="@color/white"
             android:textSize="26sp"
             android:textStyle="bold"
@@ -25,7 +25,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="View all the Completed and Cancelled Trips of users"
+            android:text="@string/bookings_history_description"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:alpha="0.9" />
@@ -74,7 +74,7 @@
                 android:layout_width="0dp"
                 android:layout_height="36dp"
                 android:layout_weight="1"
-                android:hint="From"
+                android:hint="@string/from"
                 android:textSize="12sp"
                 android:paddingHorizontal="6dp"
                 android:focusable="false"
@@ -86,7 +86,7 @@
                 android:layout_height="36dp"
                 android:layout_weight="1"
                 android:layout_marginStart="6dp"
-                android:hint="To"
+                android:hint="@string/to"
                 android:textSize="12sp"
                 android:paddingHorizontal="6dp"
                 android:focusable="false"
@@ -100,7 +100,7 @@
         android:id="@+id/tvEmpty"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="No Cancelled or Completed Bookings"
+        android:text="@string/no_cancelled_completed_bookings"
         android:textSize="16sp"
         android:textStyle="bold"
         android:gravity="center"
@@ -140,7 +140,7 @@
             android:id="@+id/tvPageIndicator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="1 / 1"
+            android:text="@string/page_indicator_default"
             android:textColor="@color/black"
             android:textSize="18sp"
             android:textStyle="bold" />
