@@ -49,12 +49,22 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
+                <!-- Route Information Section -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Route Information"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="16dp" />
+
                 <!-- Terminal -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/terminal"
-                    android:textSize="18sp"
+                    android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary"
                     android:layout_marginBottom="8dp" />
@@ -73,6 +83,7 @@
                         android:hint="@string/enter_terminal"
                         android:padding="16dp"
                         android:inputType="textCapWords"
+                        android:textSize="16sp"
                         android:background="@android:color/transparent"/>
                 </androidx.cardview.widget.CardView>
 
@@ -81,7 +92,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/to"
-                    android:textSize="18sp"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
                     android:textColor="@color/text_primary"
                     android:layout_marginBottom="8dp" />
 
@@ -99,6 +111,7 @@
                         android:hint="@string/enter_destination"
                         android:padding="16dp"
                         android:inputType="textCapWords"
+                        android:textSize="16sp"
                         android:background="@android:color/transparent"/>
                 </androidx.cardview.widget.CardView>
 
@@ -107,7 +120,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/location"
-                    android:textSize="18sp"
+                    android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary"
                     android:layout_marginBottom="8dp" />
@@ -117,7 +130,7 @@
                     android:layout_height="wrap_content"
                     app:cardCornerRadius="12dp"
                     app:cardElevation="3dp"
-                    android:layout_marginBottom="16dp">
+                    android:layout_marginBottom="24dp">
 
                     <EditText
                         android:id="@+id/etLocation"
@@ -126,82 +139,30 @@
                         android:hint="@string/enter_location"
                         android:padding="16dp"
                         android:inputType="textCapWords"
+                        android:textSize="16sp"
                         android:background="@android:color/transparent"/>
                 </androidx.cardview.widget.CardView>
 
-                <!-- Fares -->
+                <!-- Fare Details Section -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/fare_details"
-                    android:textSize="18sp"
+                    android:textSize="20sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary"
-                    android:layout_marginBottom="12dp" />
+                    android:layout_marginBottom="16dp" />
 
                 <!-- Regular Fare -->
-                <androidx.cardview.widget.CardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="3dp"
-                    android:layout_marginBottom="12dp">
-
-                    <EditText
-                        android:id="@+id/etRegularFare"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="@string/enter_regular_fare"
-                        android:padding="16dp"
-                        android:inputType="number"
-                        android:background="@android:color/transparent"/>
-                </androidx.cardview.widget.CardView>
-
-                <!-- Student Fare -->
-                <androidx.cardview.widget.CardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="3dp"
-                    android:layout_marginBottom="12dp">
-
-                    <EditText
-                        android:id="@+id/etStudentFare"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="@string/enter_student_fare"
-                        android:padding="16dp"
-                        android:inputType="number"
-                        android:background="@android:color/transparent"/>
-                </androidx.cardview.widget.CardView>
-
-                <!-- Senior Fare -->
-                <androidx.cardview.widget.CardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="3dp"
-                    android:layout_marginBottom="12dp">
-
-                    <EditText
-                        android:id="@+id/etSeniorFare"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="@string/enter_senior_fare"
-                        android:padding="16dp"
-                        android:inputType="number"
-                        android:background="@android:color/transparent"/>
-                </androidx.cardview.widget.CardView>
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/travel_time"
-                    android:textSize="18sp"
+                    android:text="Regular Fare"
+                    android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary"
                     android:layout_marginBottom="8dp" />
-                <!-- Travel Time -->
+
                 <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -209,21 +170,180 @@
                     app:cardElevation="3dp"
                     android:layout_marginBottom="16dp">
 
-                    <EditText
-                        android:id="@+id/etTravelTime"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@android:color/transparent"
-                        android:hint="@string/enter_travel_time"
-                        android:inputType="number"
-                        android:padding="16dp" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="₱"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/primary_color"
+                            android:layout_marginEnd="8dp" />
+
+                        <EditText
+                            android:id="@+id/etRegularFare"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/enter_regular_fare"
+                            android:inputType="number"
+                            android:textSize="16sp"
+                            android:background="@android:color/transparent"/>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Student Fare -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Student Fare"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="8dp" />
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="3dp"
+                    android:layout_marginBottom="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="₱"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/primary_color"
+                            android:layout_marginEnd="8dp" />
+
+                        <EditText
+                            android:id="@+id/etStudentFare"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/enter_student_fare"
+                            android:inputType="number"
+                            android:textSize="16sp"
+                            android:background="@android:color/transparent"/>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Senior Fare -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Senior/PWD Fare"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="8dp" />
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="3dp"
+                    android:layout_marginBottom="24dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="₱"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/primary_color"
+                            android:layout_marginEnd="8dp" />
+
+                        <EditText
+                            android:id="@+id/etSeniorFare"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/enter_senior_fare"
+                            android:inputType="number"
+                            android:textSize="16sp"
+                            android:background="@android:color/transparent"/>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Travel Time Section -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/travel_time"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="16dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Estimated Travel Duration"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="8dp" />
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="3dp"
+                    android:layout_marginBottom="24dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="16dp">
+
+                        <EditText
+                            android:id="@+id/etTravelTime"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:background="@android:color/transparent"
+                            android:hint="@string/enter_travel_time"
+                            android:inputType="number"
+                            android:textSize="16sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="minutes"
+                            android:textSize="16sp"
+                            android:textColor="#666666"
+                            android:layout_marginStart="8dp" />
+                    </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
                 <!-- Buttons -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:layout_marginTop="8dp">
 
                     <Button
                         android:id="@+id/btnAddRoute"
@@ -237,8 +357,6 @@
                         app:backgroundTint="@null"
                         app:strokeColor="@null"
                         android:background="@drawable/button_secondary" />
-
-
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnCurrentRoutes"

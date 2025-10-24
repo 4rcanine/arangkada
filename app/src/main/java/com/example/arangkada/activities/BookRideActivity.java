@@ -361,10 +361,14 @@ public class BookRideActivity extends BaseActivity {
         tvTripTravelTime.setText("Travel Time: " + formatTravelTime(travelTimeMinutes));
         tvPaymentMethod.setText("Payment Method: " + currentPaymentMethod);
 
-        // Load admin info
-        String adminId = tripDoc.getString("adminID");
-        if (adminId != null && !adminId.isEmpty()) {
-            loadAdminInfo(adminId);
+        // Load driver info directly from trip document
+        String driverName = tripDoc.getString("driverName");
+        String driverNumber = tripDoc.getString("driverNumber");
+
+        if ((driverName != null && !driverName.isEmpty()) || (driverNumber != null && !driverNumber.isEmpty())) {
+            layoutAdminInfo.setVisibility(View.VISIBLE);
+            tvAdminName.setText("Driver: " + (driverName != null ? driverName : "N/A"));
+            tvAdminNumber.setText("Contact: " + (driverNumber != null ? driverNumber : "N/A"));
         } else {
             layoutAdminInfo.setVisibility(View.GONE);
         }
@@ -418,7 +422,7 @@ public class BookRideActivity extends BaseActivity {
 
                         if (name != null || number != null) {
                             layoutAdminInfo.setVisibility(View.VISIBLE);
-                            tvAdminName.setText("Operator: " + (name != null ? name : "N/A"));
+                            tvAdminName.setText("Driver: " + (name != null ? name : "N/A"));
                             tvAdminNumber.setText("Contact: " + (number != null ? number : "N/A"));
                         } else {
                             layoutAdminInfo.setVisibility(View.GONE);

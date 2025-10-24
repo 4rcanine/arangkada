@@ -33,7 +33,7 @@ public class ManageVansActivity extends BaseActivity {
     private Spinner spinnerDestination, spinnerPaymentMethod;
     private TextView tvDeparture;
     private Button btnPickDeparture, btnSaveSchedule, btnUploadQR;
-    private EditText etVanPlate, etSeatCapacity, etPaymentNumber;
+    private EditText etVanPlate, etSeatCapacity, etPaymentNumber, etDriverName, etDriverNumber;
     private ImageView imgQRPreview;
     private LinearLayout layoutQRUpload;
     private ProgressBar progressBar;
@@ -76,6 +76,8 @@ public class ManageVansActivity extends BaseActivity {
         btnPickDeparture = contentView.findViewById(R.id.btnPickDeparture);
         etVanPlate = contentView.findViewById(R.id.etVanPlate);
         etSeatCapacity = contentView.findViewById(R.id.etSeatCapacity);
+        etDriverName = contentView.findViewById(R.id.etDriverName);
+        etDriverNumber = contentView.findViewById(R.id.etDriverNumber);
         etPaymentNumber = contentView.findViewById(R.id.etPaymentNumber);
         btnSaveSchedule = contentView.findViewById(R.id.btnSaveSchedule);
         progressBar = contentView.findViewById(R.id.progressBar);
@@ -400,6 +402,24 @@ public class ManageVansActivity extends BaseActivity {
             return;
         }
 
+        String driverName = etDriverName.getText().toString().trim();
+        if (driverName.isEmpty()) {
+            Toast.makeText(this, "Please enter Driver Name", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String driverNumber = etDriverNumber.getText().toString().trim();
+        if (driverNumber.isEmpty()) {
+            Toast.makeText(this, "Please enter Driver's Mobile Number", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Validate driver's phone number format
+        if (!isValidPhoneNumber(driverNumber)) {
+            Toast.makeText(this, "Please enter a valid driver mobile number (e.g., 09123456789)", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         // Check Gcash payment requirements: must have QR or number or both
         String paymentNumber = etPaymentNumber.getText().toString().trim();
         if ((selectedPaymentMethod.equals("Gcash") || selectedPaymentMethod.equals("Cash & Gcash"))) {
@@ -421,6 +441,8 @@ public class ManageVansActivity extends BaseActivity {
         tripData.put("departure", new Timestamp(departureCalendar.getTime()));
         tripData.put("vanId", vanPlate);
         tripData.put("availableSeats", seatCapacity);
+        tripData.put("driverName", driverName);
+        tripData.put("driverNumber", driverNumber);
         tripData.put("paymentMethod", selectedPaymentMethod);
 
         // Add payment details based on what was provided
@@ -456,6 +478,8 @@ public class ManageVansActivity extends BaseActivity {
         tvDeparture.setText("Select date & time");
         etVanPlate.setText("");
         etSeatCapacity.setText("");
+        etDriverName.setText("");
+        etDriverNumber.setText("");
         etPaymentNumber.setText("");
         spinnerPaymentMethod.setSelection(0);
         layoutQRUpload.setVisibility(View.GONE);

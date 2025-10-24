@@ -163,7 +163,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:cardCornerRadius="12dp"
-                    app:cardElevation="3dp">
+                    app:cardElevation="3dp"
+                    android:layout_marginBottom="12dp">
 
                     <EditText
                         android:id="@+id/etSeatCapacity"
@@ -171,6 +172,42 @@
                         android:layout_height="wrap_content"
                         android:hint="@string/enter_seat_capacity"
                         android:inputType="number"
+                        android:padding="16dp"
+                        android:background="@android:color/transparent" />
+                </androidx.cardview.widget.CardView>
+
+                <!-- Driver Name -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="3dp"
+                    android:layout_marginBottom="12dp">
+
+                    <EditText
+                        android:id="@+id/etDriverName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Enter Driver Name"
+                        android:inputType="textCapWords"
+                        android:padding="16dp"
+                        android:background="@android:color/transparent" />
+                </androidx.cardview.widget.CardView>
+
+                <!-- Driver Mobile Number -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="3dp">
+
+                    <EditText
+                        android:id="@+id/etDriverNumber"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Enter Driver's Mobile Number"
+                        android:inputType="phone"
+                        android:maxLength="11"
                         android:padding="16dp"
                         android:background="@android:color/transparent" />
                 </androidx.cardview.widget.CardView>
