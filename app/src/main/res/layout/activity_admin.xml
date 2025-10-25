@@ -96,7 +96,7 @@
                         android:scaleType="centerCrop"
                         android:clickable="true"
                         android:focusable="true"
-                        android:background="?android:attr/selectableItemBackgroundBorderless" />
+                        android:background="@color/primary_dark"  />
                 </androidx.cardview.widget.CardView>
 
                 <!-- Welcome texts -->

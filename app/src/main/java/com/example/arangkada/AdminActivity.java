@@ -113,6 +113,9 @@ public class AdminActivity extends BaseActivity {
 
     // Add this new method to load both name and profile picture
     private void loadAdminInfo(String userId) {
+        // Set placeholder first before loading
+        adminProfileImageView.setImageResource(R.drawable.ic_profile_placeholder);
+
         db.collection("accounts").document(userId).get()
                 .addOnSuccessListener(document -> {
                     if (document.exists()) {
@@ -124,11 +127,12 @@ public class AdminActivity extends BaseActivity {
                             tvAdminName.setText("Admin");
                         }
 
-                        // Load profile picture
+                        // Load profile picture or show placeholder
                         String profilePicture = document.getString("profilePicture");
                         if (profilePicture != null && !profilePicture.isEmpty()) {
                             loadProfileImage(profilePicture);
                         } else {
+                            // Explicitly set placeholder when no profile picture exists
                             adminProfileImageView.setImageResource(R.drawable.ic_profile_placeholder);
                         }
                     } else {
