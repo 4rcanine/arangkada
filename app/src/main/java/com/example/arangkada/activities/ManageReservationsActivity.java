@@ -403,14 +403,13 @@ public class ManageReservationsActivity extends BaseActivity {
                             String userName = doc.getString("name");
                             holder.txtUser.setText(userName != null ? userName : "Unknown User");
 
-                        // Display mobile number
+                            // Display mobile number
                             String userNumber = doc.getString("number");
                             holder.tvUserNumber.setText(userNumber != null && !userNumber.isEmpty()
                                     ? "Mobile: " + userNumber
                                     : "Mobile: N/A");
 
-
-                            // Load profile picture
+                            // Load profile picture or show placeholder
                             String profilePicture = doc.getString("profilePicture");
                             if (profilePicture != null && !profilePicture.isEmpty()) {
                                 Glide.with(holder.itemView.getContext())
@@ -420,15 +419,18 @@ public class ManageReservationsActivity extends BaseActivity {
                                         .circleCrop()
                                         .into(holder.ivUserProfilePicture);
                             } else {
+                                // Explicitly set placeholder when no profile picture exists
                                 holder.ivUserProfilePicture.setImageResource(R.drawable.ic_profile_placeholder);
                             }
                         } else {
                             holder.txtUser.setText("Unknown User");
+                            holder.tvUserNumber.setText("Mobile: N/A");
                             holder.ivUserProfilePicture.setImageResource(R.drawable.ic_profile_placeholder);
                         }
                     })
                     .addOnFailureListener(e -> {
                         holder.txtUser.setText("Unknown User");
+                        holder.tvUserNumber.setText("Mobile: N/A");
                         holder.ivUserProfilePicture.setImageResource(R.drawable.ic_profile_placeholder);
                     });
 
@@ -437,7 +439,17 @@ public class ManageReservationsActivity extends BaseActivity {
                         if (tripDoc.exists()) {
                             String destinationId = tripDoc.getString("destinationId");
                             String vanId = tripDoc.getString("vanId");
+                            String driverName = tripDoc.getString("driverName");
+                            String driverNumber = tripDoc.getString("driverNumber");
+
                             holder.tvVan.setText(vanId != null ? vanId : "Unknown");
+
+                            // Display driver name
+                            holder.tvDriverName.setText(driverName != null ? driverName : "N/A");
+
+                            // Display driver number
+                            holder.tvDriverNumber.setText(driverNumber != null ? driverNumber : "N/A");
+
                             if (destinationId != null) {
                                 db.collection("destinations").document(destinationId).get()
                                         .addOnSuccessListener(destDoc ->
@@ -505,13 +517,14 @@ public class ManageReservationsActivity extends BaseActivity {
         public int getItemCount() { return bookings.size(); }
 
         class BookingViewHolder extends RecyclerView.ViewHolder {
-            ImageView ivUserProfilePicture;  // Added this
+            ImageView ivUserProfilePicture;
             TextView txtUser, tvRoute, tvVan, tvDeparture, tvPassengers, tvTotalFare, tvStatus, tvPaymentMethod, tvUserNumber;
+            TextView tvDriverName, tvDriverNumber;
             Button btnConfirm, btnCancel, btnViewProof;
 
             BookingViewHolder(@NonNull View itemView) {
                 super(itemView);
-                ivUserProfilePicture = itemView.findViewById(R.id.ivUserProfilePicture);  // Added this
+                ivUserProfilePicture = itemView.findViewById(R.id.ivUserProfilePicture);
                 txtUser = itemView.findViewById(R.id.txtUser);
                 tvRoute = itemView.findViewById(R.id.tv_route);
                 tvVan = itemView.findViewById(R.id.tv_van);
@@ -524,6 +537,8 @@ public class ManageReservationsActivity extends BaseActivity {
                 btnCancel = itemView.findViewById(R.id.btnCancel);
                 btnViewProof = itemView.findViewById(R.id.btnViewProof);
                 tvUserNumber = itemView.findViewById(R.id.tvUserNumber);
+                tvDriverName = itemView.findViewById(R.id.tv_driver_name);
+                tvDriverNumber = itemView.findViewById(R.id.tv_driver_number);
             }
         }
     }

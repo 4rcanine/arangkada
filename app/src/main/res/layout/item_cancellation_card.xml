@@ -131,6 +131,38 @@
                 android:textSize="14sp"
                 android:layout_marginBottom="8dp" />
 
+            <!-- Driver Name -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Driver Name"
+                android:textColor="#666"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/tv_driver_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="N/A"
+                android:textSize="14sp"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Driver Number -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Driver Number"
+                android:textColor="#666"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/tv_driver_number"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="N/A"
+                android:textSize="14sp"
+                android:layout_marginBottom="8dp" />
+
         </LinearLayout>
 
         <!-- Footer: Total Fare + Cancel -->

@@ -120,6 +120,9 @@ public class MainActivity extends BaseActivity {
     }
 
     private void setupUserInfo() {
+        // Set placeholder first before loading
+        profileImageView.setImageResource(R.drawable.ic_profile_placeholder);
+
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
             db.collection("accounts").document(currentUser.getUid())
@@ -130,11 +133,12 @@ public class MainActivity extends BaseActivity {
                             String name = document.getString("name");
                             userNameTextView.setText(name != null ? name : "Unknown User");
 
-                            // Load profile picture
+                            // Load profile picture or show placeholder
                             String profilePicture = document.getString("profilePicture");
                             if (profilePicture != null && !profilePicture.isEmpty()) {
                                 loadProfileImage(profilePicture);
                             } else {
+                                // Explicitly set placeholder when no profile picture exists
                                 profileImageView.setImageResource(R.drawable.ic_profile_placeholder);
                             }
                         } else {

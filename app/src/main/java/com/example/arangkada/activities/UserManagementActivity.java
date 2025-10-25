@@ -190,12 +190,16 @@ public class UserManagementActivity extends BaseActivity {
         @Override
         public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
             UserModel user = userList.get(position);
+
+            // Set placeholder first before loading
+            holder.ivUserProfilePicture.setImageResource(R.drawable.ic_profile_placeholder);
+
             holder.tvUserName.setText(user.getName());
             holder.tvUserEmail.setText(user.getEmail());
             holder.tvTotalBookings.setText("Total Bookings: " + user.getTotalBookings());
             holder.tvLastBooking.setText("Last Booking: " + user.getLastBookingDate());
 
-            // Load profile picture using Glide
+            // Load profile picture or show placeholder
             if (user.getProfilePicture() != null && !user.getProfilePicture().isEmpty()) {
                 Glide.with(holder.itemView.getContext())
                         .load(user.getProfilePicture())
@@ -204,6 +208,7 @@ public class UserManagementActivity extends BaseActivity {
                         .circleCrop()
                         .into(holder.ivUserProfilePicture);
             } else {
+                // Explicitly set placeholder when no profile picture exists
                 holder.ivUserProfilePicture.setImageResource(R.drawable.ic_profile_placeholder);
             }
 

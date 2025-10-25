@@ -120,10 +120,13 @@ public class AdminProfileActivity extends BaseActivity {
                         userEmail.setText(email != null ? email : "No email");
                         userPhone.setText(number != null ? number : "No number");
 
-                        // Load profile picture
+                        // Load profile picture or show placeholder
                         currentProfilePictureUrl = profilePicture;
                         if (profilePicture != null && !profilePicture.isEmpty()) {
                             loadImageWithGlide(profilePicture, profileImage);
+                        } else {
+                            // Explicitly set placeholder when no profile picture exists
+                            profileImage.setImageResource(R.drawable.ic_profile_placeholder);
                         }
                     } else {
                         Toast.makeText(AdminProfileActivity.this, "No profile data found", Toast.LENGTH_SHORT).show();

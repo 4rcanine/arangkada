@@ -252,7 +252,16 @@ public class MyTripsActivity extends BaseActivity {
                         if (tripDoc.exists()) {
                             String destinationId = tripDoc.getString("destinationId");
                             String vanId = tripDoc.getString("vanId");
+                            String driverName = tripDoc.getString("driverName");
+                            String driverNumber = tripDoc.getString("driverNumber");
+
                             holder.tvVan.setText(vanId != null ? vanId : "Unknown");
+
+                            // Display driver name
+                            holder.tvDriverName.setText(driverName != null ? driverName : "N/A");
+
+                            // Display driver number
+                            holder.tvDriverNumber.setText(driverNumber != null ? driverNumber : "N/A");
 
                             if (destinationId != null) {
                                 db.collection("destinations").document(destinationId).get()
@@ -333,6 +342,7 @@ public class MyTripsActivity extends BaseActivity {
         class TripViewHolder extends RecyclerView.ViewHolder {
             TextView tvRoute, tvVan, tvDeparture, tvPassengers, tvTotalFare,
                     tvStatus, tvCreatedAt, tvUsername, tvReason;
+            TextView tvDriverName, tvDriverNumber;
 
             public TripViewHolder(@NonNull View itemView) {
                 super(itemView);
@@ -345,6 +355,8 @@ public class MyTripsActivity extends BaseActivity {
                 tvPassengers = itemView.findViewById(R.id.tv_passengers);
                 tvTotalFare = itemView.findViewById(R.id.tv_total_fare);
                 tvReason = itemView.findViewById(R.id.tv_reason);
+                tvDriverName = itemView.findViewById(R.id.tv_driver_name);
+                tvDriverNumber = itemView.findViewById(R.id.tv_driver_number);
             }
         }
     }

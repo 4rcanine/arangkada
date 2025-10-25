@@ -179,7 +179,16 @@ public class CancellationActivity extends BaseActivity {
                         if (tripDoc.exists()) {
                             String destinationId = tripDoc.getString("destinationId");
                             String vanId = tripDoc.getString("vanId");
+                            String driverName = tripDoc.getString("driverName");
+                            String driverNumber = tripDoc.getString("driverNumber");
+
                             holder.tvVan.setText(vanId != null ? vanId : "Unknown");
+
+                            // Display driver name
+                            holder.tvDriverName.setText(driverName != null ? driverName : "N/A");
+
+                            // Display driver number
+                            holder.tvDriverNumber.setText(driverNumber != null ? driverNumber : "N/A");
 
                             if (destinationId != null) {
                                 db.collection("destinations")
@@ -272,6 +281,7 @@ public class CancellationActivity extends BaseActivity {
 
         class BookingViewHolder extends RecyclerView.ViewHolder {
             TextView txtUser, tvRoute, tvVan, tvDeparture, tvPassengers, tvTotalFare, tvStatus, tvCreatedAt;
+            TextView tvDriverName, tvDriverNumber;
             Button btnCancel, btnViewQR;
 
             public BookingViewHolder(@NonNull View itemView) {
@@ -286,6 +296,8 @@ public class CancellationActivity extends BaseActivity {
                 tvCreatedAt = itemView.findViewById(R.id.tv_created_at);
                 btnCancel = itemView.findViewById(R.id.btnCancel);
                 btnViewQR = itemView.findViewById(R.id.btnViewQR);
+                tvDriverName = itemView.findViewById(R.id.tv_driver_name);
+                tvDriverNumber = itemView.findViewById(R.id.tv_driver_number);
             }
         }
     }

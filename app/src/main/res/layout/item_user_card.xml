@@ -23,19 +23,22 @@
             android:gravity="center_vertical">
 
             <!-- Profile Picture -->
+            <!-- Profile Picture -->
             <androidx.cardview.widget.CardView
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 card_view:cardCornerRadius="24dp"
                 card_view:cardElevation="2dp"
-                android:layout_marginEnd="12dp">
+                android:layout_marginEnd="12dp"
+                android:backgroundTint="@android:color/transparent">
 
                 <ImageView
                     android:id="@+id/ivUserProfilePicture"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:src="@drawable/ic_profile_placeholder"
-                    android:scaleType="centerCrop" />
+                    android:scaleType="centerCrop"
+                    android:background="@android:color/transparent" />
             </androidx.cardview.widget.CardView>
 
             <!-- User Name and Email -->
