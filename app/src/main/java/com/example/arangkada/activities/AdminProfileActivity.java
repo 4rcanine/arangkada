@@ -64,7 +64,7 @@ public class AdminProfileActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_base);
 
-        // Inflate your content layout inside BaseActivity's content frame
+
         View contentView = getLayoutInflater().inflate(
                 R.layout.activity_admin_profile,
                 findViewById(R.id.content_frame),
@@ -83,7 +83,7 @@ public class AdminProfileActivity extends BaseActivity {
 
     @Override
     protected void onNavigationSetup() {
-        // Optional: Add menu logic here if needed
+
     }
 
     private void initializeViews() {
@@ -136,7 +136,7 @@ public class AdminProfileActivity extends BaseActivity {
     }
 
     private void setupClickListeners() {
-        // Profile image click listener
+
         profileImage.setOnClickListener(v -> showProfilePictureDialog());
 
         editProfileCard.setOnClickListener(v -> openEditProfile());

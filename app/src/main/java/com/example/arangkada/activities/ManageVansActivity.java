@@ -52,7 +52,7 @@ public class ManageVansActivity extends BaseActivity {
     // ImageKit Configuration
     private static final String IMAGEKIT_URL_ENDPOINT = "https://ik.imagekit.io/xqqzgzvy9";
     private static final String IMAGEKIT_PUBLIC_KEY = "public_aM1dq8aVaA7PBiP8Pdfo6mYpUsM=";
-    // WARNING: Private key should NEVER be in production code - only for development/testing
+
     private static final String IMAGEKIT_PRIVATE_KEY = "private_xix6Ergz3zAHuAwotsM7a+4WsdU=";
     private static final String IMAGEKIT_UPLOAD_URL = "https://upload.imagekit.io/api/v1/files/upload";
 
@@ -61,7 +61,7 @@ public class ManageVansActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_base);
 
-        // Inflate the actual content layout into BaseActivity's content frame
+
         View contentView = getLayoutInflater().inflate(
                 R.layout.activity_manage_vans,
                 findViewById(R.id.content_frame),
@@ -280,7 +280,7 @@ public class ManageVansActivity extends BaseActivity {
     }
 
     private String parseUrlFromResponse(String jsonResponse) {
-        // Simple JSON parsing to extract URL
+
         try {
             int urlStart = jsonResponse.indexOf("\"url\":\"") + 7;
             int urlEnd = jsonResponse.indexOf("\"", urlStart);
@@ -468,7 +468,7 @@ public class ManageVansActivity extends BaseActivity {
     }
 
     private boolean isValidPhoneNumber(String number) {
-        // Basic validation for Philippine mobile numbers
+
         // Accepts formats: 09123456789 or 9123456789 (11 or 10 digits)
         return number.matches("^(09|9)\\d{9}$");
     }

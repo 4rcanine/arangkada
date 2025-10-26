@@ -26,7 +26,7 @@ public class NotificationHelper {
     private static final String PREFS_NAME = "NotificationsData";
 
     public static void showBookingNotification(Context context, String title, String message, String type) {
-        // ✅ Save notification data locally (adds new one on top of list)
+
         saveNotification(context, title, message, type);
 
         NotificationManager manager = (NotificationManager)
@@ -68,7 +68,7 @@ public class NotificationHelper {
             return;
         }
 
-        // 🔹 Use unique ID to make each notification stack (instead of replacing)
+
         NotificationManagerCompat.from(context)
                 .notify((int) System.currentTimeMillis(), builder.build());
     }

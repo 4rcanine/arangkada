@@ -69,7 +69,7 @@ public class QRScannerActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_base);
 
-        // Inflate your content layout inside BaseActivity's content frame
+
         View contentView = getLayoutInflater().inflate(
                 R.layout.activity_qrscanner,
                 findViewById(R.id.content_frame),
@@ -104,7 +104,7 @@ public class QRScannerActivity extends BaseActivity {
 
     @Override
     protected void onNavigationSetup() {
-        // Optional: Add menu logic here if needed
+
     }
 
     private void startCamera() {

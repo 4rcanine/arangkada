@@ -594,7 +594,7 @@ public class CurrentVanScheduleActivity extends BaseActivity {
             dialog.show();
         });
 
-        // Add Walk-In button handler
+
         holder.btnAddWalkIn.setOnClickListener(v -> {
             Object seatsObjInner = trip.get("availableSeats");
             long currentSeats = (seatsObjInner instanceof Number) ? ((Number) seatsObjInner).longValue() : 0L;

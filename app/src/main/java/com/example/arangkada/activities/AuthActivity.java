@@ -433,19 +433,19 @@ public class AuthActivity extends AppCompatActivity {
         builder.setTitle("Reset Password");
         builder.setMessage("Enter your email address to receive a password reset link.");
 
-        // Create an EditText for email input
+
         final EditText input = new EditText(this);
         input.setInputType(android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
         input.setHint("Email Address");
 
-        // Add padding to the EditText
+
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT);
         params.setMargins(50, 20, 50, 20);
         input.setLayoutParams(params);
 
-        // Create a container for the EditText
+
         LinearLayout container = new LinearLayout(this);
         container.setOrientation(LinearLayout.VERTICAL);
         container.addView(input);

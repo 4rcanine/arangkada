@@ -70,7 +70,7 @@ public class NewTerminalActivity extends BaseActivity {
     }
     @Override
     protected void onNavigationSetup() {
-        // Optional: Add menu logic here if needed
+
     }
     private void saveRoute() {
         String terminal = etTerminal.getText().toString().trim();

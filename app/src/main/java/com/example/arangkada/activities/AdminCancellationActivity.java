@@ -56,7 +56,6 @@ public class AdminCancellationActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_base);
 
-        // Inflate your content layout inside BaseActivity's content frame
         View contentView = getLayoutInflater().inflate(
                 R.layout.activity_admin_cancellation,
                 findViewById(R.id.content_frame),
@@ -301,7 +300,7 @@ public class AdminCancellationActivity extends BaseActivity {
         btnNext.setEnabled(currentPage < totalPages);
     }
 
-    // -------- Booking model --------
+
     public static class Booking {
         private String bookingId;
         private String userId;
@@ -337,7 +336,7 @@ public class AdminCancellationActivity extends BaseActivity {
         public void setDestinationId(String destinationId) { this.destinationId = destinationId; }
     }
 
-    // -------- Adapter --------
+
     private class CancellationAdapter extends RecyclerView.Adapter<CancellationAdapter.CancellationViewHolder> {
         private final List<Booking> bookings;
         public CancellationAdapter(List<Booking> bookings) { this.bookings = bookings; }
@@ -397,7 +396,7 @@ public class AdminCancellationActivity extends BaseActivity {
 
             holder.tvTotalFare.setText("₱" + String.format("%.2f", booking.getTotalFare()));
 
-            // Build passenger breakdown string with total first
+
             StringBuilder passengersBreakdown = new StringBuilder();
             passengersBreakdown.append(booking.getSeats()).append(" (");
 

@@ -370,9 +370,9 @@ public class ManageReservationsActivity extends BaseActivity {
         dialog.show();
     }
 
-    // ======================================================
-// Adapter
-// ======================================================
+
+
+
     private class ManageReservationsAdapter extends RecyclerView.Adapter<ManageReservationsAdapter.BookingViewHolder> {
 
         private final List<Booking> bookings;
@@ -395,7 +395,7 @@ public class ManageReservationsActivity extends BaseActivity {
         public void onBindViewHolder(@NonNull BookingViewHolder holder, int position) {
             Booking booking = bookings.get(position);
 
-            // Load user info including profile picture
+
             db.collection("accounts").document(booking.getUserId()).get()
                     .addOnSuccessListener(doc -> {
                         if (doc.exists()) {
@@ -461,7 +461,7 @@ public class ManageReservationsActivity extends BaseActivity {
             holder.tvDeparture.setText(booking.getDeparture() != null ? sdf.format(booking.getDeparture().toDate()) : "N/A");
             holder.tvTotalFare.setText("₱" + String.format("%.2f", booking.getTotalFare()));
 
-            // Build passenger breakdown string with total first
+
             StringBuilder passengersBreakdown = new StringBuilder();
             passengersBreakdown.append(booking.getSeats()).append(" (");
 

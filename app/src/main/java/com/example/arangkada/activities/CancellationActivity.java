@@ -141,9 +141,9 @@ public class CancellationActivity extends BaseActivity {
         public int getSeats() { return seats; }
     }
 
-    // ================================
-    // Adapter
-    // ================================
+
+
+
     private class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingViewHolder> {
 
         private List<Booking> bookings;
@@ -302,9 +302,9 @@ public class CancellationActivity extends BaseActivity {
         }
     }
 
-    // ================================
-    // Cancel Confirmation
-    // ================================
+
+
+
     private void showCancelConfirmationDialog(Booking booking) {
         new AlertDialog.Builder(this)
                 .setTitle("Cancel Booking")
@@ -331,9 +331,9 @@ public class CancellationActivity extends BaseActivity {
                         Toast.makeText(this, "Error restoring seats: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
-    // ================================
-    // Show QR Code Dialog
-    // ================================
+
+
+
     private void showQrCodeDialog(String bookingId) {
         try {
             QRCodeWriter writer = new QRCodeWriter();
