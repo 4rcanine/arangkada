@@ -83,68 +83,95 @@
                     android:orientation="vertical">
 
                     <!-- Header Section -->
-                    <LinearLayout
+                    <FrameLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/auth_gradient_background"
-                        android:orientation="vertical"
-                        android:padding="30dp">
+                        android:layout_height="130dp">
 
+                        <!-- Background Image -->
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:src="@drawable/background_header"
+                            android:scaleType="centerCrop" />
+
+                        <!-- Gradient Overlay for better text readability -->
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/auth_gradient_background"
+                            android:alpha="0.5" />
+
+                        <!-- Content -->
                         <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:padding="30dp"
                             android:gravity="center_vertical">
 
-                            <!-- Profile Image first -->
-                            <androidx.cardview.widget.CardView
-                                android:layout_width="60dp"
-                                android:layout_height="60dp"
-                                app:cardCornerRadius="30dp"
-                                app:cardElevation="4dp"
-                                android:layout_marginEnd="16dp">
-
-                                <ImageView
-                                    android:id="@+id/iv_profile_image_dashboard"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:src="@drawable/ic_profile_placeholder"
-                                    android:scaleType="centerCrop"
-                                    android:clickable="true"
-                                    android:focusable="true"
-                                    android:background="@color/primary_dark"                                    />
-                            </androidx.cardview.widget.CardView>
-
-                            <!-- Welcome texts after -->
                             <LinearLayout
-                                android:layout_width="0dp"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:orientation="vertical">
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical">
 
-                                <TextView
-                                    android:id="@+id/tv_welcome"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/welcome_back"
-                                    android:textColor="@color/white"
-                                    android:textSize="16sp" />
+                                <!-- Profile Image first -->
+                                <androidx.cardview.widget.CardView
+                                    android:layout_width="60dp"
+                                    android:layout_height="60dp"
+                                    app:cardCornerRadius="30dp"
+                                    app:cardElevation="4dp"
+                                    android:layout_marginEnd="16dp">
 
-                                <TextView
-                                    android:id="@+id/tv_user_name"
-                                    android:layout_width="wrap_content"
+                                    <ImageView
+                                        android:id="@+id/iv_profile_image_dashboard"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:src="@drawable/ic_profile_placeholder"
+                                        android:scaleType="centerCrop"
+                                        android:clickable="true"
+                                        android:focusable="true"
+                                        android:background="@color/primary_dark" />
+                                </androidx.cardview.widget.CardView>
+
+                                <!-- Welcome texts after -->
+                                <LinearLayout
+                                    android:layout_width="0dp"
                                     android:layout_height="wrap_content"
-                                    android:text="@string/loading"
-                                    android:textColor="@color/white"
-                                    android:textSize="24sp"
-                                    android:textStyle="bold" />
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:id="@+id/tv_welcome"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/welcome_back"
+                                        android:textColor="@color/white"
+                                        android:textSize="16sp"
+                                        android:shadowColor="#80000000"
+                                        android:shadowDx="0"
+                                        android:shadowDy="2"
+                                        android:shadowRadius="4" />
+
+                                    <TextView
+                                        android:id="@+id/tv_user_name"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/loading"
+                                        android:textColor="@color/white"
+                                        android:textSize="24sp"
+                                        android:textStyle="bold"
+                                        android:shadowColor="#80000000"
+                                        android:shadowDx="0"
+                                        android:shadowDy="2"
+                                        android:shadowRadius="4" />
+
+                                </LinearLayout>
 
                             </LinearLayout>
 
                         </LinearLayout>
-
-
-                    </LinearLayout>
+                    </FrameLayout>
 
                     <!-- Your Trips Section -->
                     <LinearLayout

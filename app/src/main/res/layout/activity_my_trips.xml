@@ -6,49 +6,76 @@
     android:background="@color/background_primary">
 
     <!-- Header -->
-    <LinearLayout
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/dashboard_header_background"
-        android:orientation="horizontal"
-        android:padding="24dp"
-        android:gravity="center_vertical">
+        android:layout_height="130dp">
 
-        <!-- Left: Title & Subtitle -->
+        <!-- Background Image -->
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/background_header"
+            android:scaleType="centerCrop" />
+
+        <!-- Gradient Overlay for better text readability -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/dashboard_header_background"
+            android:alpha="0.5" />
+
+        <!-- Content -->
         <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:padding="24dp"
+            android:gravity="center_vertical">
 
-            <TextView
+            <!-- Left: Title & Subtitle -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/booking_history"
+                    android:textColor="@color/white"
+                    android:textSize="28sp"
+                    android:textStyle="bold"
+                    android:shadowColor="#80000000"
+                    android:shadowDx="0"
+                    android:shadowDy="2"
+                    android:shadowRadius="4"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/view_recent_history"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    android:shadowColor="#80000000"
+                    android:shadowDx="0"
+                    android:shadowDy="2"
+                    android:shadowRadius="4"
+                    android:alpha="0.9" />
+            </LinearLayout>
+
+            <!-- Right: Clear History Button -->
+            <Button
+                android:id="@+id/btnClearHistory"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/booking_history"
+                android:text="@string/clear"
+                android:backgroundTint="@color/secondary_color"
                 android:textColor="@color/white"
-                android:textSize="28sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/view_recent_history"
-                android:textColor="@color/white"
-                android:textSize="16sp"
-                android:alpha="0.9" />
+                android:visibility="gone" />
         </LinearLayout>
-
-        <!-- Right: Clear History Button -->
-        <Button
-            android:id="@+id/btnClearHistory"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/clear"
-            android:backgroundTint="@color/secondary_color"
-            android:textColor="@color/white"
-            android:visibility="gone" />
-    </LinearLayout>
+    </FrameLayout>
 
     <!-- Empty message -->
     <TextView

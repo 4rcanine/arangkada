@@ -23,7 +23,6 @@
             android:gravity="center_vertical">
 
             <!-- Profile Picture -->
-            <!-- Profile Picture -->
             <androidx.cardview.widget.CardView
                 android:layout_width="48dp"
                 android:layout_height="48dp"
@@ -66,6 +65,17 @@
                     android:text="user@email.com"
                     android:textColor="@android:color/white"
                     android:textSize="13sp"
+                    android:layout_marginTop="2dp"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+                <TextView
+                    android:id="@+id/tvUserPhone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="No phone number"
+                    android:textColor="@android:color/white"
+                    android:textSize="12sp"
                     android:layout_marginTop="2dp"
                     android:maxLines="1"
                     android:ellipsize="end" />

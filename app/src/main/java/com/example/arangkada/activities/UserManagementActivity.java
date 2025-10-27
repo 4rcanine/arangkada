@@ -75,11 +75,13 @@ public class UserManagementActivity extends BaseActivity {
                         String name = doc.getString("name");
                         String email = doc.getString("email");
                         String profilePicture = doc.getString("profilePicture");
+                        String phoneNumber = doc.getString("number");
 
                         if (name == null) name = "Unknown User";
                         if (email == null) email = "No email";
+                        if (phoneNumber == null) phoneNumber = "No phone number";
 
-                        UserModel user = new UserModel(userId, name, email, profilePicture, 0, "N/A");
+                        UserModel user = new UserModel(userId, name, email, phoneNumber, profilePicture, 0, "N/A");
                         userList.add(user);
 
                         // fetch bookings for each user
@@ -142,16 +144,18 @@ public class UserManagementActivity extends BaseActivity {
         private String userId;
         private String name;
         private String email;
+        private String phoneNumber;
         private String profilePicture;
         private int totalBookings;
         private String lastBookingDate;
 
         public UserModel() {}
 
-        public UserModel(String userId, String name, String email, String profilePicture, int totalBookings, String lastBookingDate) {
+        public UserModel(String userId, String name, String email, String phoneNumber, String profilePicture, int totalBookings, String lastBookingDate) {
             this.userId = userId;
             this.name = name;
             this.email = email;
+            this.phoneNumber = phoneNumber;
             this.profilePicture = profilePicture;
             this.totalBookings = totalBookings;
             this.lastBookingDate = lastBookingDate;
@@ -160,6 +164,7 @@ public class UserManagementActivity extends BaseActivity {
         public String getUserId() { return userId; }
         public String getName() { return name; }
         public String getEmail() { return email; }
+        public String getPhoneNumber() { return phoneNumber; }
         public String getProfilePicture() { return profilePicture; }
         public int getTotalBookings() { return totalBookings; }
         public String getLastBookingDate() { return lastBookingDate; }
@@ -196,6 +201,7 @@ public class UserManagementActivity extends BaseActivity {
 
             holder.tvUserName.setText(user.getName());
             holder.tvUserEmail.setText(user.getEmail());
+            holder.tvUserPhone.setText(user.getPhoneNumber());
             holder.tvTotalBookings.setText("Total Bookings: " + user.getTotalBookings());
             holder.tvLastBooking.setText("Last Booking: " + user.getLastBookingDate());
 
@@ -227,7 +233,7 @@ public class UserManagementActivity extends BaseActivity {
 
         public static class UserViewHolder extends RecyclerView.ViewHolder {
             ImageView ivUserProfilePicture;
-            TextView tvUserName, tvUserEmail, tvTotalBookings, tvLastBooking;
+            TextView tvUserName, tvUserEmail, tvUserPhone, tvTotalBookings, tvLastBooking;
             Button btnViewHistory;
 
             public UserViewHolder(@NonNull View itemView) {
@@ -235,6 +241,7 @@ public class UserManagementActivity extends BaseActivity {
                 ivUserProfilePicture = itemView.findViewById(R.id.ivUserProfilePicture);
                 tvUserName = itemView.findViewById(R.id.tvUserName);
                 tvUserEmail = itemView.findViewById(R.id.tvUserEmail);
+                tvUserPhone = itemView.findViewById(R.id.tvUserPhone);
                 tvTotalBookings = itemView.findViewById(R.id.tvTotalBookings);
                 tvLastBooking = itemView.findViewById(R.id.tvLastBooking);
                 btnViewHistory = itemView.findViewById(R.id.btnViewHistory);
