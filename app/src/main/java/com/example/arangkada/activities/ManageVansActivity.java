@@ -33,7 +33,9 @@ public class ManageVansActivity extends BaseActivity {
     private Spinner spinnerDestination, spinnerPaymentMethod;
     private TextView tvDeparture;
     private Button btnPickDeparture, btnSaveSchedule, btnUploadQR;
-    private EditText etVanPlate, etSeatCapacity, etPaymentNumber, etDriverName, etDriverNumber;
+    private ImageButton btnShowPlateDropdown;
+    private AutoCompleteTextView actvVanPlate;
+    private EditText etSeatCapacity, etPaymentNumber, etDriverName, etDriverNumber;
     private ImageView imgQRPreview;
     private LinearLayout layoutQRUpload;
     private ProgressBar progressBar;
@@ -43,6 +45,8 @@ public class ManageVansActivity extends BaseActivity {
     private FirebaseAuth mAuth;
     private List<String> destinationNames = new ArrayList<>();
     private List<String> destinationIds = new ArrayList<>();
+    private List<String> plateNumbers = new ArrayList<>();
+    private ArrayAdapter<String> plateNumberAdapter;
     private Calendar departureCalendar = Calendar.getInstance();
 
     private Uri selectedQRUri = null;
@@ -52,7 +56,6 @@ public class ManageVansActivity extends BaseActivity {
     // ImageKit Configuration
     private static final String IMAGEKIT_URL_ENDPOINT = "https://ik.imagekit.io/xqqzgzvy9";
     private static final String IMAGEKIT_PUBLIC_KEY = "public_aM1dq8aVaA7PBiP8Pdfo6mYpUsM=";
-
     private static final String IMAGEKIT_PRIVATE_KEY = "private_xix6Ergz3zAHuAwotsM7a+4WsdU=";
     private static final String IMAGEKIT_UPLOAD_URL = "https://upload.imagekit.io/api/v1/files/upload";
 
@@ -60,7 +63,6 @@ public class ManageVansActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_base);
-
 
         View contentView = getLayoutInflater().inflate(
                 R.layout.activity_manage_vans,
@@ -74,7 +76,8 @@ public class ManageVansActivity extends BaseActivity {
         spinnerPaymentMethod = contentView.findViewById(R.id.spinnerPaymentMethod);
         tvDeparture = contentView.findViewById(R.id.tvDeparture);
         btnPickDeparture = contentView.findViewById(R.id.btnPickDeparture);
-        etVanPlate = contentView.findViewById(R.id.etVanPlate);
+        actvVanPlate = contentView.findViewById(R.id.actvVanPlate);
+        btnShowPlateDropdown = contentView.findViewById(R.id.btnShowPlateDropdown);
         etSeatCapacity = contentView.findViewById(R.id.etSeatCapacity);
         etDriverName = contentView.findViewById(R.id.etDriverName);
         etDriverNumber = contentView.findViewById(R.id.etDriverNumber);
@@ -90,18 +93,106 @@ public class ManageVansActivity extends BaseActivity {
         mAuth = FirebaseAuth.getInstance();
 
         loadDestinations();
+        loadPlateNumbers();
         setupPaymentMethodSpinner();
 
         btnPickDeparture.setOnClickListener(v -> showDateTimePicker());
         tvDeparture.setOnClickListener(v -> showDateTimePicker());
         btnSaveSchedule.setOnClickListener(v -> saveTripSchedule());
         btnUploadQR.setOnClickListener(v -> pickQRImage());
+
+        // Button to manually show dropdown
+        btnShowPlateDropdown.setOnClickListener(v -> {
+            actvVanPlate.requestFocus();
+            actvVanPlate.showDropDown();
+        });
     }
 
     @Override
     protected void onNavigationSetup() {
         // Optional: leave empty or use if you need custom navigation logic
     }
+
+    private void loadPlateNumbers() {
+        db.collection("plateNumbers")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    plateNumbers.clear();
+                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                        String plateNumber = doc.getString("plateNumber");
+                        if (plateNumber != null && !plateNumber.isEmpty()) {
+                            plateNumbers.add(plateNumber);
+                        }
+                    }
+
+                    // Setup AutoCompleteTextView adapter
+                    plateNumberAdapter = new ArrayAdapter<>(this,
+                            android.R.layout.simple_dropdown_item_1line, plateNumbers);
+                    actvVanPlate.setAdapter(plateNumberAdapter);
+                    actvVanPlate.setThreshold(1);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error loading plate numbers", e);
+                    Toast.makeText(this, "Error loading plate numbers", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void savePlateNumberToFirestore(String plateNumber, Runnable onComplete) {
+        if (plateNumber == null || plateNumber.isEmpty()) {
+            if (onComplete != null) onComplete.run();
+            return;
+        }
+
+        // Check if plate number already exists in local list first
+        if (plateNumbers.contains(plateNumber)) {
+            Log.d(TAG, "Plate number already exists locally: " + plateNumber);
+            if (onComplete != null) onComplete.run();
+            return;
+        }
+
+        // Check if plate number already exists in Firestore
+        db.collection("plateNumbers")
+                .whereEqualTo("plateNumber", plateNumber)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    if (querySnapshot.isEmpty()) {
+                        // Plate number doesn't exist, save it
+                        Map<String, Object> plateData = new HashMap<>();
+                        plateData.put("plateNumber", plateNumber);
+                        plateData.put("createdAt", new Timestamp(new Date()));
+
+                        db.collection("plateNumbers")
+                                .add(plateData)
+                                .addOnSuccessListener(documentReference -> {
+                                    Log.d(TAG, "Plate number saved successfully: " + plateNumber);
+                                    Toast.makeText(this, "New plate number registered: " + plateNumber, Toast.LENGTH_SHORT).show();
+                                    // Add to local list and update adapter
+                                    plateNumbers.add(plateNumber);
+                                    plateNumberAdapter.notifyDataSetChanged();
+                                    if (onComplete != null) onComplete.run();
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e(TAG, "Error saving plate number", e);
+                                    Toast.makeText(this, "Error saving plate number: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    if (onComplete != null) onComplete.run();
+                                });
+                    } else {
+                        Log.d(TAG, "Plate number already exists in Firestore: " + plateNumber);
+                        // Add to local list if not already there
+                        if (!plateNumbers.contains(plateNumber)) {
+                            plateNumbers.add(plateNumber);
+                            plateNumberAdapter.notifyDataSetChanged();
+                        }
+                        if (onComplete != null) onComplete.run();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error checking plate number", e);
+                    Toast.makeText(this, "Error checking plate number: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    if (onComplete != null) onComplete.run();
+                });
+    }
+
     private void setupPaymentMethodSpinner() {
         String[] methods = {"Cash", "Gcash", "Cash & Gcash"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
@@ -146,35 +237,27 @@ public class ManageVansActivity extends BaseActivity {
     }
 
     private String generateToken() {
-        // Generate a random UUID token
         return UUID.randomUUID().toString();
     }
 
     private long getExpireTimestamp() {
-        // Set expiration to 1 hour from now
         return (System.currentTimeMillis() / 1000) + 3600;
     }
 
     private String generateSignature(String token, long expire) {
         try {
-            // Create the string to sign: token + expire
             String stringToSign = token + expire;
-
-            // Create HMAC-SHA1 signature
             Mac sha256_HMAC = Mac.getInstance("HmacSHA1");
             SecretKeySpec secret_key = new SecretKeySpec(IMAGEKIT_PRIVATE_KEY.getBytes("UTF-8"), "HmacSHA1");
             sha256_HMAC.init(secret_key);
-
             byte[] hash = sha256_HMAC.doFinal(stringToSign.getBytes("UTF-8"));
 
-            // Convert to hex string
             StringBuilder hexString = new StringBuilder();
             for (byte b : hash) {
                 String hex = Integer.toHexString(0xff & b);
                 if (hex.length() == 1) hexString.append('0');
                 hexString.append(hex);
             }
-
             return hexString.toString();
         } catch (Exception e) {
             Log.e(TAG, "Error generating signature", e);
@@ -187,7 +270,6 @@ public class ManageVansActivity extends BaseActivity {
 
         new Thread(() -> {
             try {
-                // Get input stream from URI
                 InputStream inputStream = getContentResolver().openInputStream(imageUri);
                 if (inputStream == null) {
                     runOnUiThread(() -> {
@@ -197,12 +279,10 @@ public class ManageVansActivity extends BaseActivity {
                     return;
                 }
 
-                // Read bytes from input stream
                 byte[] imageBytes = new byte[inputStream.available()];
                 inputStream.read(imageBytes);
                 inputStream.close();
 
-                // Generate authentication parameters
                 String token = generateToken();
                 long expire = getExpireTimestamp();
                 String signature = generateSignature(token, expire);
@@ -215,13 +295,9 @@ public class ManageVansActivity extends BaseActivity {
                     return;
                 }
 
-                // Create OkHttp client
                 OkHttpClient client = new OkHttpClient();
-
-                // Generate unique filename
                 String fileName = "qr_code_" + System.currentTimeMillis() + ".jpg";
 
-                // Build multipart request body with authentication
                 RequestBody requestBody = new MultipartBody.Builder()
                         .setType(MultipartBody.FORM)
                         .addFormDataPart("file", fileName,
@@ -235,7 +311,6 @@ public class ManageVansActivity extends BaseActivity {
                         .addFormDataPart("useUniqueFileName", "true")
                         .build();
 
-                // Build request
                 Request request = new Request.Builder()
                         .url(IMAGEKIT_UPLOAD_URL)
                         .post(requestBody)
@@ -245,14 +320,11 @@ public class ManageVansActivity extends BaseActivity {
                 Log.d(TAG, "Expire: " + expire);
                 Log.d(TAG, "Signature: " + signature);
 
-                // Execute request
                 Response response = client.newCall(request).execute();
 
                 if (response.isSuccessful() && response.body() != null) {
                     String responseBody = response.body().string();
                     Log.d(TAG, "Upload response: " + responseBody);
-
-                    // Parse JSON response to get URL
                     uploadedQRUrl = parseUrlFromResponse(responseBody);
 
                     runOnUiThread(() -> {
@@ -280,7 +352,6 @@ public class ManageVansActivity extends BaseActivity {
     }
 
     private String parseUrlFromResponse(String jsonResponse) {
-
         try {
             int urlStart = jsonResponse.indexOf("\"url\":\"") + 7;
             int urlEnd = jsonResponse.indexOf("\"", urlStart);
@@ -357,7 +428,6 @@ public class ManageVansActivity extends BaseActivity {
     }
 
     private void saveTripSchedule() {
-        // Get current user ID
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser == null) {
             Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
@@ -378,7 +448,7 @@ public class ManageVansActivity extends BaseActivity {
             return;
         }
 
-        String vanPlate = etVanPlate.getText().toString().trim();
+        String vanPlate = actvVanPlate.getText().toString().trim().toUpperCase();
         if (vanPlate.isEmpty()) {
             Toast.makeText(this, "Please enter Van Plate Number", Toast.LENGTH_SHORT).show();
             return;
@@ -414,13 +484,11 @@ public class ManageVansActivity extends BaseActivity {
             return;
         }
 
-        // Validate driver's phone number format
         if (!isValidPhoneNumber(driverNumber)) {
             Toast.makeText(this, "Please enter a valid driver mobile number (e.g., 09123456789)", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Check Gcash payment requirements: must have QR or number or both
         String paymentNumber = etPaymentNumber.getText().toString().trim();
         if ((selectedPaymentMethod.equals("Gcash") || selectedPaymentMethod.equals("Cash & Gcash"))) {
             if (uploadedQRUrl == null && paymentNumber.isEmpty()) {
@@ -428,55 +496,65 @@ public class ManageVansActivity extends BaseActivity {
                 return;
             }
 
-            // Validate phone number format if provided
             if (!paymentNumber.isEmpty() && !isValidPhoneNumber(paymentNumber)) {
                 Toast.makeText(this, "Please enter a valid mobile number (e.g., 09123456789)", Toast.LENGTH_SHORT).show();
                 return;
             }
         }
 
-        HashMap<String, Object> tripData = new HashMap<>();
-        tripData.put("adminID", adminId);
-        tripData.put("destinationId", destinationId);
-        tripData.put("departure", new Timestamp(departureCalendar.getTime()));
-        tripData.put("vanId", vanPlate);
-        tripData.put("availableSeats", seatCapacity);
-        tripData.put("driverName", driverName);
-        tripData.put("driverNumber", driverNumber);
-        tripData.put("paymentMethod", selectedPaymentMethod);
-
-        // Add payment details based on what was provided
-        if (uploadedQRUrl != null) {
-            tripData.put("qrCodeUrl", uploadedQRUrl);
-        }
-        if (!paymentNumber.isEmpty()) {
-            tripData.put("paymentNumber", paymentNumber);
-        }
-
+        // Show loading while saving plate number first
         showLoading(true);
-        db.collection("trips")
-                .add(tripData)
-                .addOnSuccessListener(documentReference -> {
-                    Toast.makeText(this, "Trip schedule saved successfully!", Toast.LENGTH_SHORT).show();
-                    resetForm();
-                    showLoading(false);
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Error saving trip: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    showLoading(false);
-                });
+
+        // Save plate number to Firestore first, then save the trip
+        final String finalVanPlate = vanPlate;
+        final int finalSeatCapacity = seatCapacity;
+        final String finalDriverName = driverName;
+        final String finalDriverNumber = driverNumber;
+        final String finalPaymentNumber = paymentNumber;
+        final String finalDestinationId = destinationId;
+        final String finalAdminId = adminId;
+
+        savePlateNumberToFirestore(vanPlate, () -> {
+            // After plate number is saved (or confirmed to exist), save the trip
+            HashMap<String, Object> tripData = new HashMap<>();
+            tripData.put("adminID", finalAdminId);
+            tripData.put("destinationId", finalDestinationId);
+            tripData.put("departure", new Timestamp(departureCalendar.getTime()));
+            tripData.put("vanId", finalVanPlate);
+            tripData.put("availableSeats", finalSeatCapacity);
+            tripData.put("driverName", finalDriverName);
+            tripData.put("driverNumber", finalDriverNumber);
+            tripData.put("paymentMethod", selectedPaymentMethod);
+
+            if (uploadedQRUrl != null) {
+                tripData.put("qrCodeUrl", uploadedQRUrl);
+            }
+            if (!finalPaymentNumber.isEmpty()) {
+                tripData.put("paymentNumber", finalPaymentNumber);
+            }
+
+            db.collection("trips")
+                    .add(tripData)
+                    .addOnSuccessListener(documentReference -> {
+                        Toast.makeText(this, "✅ Trip schedule saved successfully!", Toast.LENGTH_SHORT).show();
+                        resetForm();
+                        showLoading(false);
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, "❌ Error saving trip: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        showLoading(false);
+                    });
+        });
     }
 
     private boolean isValidPhoneNumber(String number) {
-
-        // Accepts formats: 09123456789 or 9123456789 (11 or 10 digits)
         return number.matches("^(09|9)\\d{9}$");
     }
 
     private void resetForm() {
         if (!destinationNames.isEmpty()) spinnerDestination.setSelection(0);
         tvDeparture.setText("Select date & time");
-        etVanPlate.setText("");
+        actvVanPlate.setText("");
         etSeatCapacity.setText("");
         etDriverName.setText("");
         etDriverNumber.setText("");

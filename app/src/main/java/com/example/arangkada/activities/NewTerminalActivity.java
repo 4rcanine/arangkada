@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.arangkada.R;
+import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
@@ -20,7 +21,8 @@ import java.util.Map;
 public class NewTerminalActivity extends BaseActivity {
 
     private EditText etTerminal, etDestination, etLocation, etRegularFare, etStudentFare, etSeniorFare, etTravelTime;
-    private Button btnAddRoute, btnCurrentRoutes;
+    private Button btnAddRoute;
+    private MaterialButton btnCurrentRoutes, btnStandardFare;
 
     private FirebaseFirestore db;
 
@@ -29,12 +31,12 @@ public class NewTerminalActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_base);
 
-        // Inflate your content layout inside BaseActivity’s content frame
+        // Inflate your content layout inside BaseActivity's content frame
         View contentView = getLayoutInflater().inflate(
                 R.layout.activity_new_terminal,
                 findViewById(R.id.content_frame),
                 true
-        );;
+        );
         setupNavigation();
 
         // Initialize Firestore
@@ -50,6 +52,15 @@ public class NewTerminalActivity extends BaseActivity {
         etTravelTime = contentView.findViewById(R.id.etTravelTime);
         btnAddRoute = contentView.findViewById(R.id.btnAddRoute);
         btnCurrentRoutes = contentView.findViewById(R.id.btnCurrentRoutes);
+        btnStandardFare = contentView.findViewById(R.id.btnStandardFare);
+
+        // Standard Fare Button - Auto-fill fares
+        btnStandardFare.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                applyStandardFares();
+            }
+        });
 
         // Add Route Button
         btnAddRoute.setOnClickListener(new View.OnClickListener() {
@@ -68,10 +79,22 @@ public class NewTerminalActivity extends BaseActivity {
             }
         });
     }
+
     @Override
     protected void onNavigationSetup() {
 
     }
+
+    private void applyStandardFares() {
+        // Auto-fill the standard fare values
+        etRegularFare.setText("350");
+        etStudentFare.setText("300");
+        etSeniorFare.setText("300");
+
+        // Show a toast message for user feedback
+        Toast.makeText(this, "✓ Standard fares applied", Toast.LENGTH_SHORT).show();
+    }
+
     private void saveRoute() {
         String terminal = etTerminal.getText().toString().trim();
         String destination = etDestination.getText().toString().trim();
@@ -101,7 +124,6 @@ public class NewTerminalActivity extends BaseActivity {
             return;
         }
 
-
         String routeName = terminal + " - " + destination;
 
         // Prepare data
@@ -112,7 +134,6 @@ public class NewTerminalActivity extends BaseActivity {
         route.put("studentFare", studentFare);
         route.put("seniorFare", seniorFare);
         route.put("travelTime", travelTime);
-
 
         db.collection("destinations")
                 .add(route)
