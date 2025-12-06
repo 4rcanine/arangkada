@@ -396,6 +396,124 @@
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
+                <!-- Van Plate Numbers Section -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Van Plate Numbers"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Register vans that service this route"
+                    android:textSize="14sp"
+                    android:textColor="#666666"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Add Plate Number Input -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="3dp"
+                    android:layout_marginBottom="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="8dp">
+
+                        <EditText
+                            android:id="@+id/etPlateNumberInput"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:hint="Enter plate number (e.g., ABC1234)"
+                            android:inputType="textCapCharacters"
+                            android:textSize="16sp"
+                            android:padding="12dp"
+                            android:background="@android:color/transparent" />
+
+                        <Button
+                            android:id="@+id/btnAddPlateNumber"
+                            android:layout_width="wrap_content"
+                            android:layout_height="48dp"
+                            android:text="+ Add"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/white"
+                            android:backgroundTint="@color/primary_color"
+                            android:paddingHorizontal="24dp"
+                            android:minWidth="90dp" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Plate Numbers List -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cvPlateNumbersList"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="3dp"
+                    android:layout_marginBottom="24dp"
+                    android:visibility="gone">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="12dp">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Added Plate Numbers"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/text_primary" />
+
+                            <TextView
+                                android:id="@+id/tvPlateCount"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/primary_color"
+                                android:background="@drawable/badge_background"
+                                android:paddingHorizontal="12dp"
+                                android:paddingVertical="4dp" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="#EEEEEE"
+                            android:layout_marginBottom="12dp" />
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rvPlateNumbers"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:maxHeight="200dp"
+                            android:nestedScrollingEnabled="false" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
                 <!-- Buttons -->
                 <LinearLayout
                     android:layout_width="match_parent"

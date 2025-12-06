@@ -168,7 +168,16 @@
                     android:textColor="@color/text_primary"
                     android:layout_marginBottom="12dp" />
 
-                <!-- Plate Number with Dropdown -->
+                <!-- Plate Number Spinner -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Select Van Plate Number"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="8dp" />
+
                 <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -182,32 +191,35 @@
                         android:orientation="horizontal"
                         android:gravity="center_vertical">
 
-                        <AutoCompleteTextView
-                            android:id="@+id/actvVanPlate"
+                        <Spinner
+                            android:id="@+id/spinnerVanPlate"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:hint="@string/enter_plate_number"
-                            android:inputType="textCapCharacters"
                             android:padding="16dp"
                             android:background="@android:color/transparent"
-                            android:completionThreshold="1"
-                            android:dropDownHeight="wrap_content"
-                            android:textSize="16sp" />
+                            android:spinnerMode="dropdown" />
 
-                        <ImageButton
-                            android:id="@+id/btnShowPlateDropdown"
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
                             android:src="@android:drawable/arrow_down_float"
-                            android:background="?attr/selectableItemBackgroundBorderless"
-                            android:contentDescription="Show plate number list"
                             android:tint="@color/primary_color"
-                            android:layout_marginEnd="8dp" />
+                            android:layout_marginEnd="12dp"
+                            android:contentDescription="Dropdown indicator" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
                 <!-- Seat Capacity -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Seat Capacity"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="8dp" />
+
                 <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -226,6 +238,15 @@
                 </androidx.cardview.widget.CardView>
 
                 <!-- Driver Name -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Driver Name"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="8dp" />
+
                 <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -244,6 +265,15 @@
                 </androidx.cardview.widget.CardView>
 
                 <!-- Driver Mobile Number -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Driver Mobile Number"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="8dp" />
+
                 <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

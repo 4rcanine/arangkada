@@ -30,11 +30,9 @@ public class ManageVansActivity extends BaseActivity {
     private static final int PICK_QR_IMAGE = 101;
     private static final String TAG = "ManageVansActivity";
 
-    private Spinner spinnerDestination, spinnerPaymentMethod;
+    private Spinner spinnerDestination, spinnerPaymentMethod, spinnerVanPlate;
     private TextView tvDeparture;
     private Button btnPickDeparture, btnSaveSchedule, btnUploadQR;
-    private ImageButton btnShowPlateDropdown;
-    private AutoCompleteTextView actvVanPlate;
     private EditText etSeatCapacity, etPaymentNumber, etDriverName, etDriverNumber;
     private ImageView imgQRPreview;
     private LinearLayout layoutQRUpload;
@@ -74,10 +72,9 @@ public class ManageVansActivity extends BaseActivity {
 
         spinnerDestination = contentView.findViewById(R.id.spinnerDestination);
         spinnerPaymentMethod = contentView.findViewById(R.id.spinnerPaymentMethod);
+        spinnerVanPlate = contentView.findViewById(R.id.spinnerVanPlate);
         tvDeparture = contentView.findViewById(R.id.tvDeparture);
         btnPickDeparture = contentView.findViewById(R.id.btnPickDeparture);
-        actvVanPlate = contentView.findViewById(R.id.actvVanPlate);
-        btnShowPlateDropdown = contentView.findViewById(R.id.btnShowPlateDropdown);
         etSeatCapacity = contentView.findViewById(R.id.etSeatCapacity);
         etDriverName = contentView.findViewById(R.id.etDriverName);
         etDriverNumber = contentView.findViewById(R.id.etDriverNumber);
@@ -93,19 +90,28 @@ public class ManageVansActivity extends BaseActivity {
         mAuth = FirebaseAuth.getInstance();
 
         loadDestinations();
-        loadPlateNumbers();
         setupPaymentMethodSpinner();
+
+        // Setup destination spinner listener to load plate numbers
+        spinnerDestination.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (position >= 0 && position < destinationIds.size()) {
+                    String destinationId = destinationIds.get(position);
+                    if (!destinationId.isEmpty()) {
+                        loadPlateNumbersForDestination(destinationId);
+                    }
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
 
         btnPickDeparture.setOnClickListener(v -> showDateTimePicker());
         tvDeparture.setOnClickListener(v -> showDateTimePicker());
         btnSaveSchedule.setOnClickListener(v -> saveTripSchedule());
         btnUploadQR.setOnClickListener(v -> pickQRImage());
-
-        // Button to manually show dropdown
-        btnShowPlateDropdown.setOnClickListener(v -> {
-            actvVanPlate.requestFocus();
-            actvVanPlate.showDropDown();
-        });
     }
 
     @Override
@@ -113,83 +119,39 @@ public class ManageVansActivity extends BaseActivity {
         // Optional: leave empty or use if you need custom navigation logic
     }
 
-    private void loadPlateNumbers() {
-        db.collection("plateNumbers")
+    private void loadPlateNumbersForDestination(String destinationId) {
+        db.collection("destinations")
+                .document(destinationId)
                 .get()
-                .addOnSuccessListener(querySnapshot -> {
+                .addOnSuccessListener(documentSnapshot -> {
                     plateNumbers.clear();
-                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
-                        String plateNumber = doc.getString("plateNumber");
-                        if (plateNumber != null && !plateNumber.isEmpty()) {
-                            plateNumbers.add(plateNumber);
+
+                    if (documentSnapshot.exists()) {
+                        List<String> plates = (List<String>) documentSnapshot.get("plateNumbers");
+                        if (plates != null && !plates.isEmpty()) {
+                            plateNumbers.addAll(plates);
                         }
                     }
 
-                    // Setup AutoCompleteTextView adapter
+                    if (plateNumbers.isEmpty()) {
+                        plateNumbers.add("No vans available for this route");
+                    }
+
+                    // Update spinner adapter
                     plateNumberAdapter = new ArrayAdapter<>(this,
-                            android.R.layout.simple_dropdown_item_1line, plateNumbers);
-                    actvVanPlate.setAdapter(plateNumberAdapter);
-                    actvVanPlate.setThreshold(1);
+                            android.R.layout.simple_spinner_item, plateNumbers);
+                    plateNumberAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    spinnerVanPlate.setAdapter(plateNumberAdapter);
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error loading plate numbers", e);
                     Toast.makeText(this, "Error loading plate numbers", Toast.LENGTH_SHORT).show();
-                });
-    }
-
-    private void savePlateNumberToFirestore(String plateNumber, Runnable onComplete) {
-        if (plateNumber == null || plateNumber.isEmpty()) {
-            if (onComplete != null) onComplete.run();
-            return;
-        }
-
-        // Check if plate number already exists in local list first
-        if (plateNumbers.contains(plateNumber)) {
-            Log.d(TAG, "Plate number already exists locally: " + plateNumber);
-            if (onComplete != null) onComplete.run();
-            return;
-        }
-
-        // Check if plate number already exists in Firestore
-        db.collection("plateNumbers")
-                .whereEqualTo("plateNumber", plateNumber)
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    if (querySnapshot.isEmpty()) {
-                        // Plate number doesn't exist, save it
-                        Map<String, Object> plateData = new HashMap<>();
-                        plateData.put("plateNumber", plateNumber);
-                        plateData.put("createdAt", new Timestamp(new Date()));
-
-                        db.collection("plateNumbers")
-                                .add(plateData)
-                                .addOnSuccessListener(documentReference -> {
-                                    Log.d(TAG, "Plate number saved successfully: " + plateNumber);
-                                    Toast.makeText(this, "New plate number registered: " + plateNumber, Toast.LENGTH_SHORT).show();
-                                    // Add to local list and update adapter
-                                    plateNumbers.add(plateNumber);
-                                    plateNumberAdapter.notifyDataSetChanged();
-                                    if (onComplete != null) onComplete.run();
-                                })
-                                .addOnFailureListener(e -> {
-                                    Log.e(TAG, "Error saving plate number", e);
-                                    Toast.makeText(this, "Error saving plate number: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                    if (onComplete != null) onComplete.run();
-                                });
-                    } else {
-                        Log.d(TAG, "Plate number already exists in Firestore: " + plateNumber);
-                        // Add to local list if not already there
-                        if (!plateNumbers.contains(plateNumber)) {
-                            plateNumbers.add(plateNumber);
-                            plateNumberAdapter.notifyDataSetChanged();
-                        }
-                        if (onComplete != null) onComplete.run();
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error checking plate number", e);
-                    Toast.makeText(this, "Error checking plate number: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    if (onComplete != null) onComplete.run();
+                    plateNumbers.clear();
+                    plateNumbers.add("Error loading vans");
+                    plateNumberAdapter = new ArrayAdapter<>(this,
+                            android.R.layout.simple_spinner_item, plateNumbers);
+                    plateNumberAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    spinnerVanPlate.setAdapter(plateNumberAdapter);
                 });
     }
 
@@ -448,9 +410,9 @@ public class ManageVansActivity extends BaseActivity {
             return;
         }
 
-        String vanPlate = actvVanPlate.getText().toString().trim().toUpperCase();
-        if (vanPlate.isEmpty()) {
-            Toast.makeText(this, "Please enter Van Plate Number", Toast.LENGTH_SHORT).show();
+        String vanPlate = spinnerVanPlate.getSelectedItem() != null ? spinnerVanPlate.getSelectedItem().toString().trim() : "";
+        if (vanPlate.isEmpty() || vanPlate.equals("No vans available for this route") || vanPlate.equals("Error loading vans")) {
+            Toast.makeText(this, "Please select a valid van plate number", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -502,49 +464,36 @@ public class ManageVansActivity extends BaseActivity {
             }
         }
 
-        // Show loading while saving plate number first
         showLoading(true);
 
-        // Save plate number to Firestore first, then save the trip
-        final String finalVanPlate = vanPlate;
-        final int finalSeatCapacity = seatCapacity;
-        final String finalDriverName = driverName;
-        final String finalDriverNumber = driverNumber;
-        final String finalPaymentNumber = paymentNumber;
-        final String finalDestinationId = destinationId;
-        final String finalAdminId = adminId;
+        HashMap<String, Object> tripData = new HashMap<>();
+        tripData.put("adminID", adminId);
+        tripData.put("destinationId", destinationId);
+        tripData.put("departure", new Timestamp(departureCalendar.getTime()));
+        tripData.put("vanId", vanPlate);
+        tripData.put("availableSeats", seatCapacity);
+        tripData.put("driverName", driverName);
+        tripData.put("driverNumber", driverNumber);
+        tripData.put("paymentMethod", selectedPaymentMethod);
 
-        savePlateNumberToFirestore(vanPlate, () -> {
-            // After plate number is saved (or confirmed to exist), save the trip
-            HashMap<String, Object> tripData = new HashMap<>();
-            tripData.put("adminID", finalAdminId);
-            tripData.put("destinationId", finalDestinationId);
-            tripData.put("departure", new Timestamp(departureCalendar.getTime()));
-            tripData.put("vanId", finalVanPlate);
-            tripData.put("availableSeats", finalSeatCapacity);
-            tripData.put("driverName", finalDriverName);
-            tripData.put("driverNumber", finalDriverNumber);
-            tripData.put("paymentMethod", selectedPaymentMethod);
+        if (uploadedQRUrl != null) {
+            tripData.put("qrCodeUrl", uploadedQRUrl);
+        }
+        if (!paymentNumber.isEmpty()) {
+            tripData.put("paymentNumber", paymentNumber);
+        }
 
-            if (uploadedQRUrl != null) {
-                tripData.put("qrCodeUrl", uploadedQRUrl);
-            }
-            if (!finalPaymentNumber.isEmpty()) {
-                tripData.put("paymentNumber", finalPaymentNumber);
-            }
-
-            db.collection("trips")
-                    .add(tripData)
-                    .addOnSuccessListener(documentReference -> {
-                        Toast.makeText(this, "✅ Trip schedule saved successfully!", Toast.LENGTH_SHORT).show();
-                        resetForm();
-                        showLoading(false);
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(this, "❌ Error saving trip: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                        showLoading(false);
-                    });
-        });
+        db.collection("trips")
+                .add(tripData)
+                .addOnSuccessListener(documentReference -> {
+                    Toast.makeText(this, "✅ Trip schedule saved successfully!", Toast.LENGTH_SHORT).show();
+                    resetForm();
+                    showLoading(false);
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "❌ Error saving trip: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    showLoading(false);
+                });
     }
 
     private boolean isValidPhoneNumber(String number) {
@@ -554,7 +503,9 @@ public class ManageVansActivity extends BaseActivity {
     private void resetForm() {
         if (!destinationNames.isEmpty()) spinnerDestination.setSelection(0);
         tvDeparture.setText("Select date & time");
-        actvVanPlate.setText("");
+        if (spinnerVanPlate.getAdapter() != null && spinnerVanPlate.getAdapter().getCount() > 0) {
+            spinnerVanPlate.setSelection(0);
+        }
         etSeatCapacity.setText("");
         etDriverName.setText("");
         etDriverNumber.setText("");

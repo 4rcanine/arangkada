@@ -6,25 +6,40 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.arangkada.R;
+import com.example.arangkada.adapters.PlateNumberAdapter;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class NewTerminalActivity extends BaseActivity {
 
     private EditText etTerminal, etDestination, etLocation, etRegularFare, etStudentFare, etSeniorFare, etTravelTime;
-    private Button btnAddRoute;
+    private EditText etPlateNumberInput;
+    private Button btnAddRoute, btnAddPlateNumber;
     private MaterialButton btnCurrentRoutes, btnStandardFare;
+    private CardView cvPlateNumbersList;
+    private RecyclerView rvPlateNumbers;
+    private TextView tvPlateCount;
 
     private FirebaseFirestore db;
+
+    // List to store plate numbers
+    private List<String> plateNumbersList;
+    private PlateNumberAdapter plateNumberAdapter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -42,6 +57,9 @@ public class NewTerminalActivity extends BaseActivity {
         // Initialize Firestore
         db = FirebaseFirestore.getInstance();
 
+        // Initialize plate numbers list
+        plateNumbersList = new ArrayList<>();
+
         // Bind views
         etTerminal = contentView.findViewById(R.id.etTerminal);
         etDestination = contentView.findViewById(R.id.etDestination);
@@ -54,11 +72,29 @@ public class NewTerminalActivity extends BaseActivity {
         btnCurrentRoutes = contentView.findViewById(R.id.btnCurrentRoutes);
         btnStandardFare = contentView.findViewById(R.id.btnStandardFare);
 
+        // Plate number views
+        etPlateNumberInput = contentView.findViewById(R.id.etPlateNumberInput);
+        btnAddPlateNumber = contentView.findViewById(R.id.btnAddPlateNumber);
+        cvPlateNumbersList = contentView.findViewById(R.id.cvPlateNumbersList);
+        rvPlateNumbers = contentView.findViewById(R.id.rvPlateNumbers);
+        tvPlateCount = contentView.findViewById(R.id.tvPlateCount);
+
+        // Setup RecyclerView
+        setupPlateNumbersRecyclerView();
+
         // Standard Fare Button - Auto-fill fares
         btnStandardFare.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 applyStandardFares();
+            }
+        });
+
+        // Add Plate Number Button
+        btnAddPlateNumber.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addPlateNumber();
             }
         });
 
@@ -83,6 +119,66 @@ public class NewTerminalActivity extends BaseActivity {
     @Override
     protected void onNavigationSetup() {
 
+    }
+
+    private void setupPlateNumbersRecyclerView() {
+        plateNumberAdapter = new PlateNumberAdapter(plateNumbersList, new PlateNumberAdapter.OnPlateRemoveListener() {
+            @Override
+            public void onPlateRemove(int position, String plateNumber) {
+                removePlateNumber(position);
+            }
+        });
+
+        rvPlateNumbers.setLayoutManager(new LinearLayoutManager(this));
+        rvPlateNumbers.setAdapter(plateNumberAdapter);
+    }
+
+    private void addPlateNumber() {
+        String plateNumber = etPlateNumberInput.getText().toString().trim().toUpperCase();
+
+        // Validate input
+        if (TextUtils.isEmpty(plateNumber)) {
+            Toast.makeText(this, "⚠ Please enter a plate number", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Check for duplicates
+        if (plateNumbersList.contains(plateNumber)) {
+            Toast.makeText(this, "⚠ This plate number is already added", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Add to list
+        plateNumbersList.add(plateNumber);
+        plateNumberAdapter.notifyItemInserted(plateNumbersList.size() - 1);
+
+        // Update count and show list
+        updatePlateCount();
+        cvPlateNumbersList.setVisibility(View.VISIBLE);
+
+        // Clear input
+        etPlateNumberInput.setText("");
+
+        Toast.makeText(this, "✓ Plate number added", Toast.LENGTH_SHORT).show();
+    }
+
+    private void removePlateNumber(int position) {
+        if (position >= 0 && position < plateNumbersList.size()) {
+            plateNumbersList.remove(position);
+            plateNumberAdapter.notifyItemRemoved(position);
+            updatePlateCount();
+
+            // Hide list if empty
+            if (plateNumbersList.isEmpty()) {
+                cvPlateNumbersList.setVisibility(View.GONE);
+            }
+
+            Toast.makeText(this, "✓ Plate number removed", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void updatePlateCount() {
+        tvPlateCount.setText(String.valueOf(plateNumbersList.size()));
     }
 
     private void applyStandardFares() {
@@ -135,13 +231,37 @@ public class NewTerminalActivity extends BaseActivity {
         route.put("seniorFare", seniorFare);
         route.put("travelTime", travelTime);
 
+        // Add plate numbers if any
+        if (!plateNumbersList.isEmpty()) {
+            route.put("plateNumbers", new ArrayList<>(plateNumbersList));
+        }
+
         db.collection("destinations")
                 .add(route)
-                .addOnSuccessListener(documentReference ->
-                        Toast.makeText(NewTerminalActivity.this, "✅ Route added successfully", Toast.LENGTH_SHORT).show()
-                )
+                .addOnSuccessListener(documentReference -> {
+                    Toast.makeText(NewTerminalActivity.this, "✅ Route added successfully", Toast.LENGTH_SHORT).show();
+                    // Clear all fields after successful save
+                    clearFields();
+                })
                 .addOnFailureListener(e ->
                         Toast.makeText(NewTerminalActivity.this, "❌ Failed to add route", Toast.LENGTH_SHORT).show()
                 );
+    }
+
+    private void clearFields() {
+        etTerminal.setText("");
+        etDestination.setText("");
+        etLocation.setText("");
+        etRegularFare.setText("");
+        etStudentFare.setText("");
+        etSeniorFare.setText("");
+        etTravelTime.setText("");
+        etPlateNumberInput.setText("");
+
+        // Clear plate numbers list
+        plateNumbersList.clear();
+        plateNumberAdapter.notifyDataSetChanged();
+        cvPlateNumbersList.setVisibility(View.GONE);
+        updatePlateCount();
     }
 }
